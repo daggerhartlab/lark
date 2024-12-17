@@ -1,0 +1,4 @@
+admin:
+  css:
+    theme:
+      assets/css/lark.admin.css: {}

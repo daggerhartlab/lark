@@ -1,0 +1,12 @@
+{
+    "name": "daggerhartlab/lark",
+    "description": "Drupal module for exporting and importing content.",
+    "type": "drupal-module",
+    "authors": [
+        {
+            "name": "Jonathan Daggerhart",
+            "email": "jonathan@daggerhartlab.com"
+        }
+    ],
+    "require": {}
+}

@@ -1,0 +1,5 @@
+lark.transactions_plugins_list:
+  route_name: lark.transactions_plugins_list
+  title: 'Lark Transactions'
+  base_route: lark.settings
+  weight: 10

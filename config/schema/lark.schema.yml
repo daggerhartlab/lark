@@ -1,0 +1,11 @@
+# Schema for the configuration files of the Lark module.
+lark.settings:
+  type: config_object
+  label: 'Lark settings'
+  mapping:
+    default_source:
+      type: string
+      label: 'Default Source'
+    ignored_comparison_keys:
+      type: string
+      label: 'Ignored Comparison Keys'

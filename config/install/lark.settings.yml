@@ -1,0 +1,2 @@
+default_source: lark.default_exports
+ignored_comparison_keys: "changed\r\nrevision_timestamp\r\ncontent_translation_changed"

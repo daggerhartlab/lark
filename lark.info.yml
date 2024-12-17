@@ -1,0 +1,6 @@
+name: 'Lark'
+type: module
+description: 'Import and export content.'
+package: Development
+configure: lark.settings
+core_version_requirement: ^10 || ^11

@@ -1,0 +1,49 @@
+services:
+
+  lark.entity_logger:
+    parent: logger.channel_base
+    arguments:
+      - 'lark_entity'
+
+  Drupal\lark\Service\Utility\ExportableStatusBuilder:
+    class: Drupal\lark\Service\Utility\ExportableStatusBuilder
+    autowire: true
+
+  Drupal\lark\Service\Utility\ExportableStatusResolver:
+    class: Drupal\lark\Service\Utility\ExportableStatusResolver
+    autowire: true
+
+  Drupal\lark\Service\ExportableFactoryInterface:
+    class: Drupal\lark\Service\ExportableFactory
+    autowire: true
+
+  Drupal\lark\Service\FieldTypeHandlerManagerInterface:
+    class: Drupal\lark\Service\FieldTypeHandlerManager
+    autowire: true
+    parent: default_plugin_manager
+    arguments:
+      $cache_backend: '@cache.default'
+
+  Drupal\lark\Service\SourceManagerInterface:
+    class: Drupal\lark\Service\SourceManager
+    autowire: true
+    arguments:
+      $cache_backend: '@cache.default'
+
+  Drupal\lark\Service\ExporterInterface:
+    class: Drupal\lark\Service\Exporter
+    autowire: true
+    arguments:
+      $logger: '@lark.entity_logger'
+
+  Drupal\lark\Service\EntityUpdaterInterface:
+    class: Drupal\lark\Service\EntityUpdater
+    autowire: true
+    arguments:
+      $logger: '@lark.entity_logger'
+
+  Drupal\lark\Service\ImporterInterface:
+    class: Drupal\lark\Service\Importer
+    autowire: true
+    arguments:
+      $logger: '@lark.entity_logger'

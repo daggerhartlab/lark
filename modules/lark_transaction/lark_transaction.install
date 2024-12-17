@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file lark_transaction.install
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function lark_transaction_schema() {
+  $schema['lark_transaction'] = [
+    'description' => 'The base table for the Lark module.',
+    'fields' => [
+      'id' => [
+        'description' => 'Primary Key: Unique ID for a record.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'plugin_id' => [
+        'description' => 'The name of the Lark.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'times_executed' => [
+        'description' => 'The number of times the Lark Transaction has been executed.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'last_executed' => [
+        'description' => 'The Unix timestamp when the Lark Transaction was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+  ];
+
+  return $schema;
+}

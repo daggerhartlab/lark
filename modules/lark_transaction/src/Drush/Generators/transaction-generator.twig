@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Drupal\{{ machine_name }}\Plugin\LarkTransaction;
+
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\lark_transaction\Plugin\LarkTransactionPluginBase;
+use Drupal\lark_transaction\Attribute\LarkTransaction;
+
+/**
+ * Plugin implementation of the lark transaction.
+ *
+ * @see \Drupal\lark_transaction\Plugin\LarkTransaction\Examples
+ */
+#[LarkTransaction(
+  id: '{{ plugin_id }}',
+  label: new TranslatableMarkup('{{ label }}'),
+  description: new TranslatableMarkup('{{ description }}'),
+  weight: {{ weight }},
+  enabled: {{ enabled }},
+  repeatable: {{ repeatable }},
+)]
+class {{ class }} extends LarkTransactionPluginBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function execute(): void {
+
+  }
+
+}

@@ -1,0 +1,3 @@
+lark.default_exports:
+  label: 'Lark Default Exports'
+  directory: '../content/lark-exports'

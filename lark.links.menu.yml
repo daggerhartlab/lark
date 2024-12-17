@@ -1,0 +1,11 @@
+lark.settings:
+  title: Lark
+  parent: system.admin_config_development
+  route_name: lark.settings
+  weight: 10
+
+lark.exports_list:
+  title: Exports Manager
+  menu_name: main
+  parent: lark.settings
+  route_name: lark.exports_list

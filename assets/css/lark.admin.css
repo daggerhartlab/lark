@@ -1,0 +1,28 @@
+.lark-exports-table th.status,
+.lark-exports-table td.status {
+  max-width: 80px;
+  font-size: small;
+  text-align: center;
+}
+
+.lark-exports-row {}
+.lark-exports-row--in-sync {}
+.lark-exports-row--not-imported {
+  color: dimgray;
+}
+.lark-exports-row--out-of-sync {
+  background-color: #fffdf8;
+  color: #8a6200;
+  border-color: #8a6200;
+}
+.lark-exports-row--not-exported {
+  background-color: #fff6f6;
+  color: darkred;
+  border-color: darkred;
+}
+
+table.lark-diff-table td {
+  height: unset;
+  font-family: monospace;
+  white-space: pre;
+}

@@ -1,0 +1,14 @@
+lark administer configuration:
+  title: 'Administer Lark Configuration'
+  description: 'Perform exports and imports of Lark entities.'
+  restrict access: true
+
+lark view diffs:
+  title: 'View Lark Diffs'
+  description: 'View differences between entities in and Lark exports.'
+  restrict access: true
+
+lark import export entities:
+  title: 'Import and Export Entities'
+  description: 'Export entities to YAML using Lark.'
+  restrict access: true

@@ -1,0 +1,19 @@
+lark.transactions_plugins_list:
+  path: '/admin/config/development/lark/transactions'
+  defaults:
+    _title: 'Lark Transactions'
+    _controller: '\Drupal\lark_transaction\Controller\TransactionsPluginsController::listPlugins'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'administer site configuration'
+
+lark.transactions_plugin_execute:
+  path: '/admin/config/development/lark/transactions/{plugin_id}'
+  defaults:
+    _title: 'Lark Transaction - Execute Plugin'
+    _controller: '\Drupal\lark_transaction\Controller\TransactionsPluginsController::executePlugin'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'administer site configuration'

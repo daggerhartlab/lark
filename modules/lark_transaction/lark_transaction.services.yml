@@ -1,0 +1,10 @@
+services:
+
+  lark.transaction_logger:
+    parent: logger.channel_base
+    arguments:
+      - 'lark_transaction'
+
+  Drupal\lark_transaction\Service\LarkTransactionPluginManager:
+    parent: default_plugin_manager
+    autowire: true

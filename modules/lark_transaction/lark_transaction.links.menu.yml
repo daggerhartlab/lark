@@ -1,0 +1,5 @@
+lark.transactions_plugins_list:
+  title: Lark Transactions
+  menu_name: main
+  parent: lark.settings
+  route_name: lark.transactions_plugins_list
