@@ -2,6 +2,7 @@
     "name": "daggerhartlab/lark",
     "description": "Drupal module for exporting and importing content.",
     "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
     "authors": [
         {
             "name": "Jonathan Daggerhart",
