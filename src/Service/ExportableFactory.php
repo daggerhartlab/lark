@@ -8,6 +8,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
@@ -28,6 +29,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected SourceManagerInterface $sourceManager,
     protected ImporterInterface $importer,
     protected ExportableStatusResolver $statusResolver,
+    protected ModuleHandlerInterface $moduleHandler,
   ) {}
 
   /**
@@ -82,6 +84,15 @@ class ExportableFactory implements ExportableFactoryInterface {
     $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
     if (!$entity) {
       throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} not found.");
+    }
+
+    // Allow modules to prevent the entity from being exported.
+    $should_export = $this->moduleHandler->invokeAll('lark_should_export_entity', [$entity]);
+    if (!empty($should_export)) {
+      $should_export = array_pop($should_export);
+      if ($should_export === FALSE) {
+        return $exportables;
+      }
     }
 
     // Field definitions are lazy loaded and are populated only when needed.
