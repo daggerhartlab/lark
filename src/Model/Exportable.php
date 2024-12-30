@@ -175,7 +175,7 @@ class Exportable implements ExportableInterface {
         'entity_type' => $this->entity()->getEntityTypeId(),
         'bundle' => $this->entity()->bundle(),
         'entity_id' => $this->entity()->id(),
-        'label' => $this->entity()->label(),
+        'label' => (string) $this->entity()->label(),
         'path' => $this->getExportFilepath(),
         'uuid' => $this->entity()->uuid(),
         'default_langcode' => $this->entity()->language()->getId(),
