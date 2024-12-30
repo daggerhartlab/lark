@@ -128,7 +128,7 @@ class ExportableStatusResolver {
    *   The processed export array.
    */
   public function processExportArrayForComparison(array $export): array {
-    $ignored_keys = $this->configFactory->get('lark.settings')->get('ignored_comparison_keys');
+    $ignored_keys = $this->configFactory->get('lark.settings')->get('ignored_comparison_keys') ?? '';
     $ignored_keys = array_filter(explode("\n", $ignored_keys));
     array_walk($ignored_keys, 'trim');
 
