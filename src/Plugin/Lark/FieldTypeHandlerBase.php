@@ -9,6 +9,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -23,6 +24,7 @@ abstract class FieldTypeHandlerBase extends PluginBase implements FieldTypeHandl
     $plugin_definition,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
+    protected LoggerChannelFactoryInterface $loggerFactory,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
@@ -37,6 +39,7 @@ abstract class FieldTypeHandlerBase extends PluginBase implements FieldTypeHandl
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('entity.repository'),
+      $container->get(LoggerChannelFactoryInterface::class)
     );
   }
 

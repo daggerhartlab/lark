@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\lark\Attribute\LarkFieldTypeHandler;
 use Drupal\lark\Plugin\Lark\FieldTypeHandlerBase;
@@ -29,9 +30,10 @@ class MetatagComputedHandler extends FieldTypeHandlerBase {
     $plugin_definition,
     EntityTypeManagerInterface $entityTypeManager,
     EntityRepositoryInterface $entityRepository,
+    LoggerChannelFactoryInterface $loggerFactory,
     protected MetatagManagerInterface $metatagManager,
   ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entityTypeManager, $entityRepository);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $entityTypeManager, $entityRepository, $loggerFactory);
   }
 
   /**
@@ -44,6 +46,7 @@ class MetatagComputedHandler extends FieldTypeHandlerBase {
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('entity.repository'),
+      $container->get(LoggerChannelFactoryInterface::class),
       $container->get('metatag.manager'),
     );
   }
