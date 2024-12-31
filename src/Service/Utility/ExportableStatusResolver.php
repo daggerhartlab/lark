@@ -129,7 +129,7 @@ class ExportableStatusResolver {
    */
   public function processExportArrayForComparison(array $export): array {
     $ignored_keys = $this->configFactory->get('lark.settings')->get('ignored_comparison_keys') ?? '';
-    $ignored_keys = array_filter(explode("\n", $ignored_keys));
+    $ignored_keys = array_filter(preg_split("/[\r\n]+/", $ignored_keys));
     array_walk($ignored_keys, 'trim');
 
     // Ignore 'original_values' key added by the EntityReferenceUuidHandler.
