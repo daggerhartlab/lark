@@ -3,15 +3,10 @@
 namespace Drupal\lark\Plugin\Lark\FieldTypeHandler;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\lark\Attribute\LarkFieldTypeHandler;
 use Drupal\lark\Plugin\Lark\FieldTypeHandlerBase;
-use Drupal\metatag\MetatagManagerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the lark_field_type_handler.
@@ -23,33 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   fieldTypes: ['metatag_computed'],
 )]
 class MetatagComputedHandler extends FieldTypeHandlerBase {
-
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    EntityTypeManagerInterface $entityTypeManager,
-    EntityRepositoryInterface $entityRepository,
-    LoggerChannelFactoryInterface $loggerFactory,
-    protected MetatagManagerInterface $metatagManager,
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entityTypeManager, $entityRepository, $loggerFactory);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('entity_type.manager'),
-      $container->get('entity.repository'),
-      $container->get(LoggerChannelFactoryInterface::class),
-      $container->get('metatag.manager'),
-    );
-  }
 
   /**
    * {@inheritdoc}
@@ -64,9 +32,11 @@ class MetatagComputedHandler extends FieldTypeHandlerBase {
         ], 'IN')
       ->execute();
 
+    /** @var \Drupal\metatag\MetatagManagerInterface $metatagManager */
+    $metatagManager = \Drupal::service('metatag.manager');
     if ($metatag_configured) {
       return [
-        0 => $this->metatagManager->tagsFromEntity($field->getEntity()),
+        0 => $metatagManager->tagsFromEntity($field->getEntity()),
       ];
     }
 
