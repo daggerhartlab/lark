@@ -141,6 +141,7 @@ class EntityUpdater implements EntityUpdaterInterface {
 
     if (!file_exists($source)) {
       // Attempt to fall back without the uuid prefix.
+      // @todo This functionality is legacy and will be removed in a future.
       $source = $source_directory . DIRECTORY_SEPARATOR . basename($destination_uri);
       if (!file_exists($source)) {
         $this->logger->warning("File entity %name was imported, but the associated file (@path) was not found.", [
