@@ -131,18 +131,25 @@ class EntityUpdater implements EntityUpdaterInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @see \Drupal\lark\Service\Exporter::writeToYaml()
    */
   public function copyFileAssociatedWithEntity(FileInterface $entity, string $source_directory, string $destination_uri): void {
     // If the source file doesn't exist, there's nothing we can do.
-    $source = $source_directory . DIRECTORY_SEPARATOR . basename($destination_uri);
+    $source = $source_directory . DIRECTORY_SEPARATOR . $entity->uuid() . '--' . basename($destination_uri);
     $destination_directory = dirname($destination_uri);
 
     if (!file_exists($source)) {
-      $this->logger->warning("File entity %name was imported, but the associated file (@path) was not found.", [
-        '%name' => $entity->label(),
-        '@path' => $source,
-      ]);
-      return;
+      // Attempt to fall back without the uuid prefix.
+      // @todo This functionality is legacy and will be removed in a future.
+      $source = $source_directory . DIRECTORY_SEPARATOR . basename($destination_uri);
+      if (!file_exists($source)) {
+        $this->logger->warning("File entity %name was imported, but the associated file (@path) was not found.", [
+          '%name' => $entity->label(),
+          '@path' => $source,
+        ]);
+        return;
+      }
     }
 
     $copy_file = TRUE;

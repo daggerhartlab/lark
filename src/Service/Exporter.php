@@ -115,9 +115,15 @@ class Exporter implements ExporterInterface {
       if ($attached_file) {
         $this->fileSystem->copy(
           $attached_file,
-          $destination_directory . DIRECTORY_SEPARATOR . basename($attached_file),
+          $destination_directory . DIRECTORY_SEPARATOR . $exportable->entity()->uuid() . '--' . basename($attached_file),
           FileExists::Replace
         );
+
+        // If there's a file without the prefix, it is old and can be removed.
+        // @todo Remove this in a future release.
+        if (file_exists($destination_directory . DIRECTORY_SEPARATOR . basename($attached_file))) {
+          $this->fileSystem->delete($destination_directory . DIRECTORY_SEPARATOR . basename($attached_file));
+        }
       }
     }
 
