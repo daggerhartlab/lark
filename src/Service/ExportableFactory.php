@@ -95,6 +95,15 @@ class ExportableFactory implements ExportableFactoryInterface {
       }
     }
 
+    // If the entity is already registered/processing, nothing to do.
+    if (isset($exportables[$entity->uuid()])) {
+      return $exportables;
+    }
+    // Register the entity to prevent circular recursion.
+    else {
+      $exportables[$entity->uuid()] = NULL;
+    }
+
     // Field definitions are lazy loaded and are populated only when needed.
     // By calling ::getFieldDefinitions() we are sure that field definitions
     // are populated and available in the dump output.
@@ -114,6 +123,10 @@ class ExportableFactory implements ExportableFactoryInterface {
           }
           // Don't export users.
           if ($referenced_entity instanceof UserInterface) {
+            continue;
+          }
+          // Don't export entities that have already been registered/processed.
+          if (array_key_exists($referenced_entity->uuid(), $exportables)) {
             continue;
           }
 
