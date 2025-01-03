@@ -115,7 +115,7 @@ class Exporter implements ExporterInterface {
       if ($attached_file) {
         $this->fileSystem->copy(
           $attached_file,
-          $destination_directory . DIRECTORY_SEPARATOR . basename($attached_file),
+          $destination_directory . DIRECTORY_SEPARATOR . $exportable->entity()->uuid() . '--' . basename($attached_file),
           FileExists::Replace
         );
       }
