@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\lark\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Service\SourceManagerInterface;
@@ -26,11 +27,11 @@ final class SettingsForm extends ConfigFormBase {
    *   The Lark source plugin manager.
    */
   public function __construct(
-    ConfigFactoryInterface           $config_factory,
-    protected                        $typedConfigManager,
+    ConfigFactoryInterface $config_factory,
+    protected TypedConfigManagerInterface $typedConfigManager,
     protected SourceManagerInterface $sourceManager,
   ) {
-    parent::__construct($config_factory);
+    parent::__construct($config_factory, $this->typedConfigManager);
   }
 
   public static function create(ContainerInterface $container) {
