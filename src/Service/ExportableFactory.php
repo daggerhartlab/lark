@@ -143,7 +143,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
     $exportables[$exportable->entity()->uuid()] = $exportable;
 
-    return $exportables;
+    return array_filter($exportables);
   }
 
 }
