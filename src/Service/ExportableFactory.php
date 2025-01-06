@@ -13,7 +13,7 @@ use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Model\UniqueDictionary;
+use Drupal\lark\Service\Cache\ExportablesRuntimeCache;
 use Drupal\lark\Service\Utility\ExportableStatusResolver;
 use Drupal\user\UserInterface;
 
@@ -31,6 +31,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected ImporterInterface $importer,
     protected ExportableStatusResolver $statusResolver,
     protected ModuleHandlerInterface $moduleHandler,
+    protected ExportablesRuntimeCache $exportablesCache,
   ) {}
 
   /**
@@ -83,42 +84,55 @@ class ExportableFactory implements ExportableFactoryInterface {
    */
 
   public function getEntityExportables(string $entity_type_id, int $entity_id, array &$exportables = []): array {
-    $registry = new UniqueDictionary();
-    $registry->combine($exportables);
-    $this->getEntityExportablesRecursive($entity_type_id, $entity_id, $registry);
-    return array_reverse($registry->all());
-  }
-
-  /**
-   * @param string $entity_type_id
-   * @param int $entity_id
-   * @param \Drupal\lark\Model\UniqueDictionary $registry
-    *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function getEntityExportablesRecursive(string $entity_type_id, int $entity_id, UniqueDictionary $registry) {
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
     if (!$entity) {
       throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} not found.");
     }
 
+    if ($this->exportablesCache->has($entity->uuid())) {
+      return $this->exportablesCache->get($entity->uuid());
+    }
+
+    $exportables = $this->getEntityExportablesRecursive($entity, $exportables);
+    // Because we're registering the entities in hierarchical order, reverse the
+    // array to ensure that dependent entities are after their dependencies.
+    $exportables = array_reverse($exportables);
+    $this->exportablesCache->set($entity->uuid(), $exportables);
+    return $exportables;
+  }
+
+  /**
+   * Get the entity and prepare it for export.
+   *
+   * @param ContentEntityInterface $entity
+   *   The entity to get exportables for.
+   * @param array $exportables
+   *   The exportables array to populate.
+   *
+   * @return array
+   *   The exportables array.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function getEntityExportablesRecursive(ContentEntityInterface $entity, array &$exportables = []): array {
     // Allow modules to prevent the entity from being exported.
     $should_export = $this->moduleHandler->invokeAll('lark_should_export_entity', [$entity]);
     if (!empty($should_export)) {
       $should_export = array_pop($should_export);
       if ($should_export === FALSE) {
-        return;
+        return $exportables;
       }
     }
 
     // If the entity is already registered/processing, nothing to do.
-    if ($registry->has($entity->uuid())) {
-      return;
+    if (isset($exportables[$entity->uuid()])) {
+      return $exportables;
     }
     // Register the entity to prevent circular recursion.
-    $registry->placeholder($entity->uuid());
+    $exportables[$entity->uuid()] = NULL;
 
     // Field definitions are lazy loaded and are populated only when needed.
     // By calling ::getFieldDefinitions() we are sure that field definitions
@@ -141,13 +155,14 @@ class ExportableFactory implements ExportableFactoryInterface {
           if ($referenced_entity instanceof UserInterface) {
             continue;
           }
-          // Don't export entities that have already been registered/processed.
-          if ($registry->has($referenced_entity->uuid())) {
+
+          // If the referenced entity is already processing, do nothing.
+          if (array_key_exists($referenced_entity->uuid(), $exportables)) {
             continue;
           }
 
           $dependencies[$referenced_entity->uuid()] = $referenced_entity->getEntityTypeId();
-          $this->getEntityExportablesRecursive($referenced_entity->getEntityTypeId(), (int) $referenced_entity->id(), $registry);
+          $exportables += $this->getEntityExportablesRecursive($referenced_entity, $exportables);
         }
       }
     }
@@ -157,7 +172,10 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exportable->setDependencies($dependencies);
     $exportable->setSource($this->statusResolver->getExportableSource($exportable));
     $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
-    $registry->set($exportable->entity()->uuid(), $exportable);
+    $this->exportablesCache->set($exportable->entity()->uuid(), $exportable);
+    $exportables[$exportable->entity()->uuid()] = $exportable;
+
+    return $exportables;
   }
 
 }
