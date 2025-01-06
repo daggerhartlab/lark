@@ -65,7 +65,8 @@ class EntityExportForm extends FormBase {
     $entity_type_id = $this->getRouteMatch()->getParameters()->keys()[0];
     $entity_id = (int) $this->getRouteMatch()->getParameter($entity_type_id);
     $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
-    $exportable = $this->exportableFactory->createFromEntity($entity);
+    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id);
+    $exportable = $exportables[$entity->uuid()];
 
     $form['source'] = [
       '#type' => 'select',
@@ -92,8 +93,7 @@ class EntityExportForm extends FormBase {
       '#value' => $entity_id,
     ];
 
-    $form['exported'] = $this->buildExportableYamls($entity_type_id, $entity_id);
-
+    $form['exported'] = $this->buildExportableYamls($exportables);
     return $form;
   }
 
@@ -111,16 +111,12 @@ class EntityExportForm extends FormBase {
   /**
    * Returns the loaded structure of the current entity.
    *
-   * @param string $entity_type_id
-   *   The entity type id.
-   * @param int $entity_id
-   *   The entity id.
+   * @param \Drupal\lark\Model\ExportableInterface[] $exportables
    *
    * @return array
    *   Array of page elements to render.
    */
-  protected function buildExportableYamls(string $entity_type_id, int $entity_id): array {
-    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id);
+  protected function buildExportableYamls(array $exportables): array {
     $exportables = array_reverse($exportables);
     $exported = [
       'divider' => [

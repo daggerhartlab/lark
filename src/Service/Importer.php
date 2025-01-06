@@ -133,7 +133,8 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function discoverSourceExport(SourceInterface $source, string $uuid): array {
-    return $this->getSingleExportWithDependencies($uuid, $this->discoverSourceExports($source));
+    $found = $this->discoverSourceExports($source);
+    return $this->getSingleExportWithDependencies($uuid, $found);
   }
 
   /**
@@ -203,28 +204,42 @@ class Importer implements ImporterInterface {
    *   UUID of the export.
    * @param array $exports
    *   Found files array.
+   * @param array $dependency_registry
+   *   Reference array to track all dependencies to prevent duplicates.
    *
    * @return array
    *   Array of export with dependencies.
    */
-  protected function getSingleExportWithDependencies(string $uuid, array $exports): array {
+  protected function getSingleExportWithDependencies(string $uuid, array $exports, array &$dependency_registry = []): array {
     if (!isset($exports[$uuid])) {
       throw new LarkImportException('Export with UUID ' . $uuid . ' not found.');
     }
+
+    $_to_load_flat_array = [
+      'uuid' => 'entity_type',
+    ];
 
     $export = $exports[$uuid];
     $dependencies = [];
     foreach ($export['_meta']['depends'] as $dependency_uuid => $entity_type) {
       // Look for the dependency export.
       // @todo - Handle missing dependencies?
-      if (isset($exports[$dependency_uuid])) {
+      if (
+        isset($exports[$dependency_uuid])
+        && !array_key_exists($dependency_uuid, $dependency_registry)
+      ) {
         // Recurse and get dependencies of this dependency.
         if (!empty($exports[$dependency_uuid]['_meta']['depends'])) {
-          $dependencies += $this->getSingleExportWithDependencies($dependency_uuid, $exports);
+
+          // Register the dependency to prevent duplicates.
+          $dependency_registry[$dependency_uuid] = NULL;
+          $dependencies += $this->getSingleExportWithDependencies($dependency_uuid, $exports, $dependency_registry);
         }
 
         // Add the dependency itself.
         $dependencies[$dependency_uuid] = $exports[$dependency_uuid];
+
+        $dependency_registry[$dependency_uuid] = $exports[$dependency_uuid];
       }
     }
 
