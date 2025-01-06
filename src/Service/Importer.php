@@ -18,6 +18,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\FileInterface;
 use Drupal\lark\Exception\LarkImportException;
 use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Service\Cache\ExportsRuntimeCache;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
 
@@ -50,6 +51,8 @@ class Importer implements ImporterInterface {
    *   The logger service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\lark\Service\Cache\ExportsRuntimeCache $exportsCache
+   *   The exports runtime cache service.
    */
   public function __construct(
     protected SourceManagerInterface $sourceManager,
@@ -60,6 +63,7 @@ class Importer implements ImporterInterface {
     protected LanguageManagerInterface $languageManager,
     protected LoggerChannelInterface $logger,
     protected MessengerInterface $messenger,
+    protected ExportsRuntimeCache $exportsCache,
   ) {}
 
   /**
@@ -126,7 +130,12 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function discoverSourceExports(SourceInterface $source): array {
-    return $this->getExportsWithDependencies($source);
+    if ($this->exportsCache->has($source->id())) {
+      return $this->exportsCache->get($source->id());
+    }
+
+    $this->exportsCache->set($source->id(), $this->getExportsWithDependencies($source));
+    return $this->exportsCache->get($source->id());
   }
 
   /**
@@ -203,11 +212,13 @@ class Importer implements ImporterInterface {
    *   UUID of the export.
    * @param array $exports
    *   Found files array.
+   * @param array $dependency_registry
+   *   Reference array to track all dependencies to prevent duplicates.
    *
    * @return array
    *   Array of export with dependencies.
    */
-  protected function getSingleExportWithDependencies(string $uuid, array $exports): array {
+  protected function getSingleExportWithDependencies(string $uuid, array $exports, array &$dependency_registry = []): array {
     if (!isset($exports[$uuid])) {
       throw new LarkImportException('Export with UUID ' . $uuid . ' not found.');
     }
@@ -217,14 +228,22 @@ class Importer implements ImporterInterface {
     foreach ($export['_meta']['depends'] as $dependency_uuid => $entity_type) {
       // Look for the dependency export.
       // @todo - Handle missing dependencies?
-      if (isset($exports[$dependency_uuid])) {
+      if (
+        isset($exports[$dependency_uuid])
+        // Don't recurse into dependency if it's already been registered.
+        && !array_key_exists($dependency_uuid, $dependency_registry)
+      ) {
         // Recurse and get dependencies of this dependency.
         if (!empty($exports[$dependency_uuid]['_meta']['depends'])) {
-          $dependencies += $this->getSingleExportWithDependencies($dependency_uuid, $exports);
+
+          // Register the dependency to prevent redundant calls.
+          $dependency_registry[$dependency_uuid] = NULL;
+          $dependencies += $this->getSingleExportWithDependencies($dependency_uuid, $exports, $dependency_registry);
         }
 
         // Add the dependency itself.
         $dependencies[$dependency_uuid] = $exports[$dependency_uuid];
+        $dependency_registry[$dependency_uuid] = $exports[$dependency_uuid];
       }
     }
 

@@ -28,10 +28,10 @@ final class SettingsForm extends ConfigFormBase {
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
-    protected TypedConfigManagerInterface $typedConfigManager,
+    TypedConfigManagerInterface $typedConfigManager,
     protected SourceManagerInterface $sourceManager,
   ) {
-    parent::__construct($config_factory, $this->typedConfigManager);
+    parent::__construct($config_factory, $typedConfigManager);
   }
 
   public static function create(ContainerInterface $container) {
