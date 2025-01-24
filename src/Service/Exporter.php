@@ -111,7 +111,7 @@ class Exporter implements ExporterInterface {
 
     // If it's a file, export the file alongside the yaml.
     if ($exportable->entity() instanceof FileInterface) {
-      $attached_file = $this->fileSystem->realpath($exportable->entity()->getFileUri());
+      $attached_file = $exportable->entity()->getFileUri();
       if ($attached_file) {
         $this->fileSystem->copy(
           $attached_file,

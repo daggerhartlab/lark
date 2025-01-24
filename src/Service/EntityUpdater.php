@@ -6,6 +6,7 @@ use Drupal\Core\DefaultContent\AdminAccountSwitcher;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
@@ -169,7 +170,7 @@ class EntityUpdater implements EntityUpdaterInterface {
 
     $this->fileSystem->prepareDirectory($destination_directory, FileSystemInterface::CREATE_DIRECTORY);
     if ($copy_file) {
-      $uri = $this->fileSystem->copy($source, $destination_uri);
+      $uri = $this->fileSystem->copy($source, $destination_uri, FileExists::Rename);
       $entity->setFileUri($uri);
     }
   }
