@@ -337,6 +337,9 @@ class Importer implements ImporterInterface {
         $export['_meta']['label'] ?? NULL
       );
 
+      $this->processValuesForImport($entity, $export);
+      $this->upserter->setEntityValues($entity, $export);
+
       if ($entity instanceof FileInterface) {
         $this->upserter->copyFileAssociatedWithEntity(
           $entity,
@@ -344,9 +347,6 @@ class Importer implements ImporterInterface {
           $export['default']['uri'][0]['value']
         );
       }
-
-      $this->processValuesForImport($entity, $export);
-      $this->upserter->setEntityValues($entity, $export);
 
       /* @todo - Figure out "modified by another user" issue.
       $violations = $entity->validate();
