@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\lark\ExportableStatus;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Plugin\Lark\SourceInterface;
@@ -43,6 +44,7 @@ class ExportsManager extends ControllerBase {
     protected ExportableFactoryInterface $exportableFactory,
     protected EntityRepositoryInterface $entityRepository,
     protected ExportableStatusBuilder $statusBuilder,
+    protected LarkSettings $settings,
   ) {}
 
   /**
@@ -56,6 +58,7 @@ class ExportsManager extends ControllerBase {
       $container->get(ExportableFactoryInterface::class),
       $container->get(EntityRepositoryInterface::class),
       $container->get(ExportableStatusBuilder::class),
+      $container->get(LarkSettings::class),
     );
   }
 
@@ -130,7 +133,6 @@ class ExportsManager extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function build(): array {
-    $config = $this->config('lark.settings');
     $source_plugins = $this->sourceManager->getInstances();
     $build = ['#attached' => ['library' => ['lark/admin']]];
 
@@ -152,7 +154,7 @@ class ExportsManager extends ControllerBase {
         '#description' => $this->t('Exports found in <code>@directory</code>', [
           '@directory' => $source->directory() . DIRECTORY_SEPARATOR,
         ]),
-        '#open' => $source->id() === $config->get('default_source'),
+        '#open' => $source->id() === $this->settings->defaultSource(),
         'source_operations' => [
           '#type' => 'operations',
           '#access' => !empty($source_root_exports),

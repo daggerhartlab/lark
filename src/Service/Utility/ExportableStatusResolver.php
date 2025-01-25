@@ -8,6 +8,7 @@ use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\ExportableStatus;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Plugin\Lark\SourceInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\SourceManagerInterface;
@@ -19,9 +20,9 @@ use Drupal\lark\Service\SourceManagerInterface;
 class ExportableStatusResolver {
 
   public function __construct(
-    protected ConfigFactoryInterface $configFactory,
     protected SourceManagerInterface $sourceManager,
     protected ImporterInterface $importer,
+    protected LarkSettings $settings,
   ) {}
 
   /**
@@ -128,14 +129,7 @@ class ExportableStatusResolver {
    *   The processed export array.
    */
   public function processExportArrayForComparison(array $export): array {
-    $ignored_keys = $this->configFactory->get('lark.settings')->get('ignored_comparison_keys') ?? '';
-    $ignored_keys = array_filter(preg_split("/[\r\n]+/", $ignored_keys));
-    array_walk($ignored_keys, 'trim');
-
-    // Ignore 'original_values' key added by the EntityReferenceUuidHandler.
-    $ignored_keys[] = 'original_values';
-
-    $this->deepUnsetAll($export, $ignored_keys);
+    $this->deepUnsetAll($export, $this->settings->ignoredComparisonKeysArray());
     return $export;
   }
 

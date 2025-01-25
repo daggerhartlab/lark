@@ -13,6 +13,7 @@ use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Plugin\Discovery\YamlDiscovery;
 use Drupal\Core\Plugin\Factory\ContainerFactory;
 use Drupal\lark\Exception\LarkDefaultSourceNotFound;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Plugin\Lark\Source\DefaultSource;
 use Drupal\lark\Plugin\Lark\SourceInterface;
 
@@ -64,6 +65,7 @@ class SourceManager extends DefaultPluginManager implements SourceManagerInterfa
     ThemeHandlerInterface $theme_handler,
     CacheBackendInterface $cache_backend,
     protected ConfigFactoryInterface $configFactory,
+    protected LarkSettings $settings,
   ) {
     $this->factory = new ContainerFactory($this);
     $this->moduleHandler = $module_handler;
@@ -105,15 +107,14 @@ class SourceManager extends DefaultPluginManager implements SourceManagerInterfa
    * {@inheritdoc}
    */
   public function getDefaultSource(): SourceInterface {
-    $default_source_id = $this->configFactory->get('lark.settings')->get('default_source');
-    if (!$default_source_id) {
+    if (!$this->settings->defaultSource()) {
       $default_source_id = key($this->getDefinitions());
       if (!$default_source_id) {
         throw new LarkDefaultSourceNotFound('No default source plugin defined.');
       }
     }
 
-    return $this->getSourceInstance($default_source_id);
+    return $this->getSourceInstance($this->settings->defaultSource());
   }
 
   /**

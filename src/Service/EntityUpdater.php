@@ -11,6 +11,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\file\FileInterface;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\user\EntityOwnerInterface;
 
 /**
@@ -22,6 +23,7 @@ use Drupal\user\EntityOwnerInterface;
 class EntityUpdater implements EntityUpdaterInterface {
 
   public function __construct(
+    protected LarkSettings $settings,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
     protected LanguageManagerInterface $languageManager,
@@ -153,8 +155,8 @@ class EntityUpdater implements EntityUpdaterInterface {
       }
     }
 
-    $copy_file = TRUE;
-    if (file_exists($destination_uri)) {
+    $copy_file = $this->settings->shouldImportAssets();
+    if ($copy_file && file_exists($destination_uri)) {
       $source_hash = hash_file('sha256', $source);
       assert(is_string($source_hash));
       $destination_hash = hash_file('sha256', $destination_uri);
@@ -170,7 +172,11 @@ class EntityUpdater implements EntityUpdaterInterface {
 
     $this->fileSystem->prepareDirectory($destination_directory, FileSystemInterface::CREATE_DIRECTORY);
     if ($copy_file) {
-      $uri = $this->fileSystem->copy($source, $destination_uri, FileExists::Rename);
+      $uri = $this->fileSystem->copy(
+        $source,
+        $destination_uri,
+        $this->settings->assetImportFileExists()
+      );
       $entity->setFileUri($uri);
     }
   }

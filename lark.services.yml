@@ -5,6 +5,11 @@ services:
     arguments:
       - 'lark_entity'
 
+  Drupal\lark\Model\LarkSettings:
+    class: Drupal\lark\Model\LarkSettings
+    factory: ['Drupal\lark\Model\LarkSettings', 'create']
+    autowire: true
+
   Drupal\lark\Service\Cache\ExportsRuntimeCache:
     class: Drupal\lark\Service\Cache\ExportsRuntimeCache
 

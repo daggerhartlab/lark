@@ -13,6 +13,7 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Plugin\Lark\SourceInterface;
 
 /**
@@ -41,6 +42,7 @@ class Exporter implements ExporterInterface {
    *   The messenger service.
    */
   public function __construct(
+    protected LarkSettings $settings,
     protected ExportableFactoryInterface $exportableFactory,
     protected SourceManagerInterface $sourceManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
@@ -110,20 +112,22 @@ class Exporter implements ExporterInterface {
     $exportable->setExportFilepath($destination_filepath);
 
     // If it's a file, export the file alongside the yaml.
-    if ($exportable->entity() instanceof FileInterface) {
-      $attached_file = $exportable->entity()->getFileUri();
-      if ($attached_file) {
-        $this->fileSystem->copy(
-          $attached_file,
-          $destination_directory . DIRECTORY_SEPARATOR . $exportable->entity()->uuid() . '--' . basename($attached_file),
-          FileExists::Replace
-        );
+    if (
+      $exportable->entity() instanceof FileInterface &&
+      $exportable->entity()->getFileUri() &&
+      $this->settings->shouldExportAssets()
+    ) {
+      $asset_file = $exportable->entity()->getFileUri();
+      $this->fileSystem->copy(
+        $asset_file,
+        $destination_directory . DIRECTORY_SEPARATOR . $exportable->entity()->uuid() . '--' . basename($asset_file),
+        $this->settings->assetExportFileExists()
+      );
 
-        // If there's a file without the prefix, it is old and can be removed.
-        // @todo Remove this in a future release.
-        if (file_exists($destination_directory . DIRECTORY_SEPARATOR . basename($attached_file))) {
-          $this->fileSystem->delete($destination_directory . DIRECTORY_SEPARATOR . basename($attached_file));
-        }
+      // If there's a file without the prefix, it is old and can be removed.
+      // @todo Remove this in a future release.
+      if (file_exists($destination_directory . DIRECTORY_SEPARATOR . basename($asset_file))) {
+        $this->fileSystem->delete($destination_directory . DIRECTORY_SEPARATOR . basename($asset_file));
       }
     }
 
