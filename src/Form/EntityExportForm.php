@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\file\FileInterface;
 use Drupal\lark\ExportableStatus;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
@@ -68,6 +69,7 @@ class EntityExportForm extends FormBase {
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id);
     $exportable = $exportables[$entity->uuid()];
 
+    $form['#attached']['library'][] = 'lark/admin';
     $form['source'] = [
       '#type' => 'select',
       '#title' => $this->t('Export Source'),
@@ -130,12 +132,35 @@ class EntityExportForm extends FormBase {
       ],
     ];
     foreach ($exportables as $uuid => $exportable) {
+
+      $heading = [
+        '#type' => 'html_tag',
+        '#tag' => 'h2',
+        '#value' => $exportable->entity()->label(),
+      ];
+      $thumbnail = NULL;
+      if ($exportable->entity() instanceof FileInterface) {
+        /** @var FileInterface $file */
+        $file = $exportable->entity();
+        if (
+          str_starts_with($file->getMimeType(), 'image/') &&
+          $file->getSize() <= 2048000
+        ) {
+          $thumbnail = [
+            '#theme' => 'image',
+            '#uri' => $file->createFileUrl(FALSE),
+            '#title' => $file->label(),
+            '#attributes' => ['class' => ['lark-asset-thumbnail-image']],
+          ];
+        }
+      }
+
       $yaml = \htmlentities($exportable->toYaml());
       $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
       $exported['yaml_' . $uuid] = [
         '#type' => 'details',
         '#title' => "{$status_details['icon']} {$exportable->entity()->getEntityTypeId()} : {$exportable->entity()->id()} : {$exportable->entity()->label()}",
-        '#open' => $uuid === array_key_first($exportables),
+        '#open' => FALSE,
         'export_details' => [
           '#markup' => "<p><strong>Export Path: </strong> <code>{$exportable->getExportFilename()}</code></p>",
         ],
@@ -152,6 +177,8 @@ class EntityExportForm extends FormBase {
             ],
           ],
         ],
+        'heading' => $heading,
+        'thumbnail' => $thumbnail,
         'content' => [
           '#markup' => Markup::create("<hr><pre>{$yaml}</pre>"),
         ],

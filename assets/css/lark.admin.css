@@ -21,6 +21,12 @@
   border-color: darkred;
 }
 
+img.lark-asset-thumbnail-image {
+  max-width: 300px;
+  max-height: auto;
+  height: auto;
+}
+
 table.lark-diff-table td {
   height: unset;
   font-family: monospace;
