@@ -18,7 +18,7 @@ interface ExporterInterface {
    *   Entity id.
    * @param bool $show_messages
    *   Whether to show messages.
-   * @param array $exports_additional_metadata
+   * @param array $exports_meta_options_overrides
    *   An array of values for the export _meta array, key by entity uuuid.
    *
    * @return void
@@ -27,6 +27,6 @@ interface ExporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\lark\Exception\LarkEntityNotFoundException
    */
-  public function exportEntity(string $source_plugin_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_additional_metadata = []): void;
+  public function exportEntity(string $source_plugin_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_meta_options_overrides = []): void;
 
 }

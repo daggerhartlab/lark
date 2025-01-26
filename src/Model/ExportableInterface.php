@@ -40,7 +40,25 @@ interface ExportableInterface {
   public function setDependencies(array $dependencies): self;
 
   /**
-   * Get additional metadata by key.
+   * Set of arbitrary options for the export.
+   *
+   * @return array
+   *   Stored options.
+   */
+  public function getMetaOptions(): array;
+
+  /**
+   * Set meta options for export.
+   *
+   * @param array $options
+   *   New options.
+   *
+   * @return $this
+   */
+  public function setMetaOptions(array $options): self;
+
+  /**
+   * Get meta option by key.
    *
    * @param string $key
    *   Name of the metdata item.
@@ -48,10 +66,21 @@ interface ExportableInterface {
    * @return mixed
    *   The metadata stored, or null.
    */
-  public function getAdditionalMetadata(string $key): mixed;
+  public function getMetaOption(string $key): mixed;
 
   /**
-   * Set some additional metadata for the export.
+   * Whether a meta option exists.
+   *
+   * @param string $key
+   *   Name of the metdata item.
+   *
+   * @return bool
+   *   True if the meta option exists.
+   */
+  public function hasMetaOption(string $key): bool;
+
+  /**
+   * Set some meta option for the export.
    *
    * @param string $key
    *   Name of data.
@@ -60,7 +89,14 @@ interface ExportableInterface {
    *
    * @return $this
    */
-  public function setAdditionalMetadata(string $key, $value): self;
+  public function setMetaOption(string $key, $value): self;
+
+  /**
+   * Get the exported values if we have them.
+   *
+   * @return array
+   */
+  public function getExportedValues(): array;
 
   /**
    * Get status code.

@@ -58,15 +58,15 @@ class Exporter implements ExporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function exportEntity(string $source_plugin_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_additional_metadata = []): void {
+  public function exportEntity(string $source_plugin_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_meta_options_overrides = []): void {
     $source = $this->sourceManager->getSourceInstance($source_plugin_id);
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id);
 
     // Add metadata overrides.
-    foreach ($exports_additional_metadata as $uuid => $metadata) {
-      if (isset($exportables[$uuid]) && is_array($metadata)) {
-        foreach ($metadata as $key => $value) {
-          $exportables[$uuid]->setAdditionalMetadata($key, $value);
+    foreach ($exports_meta_options_overrides as $uuid => $meta_options) {
+      if (isset($exportables[$uuid]) && is_array($meta_options)) {
+        foreach ($meta_options as $key => $value) {
+          $exportables[$uuid]->setMetaOption($key, $value);
         }
       }
     }
@@ -130,7 +130,7 @@ class Exporter implements ExporterInterface {
       // Default to settings. Then, if an export override exists let it make the
       // decision about exporting.
       $should_export = $this->settings->shouldExportAssets();
-      $export_override = $exportable->getAdditionalMetadata('file_asset_should_export');
+      $export_override = $exportable->getMetaOption('file_asset_should_export');
       $export_override_exists = !is_null($exportable);
       if ($export_override_exists) {
         $should_export = (bool) $export_override;

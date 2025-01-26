@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
@@ -69,6 +70,7 @@ class ExportableFactory implements ExportableFactoryInterface {
       $exportable = new Exportable($entity);
       $exportable
         ->setDependencies($export['_meta']['depends'] ?? [])
+        ->setMetaOptions($exports['_meta']['options'] ?? [])
         ->setSource($source)
         ->setExportFilepath($export['_meta']['path'])
         ->setStatus($this->statusResolver->getExportableStatus($exportable, $export));
@@ -172,6 +174,10 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exportable->setDependencies($dependencies);
     $exportable->setSource($this->statusResolver->getExportableSource($exportable));
     $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
+    if ($exportable->getExportExists() && isset($exportable->getExportedValues()['_meta']['options'])) {
+      $exportable->setMetaOptions($exportable->getExportedValues()['_meta']['options']);
+    }
+
     $this->exportablesCache->set($exportable->entity()->uuid(), $exportable);
     $exportables[$exportable->entity()->uuid()] = $exportable;
 

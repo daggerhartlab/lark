@@ -104,9 +104,7 @@ class ExportableStatusResolver {
    *   The diff object.
    */
   public function exportableToDiff(ExportableInterface $exportable): Diff {
-    $left_array = $exportable->getExportExists() ?
-      Yaml::decode(\file_get_contents($exportable->getExportFilepath())) :
-      [];
+    $left_array = $exportable->getExportedValues();
 
     // Process for comparison.
     $left_array = $this->processExportArrayForComparison($left_array);

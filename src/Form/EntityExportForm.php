@@ -153,7 +153,7 @@ class EntityExportForm extends FormBase {
 
       $build[$uuid] = [
         '#type' => 'details',
-        '#title' => "{$status_details['icon']} {$exportable->entity()->getEntityTypeId()} : {$exportable->entity()->id()} : {$exportable->entity()->label()}",
+        '#title' => "{$status_details['icon']} {$exportable->entity()->getEntityTypeId()} : {$exportable->entity()->id()} : {$exportable->entity()->label()} - <small>{$exportable->entity()->uuid()}</small>",
         '#open' => FALSE,
         'export_details' => [
           '#markup' => "<p><strong>Export Path: </strong> <code>{$exportable->getExportFilename()}</code></p>",
@@ -197,6 +197,15 @@ class EntityExportForm extends FormBase {
           }
         }
 
+        $should_import_value = $this->settings->shouldImportAssets();
+        if ($exportable->hasMetaOption('file_asset_should_import')) {
+          $should_import_value = $exportable->getMetaOption('file_asset_should_import');
+        }
+        $should_export_value = $this->settings->shouldExportAssets();
+        if ($exportable->hasMetaOption('file_asset_should_export')) {
+          $should_export_value = $exportable->getMetaOption('file_asset_should_export');
+        }
+
         $build[$uuid]['file_asset'] = [
           '#type' => 'container',
           '#attributes' => ['class' => ['lark-asset-details-container']],
@@ -209,28 +218,30 @@ class EntityExportForm extends FormBase {
           'should_export' => [
             '#type' => 'radios',
             '#title' => $this->t('Asset Export'),
-            // @TODO - default value needs to be maintained.
-            '#default_value' => 0,
+            '#default_value' => (int) $should_export_value,
             '#options' => [
               0 => $this->t('(@default_desc) Do not export', [
-                '@default_desc' => $this->settings->shouldExportAssets() === FALSE ? $this->t('Default') : $this->t('Override')
+                '@default_desc' => $this->settings->shouldExportAssets() === FALSE ?
+                  $this->t('Default') :
+                  $this->t('Override')
               ]),
               1 => $this->t('(@default_desc) Export this asset along with the File entity', [
-                '@default_desc' => $this->settings->shouldExportAssets() === TRUE ? $this->t('Default') : $this->t('Override')
+                '@default_desc' => $this->settings->shouldExportAssets() === TRUE ?
+                  $this->t('Default') :
+                  $this->t('Override')
               ]),
             ],
           ],
           'should_import' => [
             '#type' => 'radios',
             '#title' => $this->t('Asset Import'),
-            // @TODO - default value needs to be maintained.
-            '#default_value' => 0,
+            '#default_value' => (int) $should_import_value,
             '#options' => [
               0 => $this->t('(@default_desc) Do not import', [
-                '@default_desc' => $this->settings->shouldExportAssets() === FALSE ? $this->t('Default') : $this->t('Override')
+                '@default_desc' => $this->settings->shouldImportAssets() === FALSE ? $this->t('Default') : $this->t('Override')
               ]),
               1 => $this->t('(@default_desc) Import this asset along with the File entity', [
-                '@default_desc' => $this->settings->shouldExportAssets() === TRUE ? $this->t('Default') : $this->t('Override')
+                '@default_desc' => $this->settings->shouldImportAssets() === TRUE ? $this->t('Default') : $this->t('Override')
               ]),
             ],
           ],

@@ -352,9 +352,9 @@ class Importer implements ImporterInterface {
         // Default to settings. Then, if an import override exists let it make
         // the decision about importing.
         $should_import = $this->settings->shouldImportAssets();
-        $import_override_exists = isset($export['_meta']['file_asset_should_import']);
+        $import_override_exists = isset($export['_meta']['options']['file_asset_should_import']);
         if ($import_override_exists) {
-          $should_import = (bool) $export['_meta']['file_asset_should_import'];
+          $should_import = (bool) $export['_meta']['options']['file_asset_should_import'];
         }
 
         if ($should_import) {
