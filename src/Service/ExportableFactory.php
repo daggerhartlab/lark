@@ -70,7 +70,7 @@ class ExportableFactory implements ExportableFactoryInterface {
       $exportable = new Exportable($entity);
       $exportable
         ->setDependencies($export['_meta']['depends'] ?? [])
-        ->setMetaOptions($exports['_meta']['options'] ?? [])
+        ->setMetaOptions($export['_meta']['options'] ?? [])
         ->setSource($source)
         ->setExportFilepath($export['_meta']['path'])
         ->setStatus($this->statusResolver->getExportableStatus($exportable, $export));
