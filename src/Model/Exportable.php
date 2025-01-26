@@ -206,7 +206,9 @@ class Exportable implements ExportableInterface {
   public function setExportFilepath(string $filepath): self {
     $this->exportFilepath = $filepath;
     $this->setExportExists(\file_exists($filepath));
-    $this->exportedValues = Yaml::decode(\file_get_contents($filepath));
+    if ($this->getExportExists()) {
+      $this->exportedValues = Yaml::decode(\file_get_contents($filepath));
+    }
 
     return $this;
   }
