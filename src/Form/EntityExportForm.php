@@ -125,38 +125,16 @@ class EntityExportForm extends FormBase {
       'divider' => [
         '#markup' => '<hr>',
       ],
-      'summary' => [
-        '#markup' => $this->t('Status summary: @summary', [
-          '@summary' => $this->statusBuilder->getExportablesSummary($exportables),
-        ]),
-      ],
+      'summary' => $this->statusBuilder->getExportablesSummary($exportables),
+//        [
+//        '#markup' => $this->t('Status summary: @summary', [
+//          '@summary' => $this->statusBuilder->getExportablesSummary($exportables),
+//        ]),
+//      ],
     ];
     foreach ($exportables as $uuid => $exportable) {
-
-      $heading = [
-        '#type' => 'html_tag',
-        '#tag' => 'h2',
-        '#value' => $exportable->entity()->label(),
-      ];
-      $thumbnail = NULL;
-      if ($exportable->entity() instanceof FileInterface) {
-        /** @var FileInterface $file */
-        $file = $exportable->entity();
-        if (
-          str_starts_with($file->getMimeType(), 'image/') &&
-          $file->getSize() <= 2048000
-        ) {
-          $thumbnail = [
-            '#theme' => 'image',
-            '#uri' => $file->createFileUrl(FALSE),
-            '#title' => $file->label(),
-            '#attributes' => ['class' => ['lark-asset-thumbnail-image']],
-          ];
-        }
-      }
-
-      $yaml = \htmlentities($exportable->toYaml());
       $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
+
       $exported['yaml_' . $uuid] = [
         '#type' => 'details',
         '#title' => "{$status_details['icon']} {$exportable->entity()->getEntityTypeId()} : {$exportable->entity()->id()} : {$exportable->entity()->label()}",
@@ -177,12 +155,33 @@ class EntityExportForm extends FormBase {
             ],
           ],
         ],
-        'heading' => $heading,
-        'thumbnail' => $thumbnail,
+        'heading' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#value' => $exportable->entity()->label(),
+        ],
         'content' => [
-          '#markup' => Markup::create("<hr><pre>{$yaml}</pre>"),
+          '#markup' => Markup::create("<hr><pre>" . \htmlentities($exportable->toYaml()) . "</pre>"),
+          '#weight' => 100,
         ],
       ];
+
+      // Handle file options.
+      if ($exportable->entity() instanceof FileInterface) {
+        /** @var FileInterface $file */
+        $file = $exportable->entity();
+        if (
+          str_starts_with($file->getMimeType(), 'image/') &&
+          $file->getSize() <= 2048000
+        ) {
+          $exported['yaml_' . $uuid]['thumbnail'] = [
+            '#theme' => 'image',
+            '#uri' => $file->createFileUrl(FALSE),
+            '#title' => $file->label(),
+            '#attributes' => ['class' => ['lark-asset-thumbnail-image']],
+          ];
+        }
+      }
     }
 
     return $exported;

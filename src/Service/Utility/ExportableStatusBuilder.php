@@ -101,20 +101,28 @@ class ExportableStatusBuilder {
    * @return \Drupal\Component\Render\MarkupInterface
    *   Summary string.
    */
-  public function getExportablesSummary(array $exportables): MarkupInterface {
+  public function getExportablesSummary(array $exportables): array {
     $status_counts = $this->getKeyedArray(0);
     $status_details = $this->getAllStatusRenderDetails();
-    $summary = [];
+    $summary = [
+      '#theme' => 'item_list',
+      '#items' => [],
+    ];
+
     foreach ($exportables as $exportable) {
       $status_counts[$exportable->getStatus()->name] += 1;
     }
 
     foreach (array_filter($status_counts) as $status_name => $count) {
       $details = $status_details[$status_name];
-      $summary[$status_name] = "<small>{$count}</small> {$details['icon']}";
+      $summary['#items'][] = [
+        'data' => [
+          '#markup' => "{$details['icon']} <span class='status-count'>{$count}</span><span class='status-label'> - {$details['label']}</span>"
+        ],
+      ];
     }
 
-    return Markup::create(implode(' <small>|</small> ', $summary));
+    return $summary;
   }
 
 }

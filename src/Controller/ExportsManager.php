@@ -188,14 +188,15 @@ class ExportsManager extends ControllerBase {
           $dependency_exportables[] = $this->exportableFactory->createFromSource($source->id(), $dependency_uuid);
         }
 
+        $status_summary = $this->statusBuilder->getExportablesSummary(array_merge([$root_uuid => $root_exportable], $dependency_exportables));
         $build['sources'][$source->id()][$root_uuid] = [
           '#type' => 'details',
-          '#title' => Markup::create(strtr("@status_summary - @entity_label <small>@entity_type</small> - @root_uuid", [
+          '#title' => Markup::create(strtr("@entity_label <small>@entity_type</small> - @root_uuid", [
             '@entity_label' => $root_exportable->entity()->label(),
             '@entity_type' => $root_exportable->entity()->getEntityTypeId(),
             '@root_uuid' => $root_uuid,
-            '@status_summary' => $this->statusBuilder->getExportablesSummary(array_merge([$root_uuid => $root_exportable], $dependency_exportables)),
           ])),
+          'status_summary' => $status_summary,
           'root_table' => [
             '#type' => 'table',
             '#attributes' => ['class' => ['lark-exports-table']],
