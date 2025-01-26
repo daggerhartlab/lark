@@ -2,7 +2,6 @@
 
 namespace Drupal\lark\Model;
 
-use Drupal\Component\Diff\Diff;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\ExportableStatus;
@@ -43,6 +42,13 @@ class Exportable implements ExportableInterface {
   protected array $dependencies = [];
 
   /**
+   * Additional metadata to be added during export.
+   *
+   * @var array
+   */
+  protected array $additional_metadata = [];
+
+  /**
    * Export status.
    *
    * @var \Drupal\lark\ExportableStatus
@@ -74,6 +80,21 @@ class Exportable implements ExportableInterface {
    */
   public function setDependencies(array $dependencies): self {
     $this->dependencies = $dependencies;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAdditionalMetadata(string $key): mixed {
+    return $this->additional_metadata[$key] ?? NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setAdditionalMetadata(string $key, $value): self {
+    $this->additional_metadata[$key] = $value;
     return $this;
   }
 
@@ -180,7 +201,7 @@ class Exportable implements ExportableInterface {
         'uuid' => $this->entity()->uuid(),
         'default_langcode' => $this->entity()->language()->getId(),
         'depends' => $this->getDependencies(),
-      ],
+      ] + $this->additional_metadata,
       'default' => Exporter::getEntityExportArray($this->entity()),
     ];
 

@@ -17,6 +17,7 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\FileInterface;
 use Drupal\lark\Exception\LarkImportException;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Plugin\Lark\SourceInterface;
 use Drupal\lark\Service\Cache\ExportsRuntimeCache;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
@@ -35,10 +36,14 @@ class Importer implements ImporterInterface {
   /**
    * LarkEntityImporter constructor.
    *
+   * @param \Drupal\lark\Model\LarkSettings $settings
+   *   Lark settings.
    * @param \Drupal\lark\Service\SourceManagerInterface $sourceManager
    *   The lark source plugin manager.
    * @param \Drupal\lark\Service\EntityUpdaterInterface $upserter
    *   Service for upserting entities.
+   * @param \Drupal\lark\Service\AssetFileManager $assetFileManager,
+   *   File asset handling.
    * @param \Drupal\lark\Service\FieldTypeHandlerManagerInterface $fieldTypeManager
    *   The lark field type handler plugin manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
@@ -55,8 +60,10 @@ class Importer implements ImporterInterface {
    *   The exports runtime cache service.
    */
   public function __construct(
+    protected LarkSettings $settings,
     protected SourceManagerInterface $sourceManager,
     protected EntityUpdaterInterface $upserter,
+    protected AssetFileManager $assetFileManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
@@ -340,12 +347,23 @@ class Importer implements ImporterInterface {
       $this->processValuesForImport($entity, $export);
       $this->upserter->setEntityValues($entity, $export);
 
+      // Handle File assets.
       if ($entity instanceof FileInterface) {
-        $this->upserter->copyFileAssociatedWithEntity(
-          $entity,
-          dirname($export['_meta']['path']),
-          $export['default']['uri'][0]['value']
-        );
+        // Default to settings. Then, if an import override exists let it make
+        // the decision about importing.
+        $should_import = $this->settings->shouldImportAssets();
+        $import_override_exists = isset($export['_meta']['file_asset_should_import']);
+        if ($import_override_exists) {
+          $should_import = (bool) $export['_meta']['file_asset_should_import'];
+        }
+
+        if ($should_import) {
+          $this->assetFileManager->importAsset(
+            $entity,
+            dirname($export['_meta']['path']),
+            $export['default']['uri'][0]['value']
+          );
+        }
       }
 
       /* @todo - Figure out "modified by another user" issue.

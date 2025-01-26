@@ -3,7 +3,6 @@
 namespace Drupal\lark\Model;
 
 
-use Drupal\Component\Diff\Diff;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\lark\ExportableStatus;
 use Drupal\lark\Plugin\Lark\SourceInterface;
@@ -39,6 +38,29 @@ interface ExportableInterface {
    * @return $this
    */
   public function setDependencies(array $dependencies): self;
+
+  /**
+   * Get additional metadata by key.
+   *
+   * @param string $key
+   *   Name of the metdata item.
+   *
+   * @return mixed
+   *   The metadata stored, or null.
+   */
+  public function getAdditionalMetadata(string $key): mixed;
+
+  /**
+   * Set some additional metadata for the export.
+   *
+   * @param string $key
+   *   Name of data.
+   * @param $value
+   *   Value.
+   *
+   * @return $this
+   */
+  public function setAdditionalMetadata(string $key, $value): self;
 
   /**
    * Get status code.

@@ -9,6 +9,8 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\file\FileInterface;
 use Drupal\lark\ExportableStatus;
+use Drupal\lark\Model\LarkSettings;
+use Drupal\lark\Service\AssetFileManager;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
 use Drupal\lark\Service\ExporterInterface;
@@ -37,6 +39,8 @@ class EntityExportForm extends FormBase {
     protected SourceManagerInterface $sourceManager,
     protected ExportableFactoryInterface $exportableFactory,
     protected ExportableStatusBuilder $statusBuilder,
+    protected LarkSettings $settings,
+    protected AssetFileManager $assetFileManager,
   ) {}
 
   /**
@@ -49,6 +53,8 @@ class EntityExportForm extends FormBase {
       $container->get(SourceManagerInterface::class),
       $container->get(ExportableFactoryInterface::class),
       $container->get(ExportableStatusBuilder::class),
+      $container->get(LarkSettings::class),
+      $container->get(AssetFileManager::class),
     );
   }
 
@@ -95,7 +101,7 @@ class EntityExportForm extends FormBase {
       '#value' => $entity_id,
     ];
 
-    $form['exported'] = $this->buildExportableYamls($exportables);
+    $form['exportable_values'] = $this->buildExportableYamls($exportables);
 
     return $form;
   }
@@ -104,10 +110,24 @@ class EntityExportForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Simplify exportable_values.
+    $exportable_values = [];
+    foreach ($form_state->getValue('exportable_values') as $uuid => $values) {
+      // File assets.
+      if ((bool) $values['file_asset']['should_export'] !== $this->settings->shouldExportAssets()) {
+        $exportable_values[$uuid]['file_asset_should_export'] = (bool) $values['file_asset']['should_export'];
+      }
+      if ((bool) $values['file_asset']['should_import'] !== $this->settings->shouldImportAssets()) {
+        $exportable_values[$uuid]['file_asset_should_import'] = (bool) $values['file_asset']['should_import'];
+      }
+    }
+
     $this->entityExporter->exportEntity(
       $form_state->getValue('source'),
       $form_state->getValue('entity_type_id'),
-      (int) $form_state->getValue('entity_id')
+      (int) $form_state->getValue('entity_id'),
+      TRUE,
+      $exportable_values,
     );
   }
 
@@ -121,21 +141,17 @@ class EntityExportForm extends FormBase {
    */
   protected function buildExportableYamls(array $exportables): array {
     $exportables = array_reverse($exportables);
-    $exported = [
+    $build = [
+      '#tree' => TRUE,
       'divider' => [
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-//        [
-//        '#markup' => $this->t('Status summary: @summary', [
-//          '@summary' => $this->statusBuilder->getExportablesSummary($exportables),
-//        ]),
-//      ],
     ];
     foreach ($exportables as $uuid => $exportable) {
       $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
 
-      $exported['yaml_' . $uuid] = [
+      $build[$uuid] = [
         '#type' => 'details',
         '#title' => "{$status_details['icon']} {$exportable->entity()->getEntityTypeId()} : {$exportable->entity()->id()} : {$exportable->entity()->label()}",
         '#open' => FALSE,
@@ -170,11 +186,62 @@ class EntityExportForm extends FormBase {
       if ($exportable->entity() instanceof FileInterface) {
         /** @var FileInterface $file */
         $file = $exportable->entity();
+
+        // Whether asset is exported.
+        $is_exported_msg = $this->t('Asset not exported.');
+        if ($exportable->getExportFilepath()) {
+          $destination = dirname($exportable->getExportFilepath());
+          if ($this->assetFileManager->assetIsExported($exportable->entity(), $destination)) {
+            $path = $destination . DIRECTORY_SEPARATOR . $this->assetFileManager->assetExportFilename($exportable->entity());
+            $is_exported_msg = $this->t('Asset exported: @path', ['@path' => $path]);
+          }
+        }
+
+        $build[$uuid]['file_asset'] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['lark-asset-details-container']],
+          'is_exported' => [
+            '#type' => 'container',
+            'exists' => [
+              '#markup' => "<p><em>$is_exported_msg</em></p>",
+            ],
+          ],
+          'should_export' => [
+            '#type' => 'radios',
+            '#title' => $this->t('Asset Export'),
+            // @TODO - default value needs to be maintained.
+            '#default_value' => 0,
+            '#options' => [
+              0 => $this->t('(@default_desc) Do not export', [
+                '@default_desc' => $this->settings->shouldExportAssets() === FALSE ? $this->t('Default') : $this->t('Override')
+              ]),
+              1 => $this->t('(@default_desc) Export this asset along with the File entity', [
+                '@default_desc' => $this->settings->shouldExportAssets() === TRUE ? $this->t('Default') : $this->t('Override')
+              ]),
+            ],
+          ],
+          'should_import' => [
+            '#type' => 'radios',
+            '#title' => $this->t('Asset Import'),
+            // @TODO - default value needs to be maintained.
+            '#default_value' => 0,
+            '#options' => [
+              0 => $this->t('(@default_desc) Do not import', [
+                '@default_desc' => $this->settings->shouldExportAssets() === FALSE ? $this->t('Default') : $this->t('Override')
+              ]),
+              1 => $this->t('(@default_desc) Import this asset along with the File entity', [
+                '@default_desc' => $this->settings->shouldExportAssets() === TRUE ? $this->t('Default') : $this->t('Override')
+              ]),
+            ],
+          ],
+        ];
+
+        // Thumbnail.
         if (
           str_starts_with($file->getMimeType(), 'image/') &&
           $file->getSize() <= 2048000
         ) {
-          $exported['yaml_' . $uuid]['thumbnail'] = [
+          $build[$uuid]['file_asset']['thumbnail'] = [
             '#theme' => 'image',
             '#uri' => $file->createFileUrl(FALSE),
             '#title' => $file->label(),
@@ -184,7 +251,7 @@ class EntityExportForm extends FormBase {
       }
     }
 
-    return $exported;
+    return $build;
   }
 
 }

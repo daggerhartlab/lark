@@ -34,8 +34,10 @@ class Exporter implements ExporterInterface {
    *   The lark field type handler plugin manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   * @param \Drupal\lark\Service\AssetFileManager $fileSystem
    *   The file system service.
+   * @param \Drupal\lark\Service\AssetFileManager $assetFileManager
+   *   The asset file manager.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
@@ -48,6 +50,7 @@ class Exporter implements ExporterInterface {
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected FileSystemInterface $fileSystem,
+    protected AssetFileManager $assetFileManager,
     protected LoggerChannelInterface $logger,
     protected MessengerInterface $messenger,
   ) {}
@@ -55,9 +58,19 @@ class Exporter implements ExporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function exportEntity(string $source_plugin_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE): void {
+  public function exportEntity(string $source_plugin_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_additional_metadata = []): void {
     $source = $this->sourceManager->getSourceInstance($source_plugin_id);
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id);
+
+    // Add metadata overrides.
+    foreach ($exports_additional_metadata as $uuid => $metadata) {
+      if (isset($exportables[$uuid]) && is_array($metadata)) {
+        foreach ($metadata as $key => $value) {
+          $exportables[$uuid]->setAdditionalMetadata($key, $value);
+        }
+      }
+    }
+
     foreach ($exportables as $exportable) {
       if ($this->writeToYaml($source, $exportable)) {
         $message = $this->t('Exported @entity_type_id : @entity_id : @label', [
@@ -97,41 +110,38 @@ class Exporter implements ExporterInterface {
    *   Whether the export was successful.
    */
   protected function writeToYaml(SourceInterface $source, ExportableInterface $exportable): bool {
+    $entity = $exportable->entity();
     // Prepare the export destination.
     $destination_directory = $source->getDestinationDirectory(
-      $exportable->entity()->getEntityTypeId(),
-      $exportable->entity()->bundle(),
+      $entity->getEntityTypeId(),
+      $entity->bundle(),
     );
     $this->fileSystem->prepareDirectory($destination_directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
 
     $destination_filepath = $source->getDestinationFilepath(
-      $exportable->entity()->getEntityTypeId(),
-      $exportable->entity()->bundle(),
+      $entity->getEntityTypeId(),
+      $entity->bundle(),
       $exportable->getExportFilename(),
     );
     $exportable->setExportFilepath($destination_filepath);
 
     // If it's a file, export the file alongside the yaml.
-    if (
-      $exportable->entity() instanceof FileInterface &&
-      $exportable->entity()->getFileUri() &&
-      $this->settings->shouldExportAssets()
-    ) {
-      $asset_file = $exportable->entity()->getFileUri();
-      $this->fileSystem->copy(
-        $asset_file,
-        $destination_directory . DIRECTORY_SEPARATOR . $exportable->entity()->uuid() . '--' . basename($asset_file),
-        $this->settings->assetExportFileExists()
-      );
+    if ($entity instanceof FileInterface && $entity->getFileUri()) {
+      // Default to settings. Then, if an export override exists let it make the
+      // decision about exporting.
+      $should_export = $this->settings->shouldExportAssets();
+      $export_override = $exportable->getAdditionalMetadata('file_asset_should_export');
+      $export_override_exists = !is_null($exportable);
+      if ($export_override_exists) {
+        $should_export = (bool) $export_override;
+      }
 
-      // If there's a file without the prefix, it is old and can be removed.
-      // @todo Remove this in a future release.
-      if (file_exists($destination_directory . DIRECTORY_SEPARATOR . basename($asset_file))) {
-        $this->fileSystem->delete($destination_directory . DIRECTORY_SEPARATOR . basename($asset_file));
+      if ($should_export) {
+        $this->assetFileManager->exportAsset($entity, $destination_directory);
       }
     }
 
-    return (bool) file_put_contents(
+    return (bool) \file_put_contents(
       $destination_filepath,
       $exportable->toYaml(),
     );
