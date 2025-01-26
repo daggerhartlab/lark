@@ -106,7 +106,7 @@ final class SettingsForm extends ConfigFormBase {
         '#default_value' => $this->settings->assetExportFileExists()->name,
         '#options' => [
           FileExists::Error->name => $this->t('Do nothing.'),
-          FileExists::Rename->name => $this->t('Rename the asset being exported and update the export.'),
+          //FileExists::Rename->name => $this->t('Rename the asset being exported and update the export.'),
           FileExists::Replace->name => $this->t('Replace the existing exported asset with the new asset.'),
         ],
       ],
