@@ -11,6 +11,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\file\FileInterface;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\user\EntityOwnerInterface;
 
 /**
@@ -22,6 +23,7 @@ use Drupal\user\EntityOwnerInterface;
 class EntityUpdater implements EntityUpdaterInterface {
 
   public function __construct(
+    protected LarkSettings $settings,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
     protected LanguageManagerInterface $languageManager,
@@ -127,51 +129,6 @@ class EntityUpdater implements EntityUpdaterInterface {
 
         $item->get($property_name)->setValue($value);
       }
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @see \Drupal\lark\Service\Exporter::writeToYaml()
-   */
-  public function copyFileAssociatedWithEntity(FileInterface $entity, string $source_directory, string $destination_uri): void {
-    // If the source file doesn't exist, there's nothing we can do.
-    $source = $source_directory . DIRECTORY_SEPARATOR . $entity->uuid() . '--' . basename($destination_uri);
-    $destination_directory = dirname($destination_uri);
-
-    if (!file_exists($source)) {
-      // Attempt to fall back without the uuid prefix.
-      // @todo This functionality is legacy and will be removed in a future.
-      $source = $source_directory . DIRECTORY_SEPARATOR . basename($destination_uri);
-      if (!file_exists($source)) {
-        $this->logger->warning("File entity %name was imported, but the associated file (@path) was not found.", [
-          '%name' => $entity->label(),
-          '@path' => $source,
-        ]);
-        return;
-      }
-    }
-
-    $copy_file = TRUE;
-    if (file_exists($destination_uri)) {
-      $source_hash = hash_file('sha256', $source);
-      assert(is_string($source_hash));
-      $destination_hash = hash_file('sha256', $destination_uri);
-      assert(is_string($destination_hash));
-
-      if (hash_equals($source_hash, $destination_hash) && $this->entityTypeManager->getStorage('file')->loadByProperties(['uri' => $destination_uri]) === []) {
-        // If the file hashes match and the file is not already a managed file
-        // then do not copy a new version to the file system. This prevents
-        // re-installs during development from creating unnecessary duplicates.
-        $copy_file = FALSE;
-      }
-    }
-
-    $this->fileSystem->prepareDirectory($destination_directory, FileSystemInterface::CREATE_DIRECTORY);
-    if ($copy_file) {
-      $uri = $this->fileSystem->copy($source, $destination_uri, FileExists::Rename);
-      $entity->setFileUri($uri);
     }
   }
 

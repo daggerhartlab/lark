@@ -2,7 +2,6 @@
 
 namespace Drupal\lark\Model;
 
-use Drupal\Component\Diff\Diff;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\ExportableStatus;
@@ -36,11 +35,25 @@ class Exportable implements ExportableInterface {
   protected bool $exportExists = FALSE;
 
   /**
+   * If the export exists, this is the array of values that was exported.
+   *
+   * @var array
+   */
+  protected array $exportedValues = [];
+
+  /**
    * Dependencies array keys are entity UUIDs, values are entity type IDs.
    *
    * @var string[]
    */
   protected array $dependencies = [];
+
+  /**
+   * Additional metadata to be added during export.
+   *
+   * @var array
+   */
+  protected array $metaOptions = [];
 
   /**
    * Export status.
@@ -75,6 +88,50 @@ class Exportable implements ExportableInterface {
   public function setDependencies(array $dependencies): self {
     $this->dependencies = $dependencies;
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMetaOptions(): array {
+    return $this->metaOptions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setMetaOptions(array $options): self {
+    $this->metaOptions = $options;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMetaOption(string $key): mixed {
+    return $this->metaOptions[$key] ?? NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasMetaOption(string $key): bool {
+    return isset($this->metaOptions[$key]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setMetaOption(string $key, $value): self {
+    $this->metaOptions[$key] = $value;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getExportedValues(): array {
+    return $this->exportedValues;
   }
 
   /**
@@ -149,6 +206,8 @@ class Exportable implements ExportableInterface {
   public function setExportFilepath(string $filepath): self {
     $this->exportFilepath = $filepath;
     $this->setExportExists(\file_exists($filepath));
+    $this->exportedValues = Yaml::decode(\file_get_contents($filepath));
+
     return $this;
   }
 
@@ -183,6 +242,10 @@ class Exportable implements ExportableInterface {
       ],
       'default' => Exporter::getEntityExportArray($this->entity()),
     ];
+
+    if ($this->getMetaOptions()) {
+      $array['_meta']['options'] = $this->getMetaOptions();
+    }
 
     foreach ($this->entity()->getTranslationLanguages() as $langcode => $language) {
       if ($langcode === $this->entity()->language()->getId()) {
