@@ -147,39 +147,111 @@ class EntityExportForm extends FormBase {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
+      'lark_exports_table' => [
+        '#theme' => 'table',
+        '#header' => [
+          'icon' => [
+            'data' => $this->t('Icon'),
+          ],
+          'entity_id' => [
+            'data' => $this->t('Entity ID'),
+          ],
+          'entity_type'  => [
+            'data' => $this->t('Entity Type'),
+          ],
+          'bundle' => [
+            'data' => $this->t('Bundle'),
+          ],
+          'label' => [
+            'data' => $this->t('Label'),
+          ],
+          'toggle'  => [
+            'data' => $this->t('Toggle'),
+          ],
+        ],
+        '#rows' => [],
+      ],
     ];
     foreach ($exportables as $uuid => $exportable) {
       $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
+
+      $depth = $this->calculateExportableDepth($exportables, $uuid);
+      $icon['#attributes']['style'] = "margin-left: {$depth}em";
+
+      // Data row.
+      $build['lark_exports_table']['#rows'][] = [
+        'data' => [
+          'icon' => [
+            'data' => $status_details['icon'],
+          ],
+          'entity_id' => [
+            'data' => $exportable->entity()->id(),
+          ],
+          'entity_type' => [
+            'data' => $exportable->entity()->getEntityTypeId(),
+          ],
+          'bundle' => [
+            'data' => $exportable->entity()->bundle(),
+          ],
+          'label' => $exportable->entity()->label(),
+          'toggle'  => [
+            'data' => [
+              '#theme' => 'image',
+              '#alt' => 'Toggle row',
+              '#attributes' => [
+                'src' => '/modules/contrib/lark/assets/icons/file-yaml.png',
+                'width' => '35',
+                'height' => '35',
+              ],
+            ],
+            'class' => 'lark-toggle-row',
+            'data-uuid' => $uuid,
+          ],
+        ],
+      ];
+      // Yaml row.
+      $build['lark_exports_table']['#rows'][] = [
+        'data' => [
+          'yaml' => [
+            'class' => ['lark-yaml-row', 'lark-yaml-row--' . $uuid],
+            'colspan' => count($build['lark_exports_table']['#header']),
+            'data' => [
+              'heading' => [
+                '#type' => 'html_tag',
+                '#tag' => 'h2',
+                '#value' => $exportable->entity()->label(),
+              ],
+              'export_details' => [
+                '#markup' => "<p><strong>Export Path: </strong> <code>{$exportable->getExportFilename()}</code></p>",
+              ],
+              'diff_link' => [
+                '#type' => 'operations',
+                '#access' => $exportable->getStatus() === ExportableStatus::OutOfSync,
+                '#links' => [
+                  'import_all' => [
+                    'title' => $this->t('View diff'),
+                    'url' => Url::fromRoute('lark.diff_viewer', [
+                      'source_plugin_id' => $exportable->getSource()?->id(),
+                      'uuid' => $exportable->entity()->uuid(),
+                    ]),
+                  ],
+                ],
+              ],
+              'content' => [
+                '#markup' => Markup::create("<hr><pre>" . \htmlentities($exportable->toYaml()) . "</pre>"),
+                '#weight' => 100,
+              ],
+            ],
+          ],
+        ],
+      ];
+
 
       $build[$uuid] = [
         '#type' => 'details',
         '#title' => "{$status_details['icon']} {$exportable->entity()->getEntityTypeId()} : {$exportable->entity()->id()} : {$exportable->entity()->label()} - <small>{$exportable->entity()->uuid()}</small>",
         '#open' => FALSE,
-        'export_details' => [
-          '#markup' => "<p><strong>Export Path: </strong> <code>{$exportable->getExportFilename()}</code></p>",
-        ],
-        'diff_link' => [
-          '#type' => 'operations',
-          '#access' => $exportable->getStatus() === ExportableStatus::OutOfSync,
-          '#links' => [
-            'import_all' => [
-              'title' => $this->t('View diff'),
-              'url' => Url::fromRoute('lark.diff_viewer', [
-                'source_plugin_id' => $exportable->getSource()?->id(),
-                'uuid' => $exportable->entity()->uuid(),
-              ]),
-            ],
-          ],
-        ],
-        'heading' => [
-          '#type' => 'html_tag',
-          '#tag' => 'h2',
-          '#value' => $exportable->entity()->label(),
-        ],
-        'content' => [
-          '#markup' => Markup::create("<hr><pre>" . \htmlentities($exportable->toYaml()) . "</pre>"),
-          '#weight' => 100,
-        ],
+
       ];
 
       // Handle file options.
@@ -263,6 +335,30 @@ class EntityExportForm extends FormBase {
     }
 
     return $build;
+  }
+
+  /**
+   * Get the number of levels deep the given uuid is in the array of exportables.
+   *
+   * @param array $exportables
+   * @param string $uuid
+   *
+   * @return int
+   */
+  private function calculateExportableDepth(array $exportables, string $uuid) : int {
+    $depth = 0;
+    foreach ($exportables as $exportable) {
+      // Don't include itself.
+      if ($exportable->entity()->uuid() === $uuid) {
+        continue;
+      }
+
+      if (array_key_exists($uuid, $exportable->getDependencies())) {
+        $depth += 1 + $this->calculateExportableDepth($exportables, $exportable->entity()->uuid());
+      }
+    }
+
+    return $depth;
   }
 
 }

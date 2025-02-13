@@ -2,3 +2,5 @@ admin:
   css:
     theme:
       assets/css/lark.admin.css: {}
+  js:
+    assets/js/exports-browser.js: {}
