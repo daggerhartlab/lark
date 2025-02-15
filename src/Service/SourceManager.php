@@ -147,4 +147,10 @@ class SourceManager extends DefaultPluginManager implements SourceManagerInterfa
     return $plugin;
   }
 
+  public function findSourceByUuid(string $uuid): ?SourceInterface {
+    foreach ($this->getInstances() as $instance) {
+      $instance->exportExistsInSource($uuid);
+    }
+  }
+
 }

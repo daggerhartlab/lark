@@ -176,6 +176,9 @@ class ExportsManager extends ControllerBase {
 
       foreach ($source_root_exports as $root_uuid => $root_export) {
         $root_exportable = $this->exportableFactory->createFromSource($source->id(), $root_uuid);
+        if (!$root_exportable) {
+          continue;
+        }
 
         $dependency_exports = $this->importer->discoverSourceExport($source, $root_uuid);
         $dependency_exports = array_reverse($dependency_exports);
@@ -185,7 +188,10 @@ class ExportsManager extends ControllerBase {
             continue;
           }
 
-          $dependency_exportables[] = $this->exportableFactory->createFromSource($source->id(), $dependency_uuid);
+          $dependency_exportable = $this->exportableFactory->createFromSource($source->id(), $dependency_uuid);
+          if ($dependency_exportable) {
+            $dependency_exportables[] = $dependency_exportable;
+          }
         }
 
         $status_summary = $this->statusBuilder->getExportablesSummary(array_merge([$root_uuid => $root_exportable], $dependency_exportables));

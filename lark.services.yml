@@ -32,6 +32,10 @@ services:
     class: Drupal\lark\Service\ExportableFactory
     autowire: true
 
+  Drupal\lark\Service\EntityExportFormPluginManager:
+    class: Drupal\lark\Service\EntityExportFormPluginManager
+    parent: default_plugin_manager
+
   Drupal\lark\Service\FieldTypeHandlerManagerInterface:
     class: Drupal\lark\Service\FieldTypeHandlerManager
     autowire: true

@@ -11,6 +11,24 @@ use Drupal\lark\Plugin\Lark\SourceInterface;
  */
 interface ExportableFactoryInterface {
 
+
+  /**
+   * Create an exportable from only a uuid.
+   *
+   * Potentially expensive operation when we don't have any other data.
+   *
+   * @param string $uuid
+   *   Uuid for a content entity of an unknown type.
+   *
+   * @return \Drupal\lark\Model\ExportableInterface
+   *   Exportable created from found entity/export.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function createFromUuid(string $uuid): ExportableInterface;
+
   /**
    * Create exportable from entity.
    *
@@ -30,13 +48,13 @@ interface ExportableFactoryInterface {
    * @param string $uuid
    *   Export entity uuid.
    *
-   * @return \Drupal\lark\Model\ExportableInterface
-   *   Exportable.
+   * @return \Drupal\lark\Model\ExportableInterface|null
+   *   Exportable. Null if not found in source.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function createFromSource(string $source_plugin_id, string $uuid): ExportableInterface;
+  public function createFromSource(string $source_plugin_id, string $uuid): ?ExportableInterface;
 
   /**
    * Factory for creating exportables with dependencies.
