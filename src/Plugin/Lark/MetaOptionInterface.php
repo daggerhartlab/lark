@@ -77,4 +77,14 @@ interface MetaOptionInterface {
    */
   public function processFormValues(array $submitted_values, ExportableInterface $exportable, FormStateInterface $form_state): array;
 
+  /**
+   * Perform additional actions and modifications to the exportable immediately
+   * before it is written to yaml.
+   *
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
+   *
+   * @return void
+   */
+  public function preWriteToYaml(ExportableInterface $exportable): void;
+
 }

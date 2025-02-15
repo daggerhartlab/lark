@@ -42,7 +42,7 @@ class EntityExportForm extends FormBase {
     protected ExportableStatusBuilder $statusBuilder,
     protected LarkSettings $settings,
     protected AssetFileManager $assetFileManager,
-    protected MetaOptionManager $formPluginManager,
+    protected MetaOptionManager $metaOptionManager,
   ) {}
 
   /**
@@ -232,8 +232,10 @@ class EntityExportForm extends FormBase {
       ],
     ];
 
-    foreach ($this->formPluginManager->getInstances() as $form_plugin) {
-      $form_row['form']['data'][$form_plugin->id()] = $form_plugin->formElement($exportable, $form, $form_state, $render_parents);
+    foreach ($this->metaOptionManager->getInstances() as $meta_option) {
+      if ($meta_option->applies($exportable->entity())) {
+        $form_row['form']['data'][$meta_option->id()] = $meta_option->formElement($exportable, $form, $form_state, $render_parents);
+      }
     }
 
     return [
@@ -251,7 +253,7 @@ class EntityExportForm extends FormBase {
     foreach ($submitted_values as $uuid => $values) {
       $exportable = $this->exportableFactory->createFromUuid($uuid);
 
-      foreach ($this->formPluginManager->getInstances() as $form_plugin) {
+      foreach ($this->metaOptionManager->getInstances() as $form_plugin) {
         // Ensure the plugin applies to the entity.
         if (!$form_plugin->applies($exportable->entity())) {
           continue;

@@ -91,6 +91,11 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function preWriteToYaml(ExportableInterface $exportable): void {}
+
+  /**
    * Takes a normal render array for a radios element and makes it work within
    * a rendered table element. This solves a core Drupal bug where Radios are
    * not rendered at all within a table.

@@ -34,7 +34,7 @@ class Exporter implements ExporterInterface {
    *   The lark field type handler plugin manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\lark\Service\AssetFileManager $fileSystem
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system service.
    * @param \Drupal\lark\Service\AssetFileManager $assetFileManager
    *   The asset file manager.
@@ -65,18 +65,9 @@ class Exporter implements ExporterInterface {
 
     foreach ($exportables as $exportable) {
       // Add meta option overrides to the export.
-      $meta_options = $exports_meta_options_overrides[$exportable->entity()->uuid()] ?? NULL;
-      foreach ($this->metaOptionManager->getInstances() as $meta_option) {
-        if (!$meta_option->applies($exportable->entity())) {
-          continue;
-        }
+      $meta_option_overrides = $exports_meta_options_overrides[$exportable->entity()->uuid()] ?? [];
 
-        if (array_key_exists($meta_option->id(), $meta_options)) {
-          $exportable->setMetaOption($meta_option->id(), $meta_options[$meta_option->id()]);
-        }
-      }
-
-      if ($this->writeToYaml($source, $exportable)) {
+      if ($this->writeToYaml($source, $exportable, $meta_option_overrides)) {
         $message = $this->t('Exported @entity_type_id : @entity_id : @label', [
           '@entity_type_id' => $exportable->entity()->getEntityTypeId(),
           '@entity_id' => $exportable->entity()->id(),
@@ -109,11 +100,26 @@ class Exporter implements ExporterInterface {
    *   Source plugin.
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   Exportable entity model.
+   * @param array $meta_option_overrides
    *
    * @return bool
    *   Whether the export was successful.
    */
-  protected function writeToYaml(SourceInterface $source, ExportableInterface $exportable): bool {
+  protected function writeToYaml(SourceInterface $source, ExportableInterface $exportable, array $meta_option_overrides = []): bool {
+    // Set and meta option overrides passed in from the caller.
+    foreach ($this->metaOptionManager->getInstances() as $meta_option) {
+      if (!$meta_option->applies($exportable->entity())) {
+        continue;
+      }
+
+      if (
+        array_key_exists($meta_option->id(), $meta_option_overrides) &&
+        !empty($meta_option_overrides[$meta_option->id()])
+      ) {
+        $exportable->setMetaOption($meta_option->id(), $meta_option_overrides[$meta_option->id()]);
+      }
+    }
+
     $entity = $exportable->entity();
     // Prepare the export destination.
     $destination_directory = $source->getDestinationDirectory(
@@ -129,19 +135,10 @@ class Exporter implements ExporterInterface {
     );
     $exportable->setExportFilepath($destination_filepath);
 
-    // If it's a file, export the file alongside the yaml.
-    if ($entity instanceof FileInterface && $entity->getFileUri()) {
-      // Default to settings. Then, if an export override exists let it make the
-      // decision about exporting.
-      $should_export = $this->settings->shouldExportAssets();
-      $export_override = $exportable->getMetaOption('file_assets')['should_export'] ?? NULL;
-      $export_override_exists = !is_null($exportable);
-      if ($export_override_exists) {
-        $should_export = (bool) $export_override;
-      }
-
-      if ($should_export) {
-        $this->assetFileManager->exportAsset($entity, $destination_directory);
+    // Allow meta option plugins to perform last minute changes or actions.
+    foreach ($this->metaOptionManager->getInstances() as $meta_option) {
+      if ($meta_option->applies($entity)) {
+        $meta_option->preWriteToYaml($exportable);
       }
     }
 

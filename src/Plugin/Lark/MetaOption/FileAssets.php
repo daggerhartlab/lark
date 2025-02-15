@@ -32,6 +32,9 @@ final class FileAssets extends MetaOptionBase {
     return $entity instanceof FileInterface;
   }
 
+  /**
+   * @return \Drupal\lark\Service\AssetFileManager
+   */
   private function assetFileManager(): AssetFileManager {
     if (!$this->assetFileManager) {
       $this->assetFileManager = \Drupal::service(AssetFileManager::class);
@@ -47,10 +50,6 @@ final class FileAssets extends MetaOptionBase {
     /** @var FileInterface $file */
     $file = $exportable->entity();
     $uuid = $file->uuid();
-
-    if (!($file instanceof FileInterface)) {
-      return [];
-    }
 
     // Whether asset is exported.
     $is_exported_msg = $this->t('Asset not exported.');
@@ -149,6 +148,28 @@ final class FileAssets extends MetaOptionBase {
     }
 
     return $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preWriteToYaml(ExportableInterface $exportable): void {
+    // If it's a file, export the file alongside the yaml.
+    /** @var FileInterface $entity */
+    $entity = $exportable->entity();
+
+    // Default to settings. Then, if an export override exists let it make the
+    // decision about exporting.
+    $should_export = $this->larkSettings->shouldExportAssets();
+    $export_override = $exportable->getMetaOption($this->id())['should_export'] ?? NULL;
+    $export_override_exists = !is_null($exportable);
+    if ($export_override_exists) {
+      $should_export = (bool) $export_override;
+    }
+
+    if ($should_export) {
+      $this->assetFileManager()->exportAsset($entity, \dirname($exportable->getExportFilepath()));
+    }
   }
 
 }
