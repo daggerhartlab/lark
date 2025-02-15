@@ -76,7 +76,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
           $link_template = $entity_type->getLinkTemplate('lark-export');
         }
 
-        //$this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-import', "/lark/import/$entity_type_id");
+        $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-import', "/lark/import/$entity_type_id");
         $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-diff', "/lark/diff/$entity_type_id");
       }
     }

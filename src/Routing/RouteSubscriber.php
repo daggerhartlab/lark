@@ -17,7 +17,7 @@ use Symfony\Component\Routing\RouteCollection;
 class RouteSubscriber extends RouteSubscriberBase {
 
   /**
-   * Constructs a RouteSubcriber object.
+   * Constructs a RouteSubscriber object.
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
@@ -29,15 +29,15 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   protected function alterRoutes(RouteCollection $collection): void {
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
-      if ($route = $this->getEntityLoadRoute($entity_type, 'lark-load')) {
+      if ($route = $this->getEntityExportRoute($entity_type, 'lark-load')) {
         $collection->add("entity.$entity_type_id.lark_load", $route);
       }
-      if ($route = $this->getEntityLoadRoute($entity_type, 'lark-export')) {
+      if ($route = $this->getEntityExportRoute($entity_type, 'lark-export')) {
         $collection->add("entity.$entity_type_id.lark_export", $route);
       }
-//      if ($route = $this->getEntityLoadRoute($entity_type, 'lark-import')) {
-//        $collection->add("entity.$entity_type_id.lark_import", $route);
-//      }
+      if ($route = $this->getEntityImportRoute($entity_type, 'lark-import')) {
+        $collection->add("entity.$entity_type_id.lark_import", $route);
+      }
       if ($route = $this->getEntityDiffRoute($entity_type)) {
         $collection->add("entity.$entity_type_id.lark_diff", $route);
       }
@@ -53,12 +53,46 @@ class RouteSubscriber extends RouteSubscriberBase {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getEntityLoadRoute(EntityTypeInterface $entity_type, string $link_key): ?Route {
+  protected function getEntityExportRoute(EntityTypeInterface $entity_type, string $link_key): ?Route {
     if ($link = $entity_type->getLinkTemplate($link_key)) {
       $route = (new Route($link))
         ->addDefaults([
           '_form' => '\Drupal\lark\Form\EntityExportForm',
-          '_title' => 'Lark',
+          '_title' => 'Lark Export',
+        ])
+        ->addRequirements([
+          '_permission' => 'lark import export entities',
+        ])
+        ->setOption('_admin_route', TRUE)
+        ->setOption('_lark_entity_type_id', $entity_type->id());
+
+      // Set the parameters of the new route using the existing 'edit-form'
+      // route parameters. If there are none then we need to set the basic
+      // parameter [entity_type_id => [type => 'entity:entity_type_id']].
+      // @see https://gitlab.com/drupalspoons/devel/-/issues/377
+      $parameters = $this->getRouteParameters($entity_type, 'edit-form') ?: [$entity_type->id() => ['type' => 'entity:' . $entity_type->id()]];
+      $route->setOption('parameters', $parameters);
+
+      return $route;
+    }
+    return NULL;
+  }
+
+  /**
+   * Gets the entity load route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getEntityImportRoute(EntityTypeInterface $entity_type): ?Route {
+    if ($link = $entity_type->getLinkTemplate('lark-import')) {
+      $route = (new Route($link))
+        ->addDefaults([
+          '_form' => '\Drupal\lark\Form\EntityImportForm',
+          '_title' => 'Lark Import',
         ])
         ->addRequirements([
           '_permission' => 'lark import export entities',
