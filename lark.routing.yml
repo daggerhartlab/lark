@@ -45,33 +45,3 @@ lark.import_source:
     _admin_route: TRUE
   requirements:
     _permission: 'lark import export entities'
-#
-#lark.node_export:
-#  path: '/node/{node}/lark-export'
-#  defaults:
-#    _form: '\Drupal\lark\Form\EntityExportForm'
-#    _title: 'Lark Export'
-#  options:
-#    _admin_route: TRUE
-#  requirements:
-#    _permission: 'lark import export entities'
-#
-#lark.media_export:
-#  path: '/media/{media}/manual-export'
-#  defaults:
-#    _form: '\Drupal\lark\Form\EntityExportForm'
-#    _title: 'Lark Export'
-#  options:
-#    _admin_route: TRUE
-#  requirements:
-#    _permission: 'lark import export entities'
-#
-#lark.file_export:
-#  path: '/lark/file/{file}'
-#  defaults:
-#    _form: '\Drupal\lark\Form\EntityExportForm'
-#    _title: 'Lark Export'
-#  options:
-#    _admin_route: TRUE
-#  requirements:
-#    _permission: 'lark import export entities'
