@@ -15,11 +15,9 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\file\FileInterface;
 use Drupal\lark\Exception\LarkImportException;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Plugin\Lark\SourceInterface;
-use Drupal\lark\Service\Cache\ExportsRuntimeCache;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
 
@@ -32,6 +30,8 @@ use Symfony\Component\Finder\Finder as SymfonyFinder;
 class Importer implements ImporterInterface {
 
   use StringTranslationTrait;
+
+  protected array $discoveryCache = [];
 
   /**
    * LarkEntityImporter constructor.
@@ -56,8 +56,6 @@ class Importer implements ImporterInterface {
    *   The logger service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
-   * @param \Drupal\lark\Service\Cache\ExportsRuntimeCache $exportsCache
-   *   The exports runtime cache service.
    */
   public function __construct(
     protected LarkSettings $settings,
@@ -71,7 +69,6 @@ class Importer implements ImporterInterface {
     protected LanguageManagerInterface $languageManager,
     protected LoggerChannelInterface $logger,
     protected MessengerInterface $messenger,
-    protected ExportsRuntimeCache $exportsCache,
   ) {}
 
   /**
@@ -138,19 +135,19 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function discoverSourceExports(SourceInterface $source): array {
-    if ($this->exportsCache->has($source->id())) {
-      return $this->exportsCache->get($source->id());
+    if (array_key_exists($source->id(), $this->discoveryCache)) {
+      return $this->discoveryCache[$source->id()];
     }
 
-    $this->exportsCache->set($source->id(), $this->getExportsWithDependencies($source));
-    return $this->exportsCache->get($source->id());
+    $this->discoveryCache[$source->id()] = $this->getExportsWithDependencies($source);
+    return $this->discoveryCache[$source->id()];
   }
 
   /**
    * {@inheritdoc}
    */
   public function discoverSourceExport(SourceInterface $source, string $uuid): array {
-    return $this->getSingleExportWithDependencies($uuid, $this->discoverSourceExports($source));
+    return $this->filterSingleExportWithDependencies($uuid, $this->discoverSourceExports($source));
   }
 
   /**
@@ -226,7 +223,7 @@ class Importer implements ImporterInterface {
    * @return array
    *   Array of export with dependencies.
    */
-  protected function getSingleExportWithDependencies(string $uuid, array $exports, array &$dependency_registry = []): array {
+  protected function filterSingleExportWithDependencies(string $uuid, array $exports, array &$dependency_registry = []): array {
     if (!isset($exports[$uuid])) {
       throw new LarkImportException('Export with UUID ' . $uuid . ' not found.');
     }
@@ -246,7 +243,7 @@ class Importer implements ImporterInterface {
 
           // Register the dependency to prevent redundant calls.
           $dependency_registry[$dependency_uuid] = NULL;
-          $dependencies += $this->getSingleExportWithDependencies($dependency_uuid, $exports, $dependency_registry);
+          $dependencies += $this->filterSingleExportWithDependencies($dependency_uuid, $exports, $dependency_registry);
         }
 
         // Add the dependency itself.

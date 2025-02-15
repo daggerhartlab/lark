@@ -14,12 +14,6 @@ services:
     class: Drupal\lark\Service\AssetFileManager
     autowire: true
 
-  Drupal\lark\Service\Cache\ExportsRuntimeCache:
-    class: Drupal\lark\Service\Cache\ExportsRuntimeCache
-
-  Drupal\lark\Service\Cache\ExportablesRuntimeCache:
-    class: Drupal\lark\Service\Cache\ExportablesRuntimeCache
-
   Drupal\lark\Service\Utility\ExportableStatusBuilder:
     class: Drupal\lark\Service\Utility\ExportableStatusBuilder
     autowire: true

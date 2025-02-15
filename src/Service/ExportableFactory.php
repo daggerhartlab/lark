@@ -11,12 +11,9 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
-use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Plugin\Lark\SourceInterface;
-use Drupal\lark\Service\Cache\ExportablesRuntimeCache;
 use Drupal\lark\Service\Utility\ExportableStatusResolver;
 use Drupal\user\UserInterface;
 
@@ -24,6 +21,8 @@ use Drupal\user\UserInterface;
  * Factory for creating exportable entities.
  */
 class ExportableFactory implements ExportableFactoryInterface {
+
+  protected array $exportablesCache = [];
 
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
@@ -34,7 +33,6 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected ImporterInterface $importer,
     protected ExportableStatusResolver $statusResolver,
     protected ModuleHandlerInterface $moduleHandler,
-    protected ExportablesRuntimeCache $exportablesCache,
   ) {}
 
   /**
@@ -92,6 +90,10 @@ class ExportableFactory implements ExportableFactoryInterface {
    * {@inheritdoc}
    */
   public function createFromSourceWithDependencies(string $source_plugin_id, string $root_uuid): array {
+    if (array_key_exists($root_uuid, $this->exportablesCache)) {
+      return $this->exportablesCache[$root_uuid];
+    }
+
     $source = $this->sourceManager->createInstance($source_plugin_id);
     $exports = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
@@ -113,7 +115,8 @@ class ExportableFactory implements ExportableFactoryInterface {
       $exportables[$uuid] = $exportable;
     };
 
-    return $exportables;
+    $this->exportablesCache[$root_uuid] = $exportables;
+    return $this->exportablesCache[$root_uuid];
   }
 
   /**
@@ -126,15 +129,15 @@ class ExportableFactory implements ExportableFactoryInterface {
       throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} not found.");
     }
 
-    if ($this->exportablesCache->has($entity->uuid())) {
-      return $this->exportablesCache->get($entity->uuid());
+    if (array_key_exists($entity->uuid(), $this->exportablesCache)) {
+      return $this->exportablesCache[$entity->uuid()];
     }
 
     $exportables = $this->getEntityExportablesRecursive($entity, $exportables);
     // Because we're registering the entities in hierarchical order, reverse the
     // array to ensure that dependent entities are after their dependencies.
     $exportables = array_reverse($exportables);
-    $this->exportablesCache->set($entity->uuid(), $exportables);
+    $this->exportablesCache[$entity->uuid()] = $exportables;
 
     return $exportables;
   }
@@ -215,8 +218,6 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     $exportables[$exportable->entity()->uuid()] = $exportable;
-    $this->exportablesCache->set($exportable->entity()->uuid(), $exportables);
-
     return $exportables;
   }
 
