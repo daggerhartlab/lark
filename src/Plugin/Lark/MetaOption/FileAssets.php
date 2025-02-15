@@ -43,7 +43,7 @@ final class FileAssets extends MetaOptionBase {
   /**
    * {@inheritdoc}
    */
-  public function buildElement(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents): array {
+  public function formElement(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents): array {
     /** @var FileInterface $file */
     $file = $exportable->entity();
     $uuid = $file->uuid();
@@ -138,7 +138,7 @@ final class FileAssets extends MetaOptionBase {
   /**
    * {@inheritdoc}
    */
-  public function processValues(array $submitted_values, string $uuid, FormStateInterface $form_state): array {
+  public function processFormValues(array $submitted_values, ExportableInterface $exportable, FormStateInterface $form_state): array {
     $values = [];
 
     if ((bool) $submitted_values['should_export'] !== $this->larkSettings->shouldExportAssets()) {

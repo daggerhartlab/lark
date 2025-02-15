@@ -60,14 +60,14 @@ interface MetaOptionInterface {
    * @return array
    *   Customized element render array.
    */
-  public function buildElement(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents): array;
+  public function formElement(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents): array;
 
 //  public function validateElement(array &$form, FormStateInterface $form_state): void;
 
   /**
-   * @param array $values
+   * @param array $submitted_values
    *   Values for this plugin for a single export entity.
-   * @param string $uuid
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   UUID of the entity.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   Current form state.
@@ -75,6 +75,6 @@ interface MetaOptionInterface {
    * @return array
    *   Processed values.
    */
-  public function processValues(array $submitted_values, string $uuid, FormStateInterface $form_state): array;
+  public function processFormValues(array $submitted_values, ExportableInterface $exportable, FormStateInterface $form_state): array;
 
 }

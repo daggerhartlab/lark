@@ -85,10 +85,8 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
 
   /**
    * {@inheritdoc}
-   * @param array $values
-   * @param string $uuid
    */
-  public function processValues(array $submitted_values, string $uuid, FormStateInterface $form_state): array {
+  public function processFormValues(array $submitted_values, ExportableInterface $exportable, FormStateInterface $form_state): array {
     return [];
   }
 

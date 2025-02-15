@@ -51,6 +51,7 @@ class Exporter implements ExporterInterface {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected FileSystemInterface $fileSystem,
     protected AssetFileManager $assetFileManager,
+    protected MetaOptionManager $metaOptionManager,
     protected LoggerChannelInterface $logger,
     protected MessengerInterface $messenger,
   ) {}
@@ -62,16 +63,19 @@ class Exporter implements ExporterInterface {
     $source = $this->sourceManager->getSourceInstance($source_plugin_id);
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id);
 
-    // Add metadata overrides.
-    foreach ($exports_meta_options_overrides as $uuid => $meta_options) {
-      if (isset($exportables[$uuid]) && is_array($meta_options)) {
-        foreach ($meta_options as $key => $value) {
-          $exportables[$uuid]->setMetaOption($key, $value);
+    foreach ($exportables as $exportable) {
+      // Add meta option overrides to the export.
+      $meta_options = $exports_meta_options_overrides[$exportable->entity()->uuid()] ?? NULL;
+      foreach ($this->metaOptionManager->getInstances() as $meta_option) {
+        if (!$meta_option->applies($exportable->entity())) {
+          continue;
+        }
+
+        if (array_key_exists($meta_option->id(), $meta_options)) {
+          $exportable->setMetaOption($meta_option->id(), $meta_options[$meta_option->id()]);
         }
       }
-    }
 
-    foreach ($exportables as $exportable) {
       if ($this->writeToYaml($source, $exportable)) {
         $message = $this->t('Exported @entity_type_id : @entity_id : @label', [
           '@entity_type_id' => $exportable->entity()->getEntityTypeId(),
@@ -130,7 +134,7 @@ class Exporter implements ExporterInterface {
       // Default to settings. Then, if an export override exists let it make the
       // decision about exporting.
       $should_export = $this->settings->shouldExportAssets();
-      $export_override = $exportable->getMetaOption('file_asset_should_export');
+      $export_override = $exportable->getMetaOption('file_assets')['should_export'] ?? NULL;
       $export_override_exists = !is_null($exportable);
       if ($export_override_exists) {
         $should_export = (bool) $export_override;
