@@ -108,11 +108,8 @@ class Exporter implements ExporterInterface {
   protected function writeToYaml(SourceInterface $source, ExportableInterface $exportable, array $meta_option_overrides = []): bool {
     // Set and meta option overrides passed in from the caller.
     foreach ($this->metaOptionManager->getInstances() as $meta_option) {
-      if (!$meta_option->applies($exportable->entity())) {
-        continue;
-      }
-
       if (
+        $meta_option->applies($exportable->entity()) &&
         array_key_exists($meta_option->id(), $meta_option_overrides) &&
         !empty($meta_option_overrides[$meta_option->id()])
       ) {

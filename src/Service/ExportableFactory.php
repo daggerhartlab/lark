@@ -209,6 +209,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exportable->setDependencies($dependencies);
     $exportable->setSource($this->statusResolver->getExportableSource($exportable));
     $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
+
     if ($exportable->getExportExists() && isset($exportable->getExportedValues()['_meta']['options'])) {
       $exportable->setMetaOptions($exportable->getExportedValues()['_meta']['options']);
     }
