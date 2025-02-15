@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Plugin\Lark;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Model\ExportableInterface;
@@ -82,9 +83,23 @@ interface MetaOptionInterface {
    * before it is written to yaml.
    *
    * @param \Drupal\lark\Model\ExportableInterface $exportable
+   *   Exportable being written.
    *
    * @return void
    */
-  public function preWriteToYaml(ExportableInterface $exportable): void;
+  public function preExportWrite(ExportableInterface $exportable): void;
+
+  /**
+   * Perform additional actions and modifications to the entity immediately
+   * before is it saved to the database.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   Entity being imported.
+   * @param array $export
+   *   Export array for the entity being imported.
+   *
+   * @return void
+   */
+  public function preImportSave(ContentEntityInterface $entity, array $export): void;
 
 }

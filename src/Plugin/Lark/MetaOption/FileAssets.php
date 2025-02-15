@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Plugin\Lark\MetaOption;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -23,24 +24,11 @@ use Drupal\lark\Service\AssetFileManager;
 )]
 final class FileAssets extends MetaOptionBase {
 
-  protected ?AssetFileManager $assetFileManager = NULL;
-
   /**
    * {@inheritdoc}
    */
   public function applies(EntityInterface $entity): bool {
     return $entity instanceof FileInterface;
-  }
-
-  /**
-   * @return \Drupal\lark\Service\AssetFileManager
-   */
-  private function assetFileManager(): AssetFileManager {
-    if (!$this->assetFileManager) {
-      $this->assetFileManager = \Drupal::service(AssetFileManager::class);
-    }
-
-    return $this->assetFileManager;
   }
 
   /**
@@ -55,8 +43,8 @@ final class FileAssets extends MetaOptionBase {
     $is_exported_msg = $this->t('Asset not exported.');
     if ($exportable->getExportFilepath()) {
       $destination = dirname($exportable->getExportFilepath());
-      if ($this->assetFileManager()->assetIsExported($file, $destination)) {
-        $path = $destination . DIRECTORY_SEPARATOR . $this->assetFileManager()->assetExportFilename($file);
+      if ($this->assetFileManager->assetIsExported($file, $destination)) {
+        $path = $destination . DIRECTORY_SEPARATOR . $this->assetFileManager->assetExportFilename($file);
         $is_exported_msg = $this->t('Asset exported: @path', ['@path' => $path]);
       }
     }
@@ -153,7 +141,7 @@ final class FileAssets extends MetaOptionBase {
   /**
    * {@inheritdoc}
    */
-  public function preWriteToYaml(ExportableInterface $exportable): void {
+  public function preExportWrite(ExportableInterface $exportable): void {
     // If it's a file, export the file alongside the yaml.
     /** @var FileInterface $entity */
     $entity = $exportable->entity();
@@ -168,7 +156,30 @@ final class FileAssets extends MetaOptionBase {
     }
 
     if ($should_export) {
-      $this->assetFileManager()->exportAsset($entity, \dirname($exportable->getExportFilepath()));
+      $this->assetFileManager->exportAsset($entity, \dirname($exportable->getExportFilepath()));
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preImportSave(ContentEntityInterface $entity, array $export): void {
+    /** @var \Drupal\file\FileInterface $entity */
+
+    // Default to settings. Then, if an import override exists let it make
+    // the decision about importing.
+    $should_import = $this->larkSettings->shouldImportAssets();
+    $import_override_exists = isset($export['_meta']['options']['file_asset']['should_import']);
+    if ($import_override_exists) {
+      $should_import = (bool) $export['_meta']['options']['file_asset']['should_import'];
+    }
+
+    if ($should_import) {
+      $this->assetFileManager->importAsset(
+        $entity,
+        dirname($export['_meta']['path']),
+        $export['default']['uri'][0]['value']
+      );
     }
   }
 

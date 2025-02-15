@@ -135,7 +135,7 @@ class Exporter implements ExporterInterface {
     // Allow meta option plugins to perform last minute changes or actions.
     foreach ($this->metaOptionManager->getInstances() as $meta_option) {
       if ($meta_option->applies($entity)) {
-        $meta_option->preWriteToYaml($exportable);
+        $meta_option->preExportWrite($exportable);
       }
     }
 

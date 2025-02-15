@@ -16,6 +16,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Plugin\Lark\MetaOptionInterface;
+use Drupal\lark\Service\AssetFileManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -30,6 +31,7 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
     $plugin_id,
     $plugin_definition,
     protected LarkSettings $larkSettings,
+    protected AssetFileManager $assetFileManager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
@@ -45,6 +47,7 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
       $plugin_id,
       $plugin_definition,
       $container->get(LarkSettings::class),
+      $container->get(AssetFileManager::class)
     );
   }
 
@@ -93,7 +96,7 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
   /**
    * {@inheritdoc}
    */
-  public function preWriteToYaml(ExportableInterface $exportable): void {}
+  public function preExportWrite(ExportableInterface $exportable): void {}
 
   /**
    * Takes a normal render array for a radios element and makes it work within
