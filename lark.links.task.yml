@@ -1,3 +1,7 @@
+lark.entities:
+  class: \Drupal\Core\Menu\LocalTaskDefault
+  deriver: \Drupal\lark\Routing\LocalTasks
+
 lark.settings:
   route_name: lark.settings
   title: 'Lark Settings'
@@ -9,15 +13,3 @@ lark.exports_list:
   title: 'Exports Manager'
   base_route: lark.settings
   weight: 1
-
-lark.node_export:
-  route_name: lark.node_export
-  title: 'Lark Export'
-  base_route: entity.node.canonical
-  weight: 100
-
-lark.media_export:
-  route_name: lark.media_export
-  title: 'Lark Export'
-  base_route: entity.media.canonical
-  weight: 100

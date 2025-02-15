@@ -72,10 +72,13 @@ class EntityExportForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $entity_type_id = $this->getRouteMatch()->getParameters()->keys()[0];
-    $entity_id = (int) $this->getRouteMatch()->getParameter($entity_type_id);
-    $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
-    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id);
+    $entity_type_id = $this->getRouteMatch()->getRouteObject()->getOption('_lark_entity_type_id');
+    $entity = $this->getRouteMatch()->getParameter($entity_type_id);
+    if (is_numeric($entity)) {
+      $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity);
+    }
+
+    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
     $form['#attached']['library'][] = 'lark/admin';
@@ -93,7 +96,7 @@ class EntityExportForm extends FormBase {
     ];
     $form['entity_id'] = [
       '#type' => 'value',
-      '#value' => $entity_id,
+      '#value' => $entity->id(),
     ];
     $form['actions'] = [
       '#type' => 'actions',

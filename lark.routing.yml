@@ -6,21 +6,6 @@ lark.settings:
   requirements:
     _permission: 'lark administer configuration'
 
-lark.diff_viewer:
-  path: '/admin/lark/diff/{source_plugin_id}/{uuid}'
-  defaults:
-    _title: 'Lark Diff Viewer'
-    _controller: '\Drupal\lark\Controller\DiffViewer::build'
-  options:
-    _admin_route: TRUE
-    parameters:
-      source_plugin_id:
-        type: string
-      uuid:
-        type: string
-  requirements:
-    _permission: 'lark view diffs'
-
 lark.exports_list:
   path: '/admin/config/development/lark/entity-exports'
   defaults:
@@ -56,36 +41,6 @@ lark.import_source:
   defaults:
     _title: 'Import All Source Entities'
     _controller: '\Drupal\lark\Controller\ExportsManager::importSource'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'lark import export entities'
-
-lark.node_export:
-  path: '/node/{node}/lark-export'
-  defaults:
-    _form: '\Drupal\lark\Form\EntityExportForm'
-    _title: 'Lark Export'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'lark import export entities'
-
-lark.media_export:
-  path: '/media/{media}/manual-export'
-  defaults:
-    _form: '\Drupal\lark\Form\EntityExportForm'
-    _title: 'Lark Export'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'lark import export entities'
-
-lark.file_export:
-  path: '/lark/file/{file}'
-  defaults:
-    _form: '\Drupal\lark\Form\EntityExportForm'
-    _title: 'Lark Export'
   options:
     _admin_route: TRUE
   requirements:
