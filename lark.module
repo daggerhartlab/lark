@@ -1,0 +1,29 @@
+<?php
+
+use Drupal\Core\DependencyInjection\ClassResolverInterface;
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function lark_entity_type_alter(array &$entity_types) {
+  /**
+   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
+   * @var \Drupal\lark\Routing\EntityTypeInfo $entity_type_info
+   */
+  $class_resolver = \Drupal::service(ClassResolverInterface::class);
+  $entity_type_info = $class_resolver->getInstanceFromDefinition(\Drupal\lark\Routing\EntityTypeInfo::class);
+  return $entity_type_info->entityTypeAlter($entity_types);
+}
+
+/**
+ * Implements hook_entity_operation()
+ */
+function lark_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
+  /**
+   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
+   * @var \Drupal\lark\Routing\EntityTypeInfo $entity_type_info
+   */
+  $class_resolver = \Drupal::service(ClassResolverInterface::class);
+  $entity_type_info = $class_resolver->getInstanceFromDefinition(\Drupal\lark\Routing\EntityTypeInfo::class);
+  return $entity_type_info->entityOperation($entity);
+}

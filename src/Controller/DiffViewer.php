@@ -4,11 +4,13 @@ namespace Drupal\lark\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Diff\DiffFormatter;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\ExportableStatusResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class DiffViewer extends ControllerBase {
 
@@ -26,7 +28,7 @@ class DiffViewer extends ControllerBase {
     return new static(
       $container->get(ExportableFactoryInterface::class),
       $container->get(DiffFormatter::class),
-      $container->get(ExportableStatusResolver::class)
+      $container->get(ExportableStatusResolver::class),
     );
   }
 
@@ -41,8 +43,11 @@ class DiffViewer extends ControllerBase {
    * @return array
    *   Render array.
    */
-  public function build(string $source_plugin_id, string $uuid): array {
-    $exportable = $this->exportableFactory->createFromSource($source_plugin_id, $uuid);
+  public function build(RouteMatchInterface $routeMatch): array {
+    $entity_type_id = $routeMatch->getRouteObject()->getOption('_lark_entity_type_id');
+    $entity = $routeMatch->getParameter($entity_type_id);
+    $exportable = $this->exportableFactory->createFromEntity($entity);
+
     if (!$exportable) {
       return [];
     }
