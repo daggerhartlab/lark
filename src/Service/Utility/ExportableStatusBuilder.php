@@ -77,8 +77,8 @@ class ExportableStatusBuilder {
       $words = array_filter(preg_split('/(?=[A-Z])/', $status_name));
       $details['class_name'] = strtolower(implode('-', $words));
       $details['label'] = ucwords(strtolower(implode(' ', $words)));
-      $details['icon_url'] = Url::fromUri("base:/{$path}/assets/icons/status--{$details['class_name']}.svg")->toString();
-      $details['icon'] = Markup::create("<img src='{$details['icon_url']}' alt='{$details['label']}' title='{$details['label']}' />");
+      $details['icon_url'] = Url::fromUri("base:/{$path}/assets/icons/status--{$details['class_name']}.png")->toString();
+      $details['icon'] = Markup::create("<img src='{$details['icon_url']}' alt='{$details['label']}' title='{$details['label']}' width='25px' height='25px' />");
       $details['render'] = [
         '#type' => 'html_tag',
         '#tag' => 'span',
