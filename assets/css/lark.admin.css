@@ -38,3 +38,15 @@ table.lark-diff-table td {
   font-family: monospace;
   white-space: pre;
 }
+
+.lark-yaml-export-pre {
+  font-size: 0.9em;
+  white-space: pre;
+  border: 1px solid #ddd;
+  border-top-color: #bbb;
+  padding: 4px 8px;
+  overflow: scroll;
+  max-height: 80vh;
+  max-width: 1024px;
+  width: 98%;
+}

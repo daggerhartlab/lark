@@ -82,11 +82,18 @@ class ExportableStatusResolver {
     if (empty($export)) {
       $exports = $this->importer->discoverSourceExport($source, $entity->uuid());
       $export = $exports[$entity->uuid()];
+
+      // The database doesn't store our meta options, and during a diff they
+      // wouldn't have changed.
+      if (isset($export['_meta']['options'])) {
+        $exportable->setMetaOptions($export['_meta']['options']);
+      }
     }
 
     $left = $export;
     $left = $this->processExportArrayForComparison($left);
     $right = $this->processExportArrayForComparison($exportable->toArray());
+
     if ($left === $right) {
       return ExportableStatus::InSync;
     }

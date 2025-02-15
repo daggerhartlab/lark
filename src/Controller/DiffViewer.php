@@ -43,6 +43,10 @@ class DiffViewer extends ControllerBase {
    */
   public function build(string $source_plugin_id, string $uuid): array {
     $exportable = $this->exportableFactory->createFromSource($source_plugin_id, $uuid);
+    if (!$exportable) {
+      return [];
+    }
+
     return [
       '#attached' => [
         'library' => [

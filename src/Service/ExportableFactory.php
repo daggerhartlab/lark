@@ -5,6 +5,7 @@ namespace Drupal\lark\Service;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -14,6 +15,7 @@ use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Plugin\Lark\SourceInterface;
 use Drupal\lark\Service\Cache\ExportablesRuntimeCache;
 use Drupal\lark\Service\Utility\ExportableStatusResolver;
 use Drupal\user\UserInterface;
@@ -48,9 +50,42 @@ class ExportableFactory implements ExportableFactoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function createFromSource(string $source_plugin_id, string $uuid): ExportableInterface {
+  public function createFromUuid(string $uuid): ExportableInterface {
+    $content_entity_types = array_filter($this->entityTypeManager->getDefinitions(), function($def) {
+      return $def instanceof ContentEntityTypeInterface;
+    });
+
+    $found = NULL;
+    foreach ($content_entity_types as $entity_type) {
+      $found = $this->entityTypeManager->getStorage($entity_type->id())->loadByProperties([
+        'uuid' => $uuid,
+      ]);
+      if ($found) {
+        $found = reset($found);
+        break;
+      }
+    }
+
+    if ($found) {
+      return $this->createFromEntity($found);
+    }
+
+    foreach ($this->sourceManager->getInstances() as $source) {
+      $exportable = $this->createFromSource($source->id(), $uuid);
+      if ($exportable) {
+        return $exportable;
+      }
+    }
+
+    throw new LarkEntityNotFoundException("UUID not found in database nor source exports: {$uuid}");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createFromSource(string $source_plugin_id, string $uuid): ?ExportableInterface {
     $exportables = $this->createFromSourceWithDependencies($source_plugin_id, $uuid);
-    return $exportables[$uuid];
+    return $exportables[$uuid] ?? NULL;
   }
 
   /**
@@ -84,7 +119,6 @@ class ExportableFactory implements ExportableFactoryInterface {
   /**
    * {@inheritdoc}
    */
-
   public function getEntityExportables(string $entity_type_id, int $entity_id, array &$exportables = []): array {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
@@ -101,6 +135,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     // array to ensure that dependent entities are after their dependencies.
     $exportables = array_reverse($exportables);
     $this->exportablesCache->set($entity->uuid(), $exportables);
+
     return $exportables;
   }
 
@@ -174,12 +209,13 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exportable->setDependencies($dependencies);
     $exportable->setSource($this->statusResolver->getExportableSource($exportable));
     $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
+
     if ($exportable->getExportExists() && isset($exportable->getExportedValues()['_meta']['options'])) {
       $exportable->setMetaOptions($exportable->getExportedValues()['_meta']['options']);
     }
 
-    $this->exportablesCache->set($exportable->entity()->uuid(), $exportable);
     $exportables[$exportable->entity()->uuid()] = $exportable;
+    $this->exportablesCache->set($exportable->entity()->uuid(), $exportables);
 
     return $exportables;
   }

@@ -64,6 +64,7 @@ class Importer implements ImporterInterface {
     protected SourceManagerInterface $sourceManager,
     protected EntityUpdaterInterface $upserter,
     protected AssetFileManager $assetFileManager,
+    protected MetaOptionManager $metaOptionManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
@@ -347,22 +348,9 @@ class Importer implements ImporterInterface {
       $this->processValuesForImport($entity, $export);
       $this->upserter->setEntityValues($entity, $export);
 
-      // Handle File assets.
-      if ($entity instanceof FileInterface) {
-        // Default to settings. Then, if an import override exists let it make
-        // the decision about importing.
-        $should_import = $this->settings->shouldImportAssets();
-        $import_override_exists = isset($export['_meta']['options']['file_asset_should_import']);
-        if ($import_override_exists) {
-          $should_import = (bool) $export['_meta']['options']['file_asset_should_import'];
-        }
-
-        if ($should_import) {
-          $this->assetFileManager->importAsset(
-            $entity,
-            dirname($export['_meta']['path']),
-            $export['default']['uri'][0]['value']
-          );
+      foreach ($this->metaOptionManager->getInstances() as $meta_option) {
+        if ($meta_option->applies($entity)) {
+          $meta_option->preImportSave($entity, $export);
         }
       }
 
