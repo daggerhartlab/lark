@@ -12,7 +12,7 @@ use Drupal\lark\Model\ExportableInterface;
  * Interface for lark_entity_export_form plugins. These plugins are used when
  * building and handling the entity export form.
  */
-interface EntityExportFormInterface {
+interface MetaOptionInterface {
 
   /**
    * Plugin ID.

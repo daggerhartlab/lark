@@ -5,12 +5,13 @@ namespace Drupal\lark\Form;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\lark\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\AssetFileManager;
-use Drupal\lark\Service\EntityExportFormPluginManager;
+use Drupal\lark\Service\MetaOptionManager;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
 use Drupal\lark\Service\ExporterInterface;
@@ -26,7 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityExportForm extends FormBase {
 
   /**
-   * EntityExportForm constructor.
+   * MetaOption constructor.
    *
    * @param \Drupal\lark\Service\ExporterInterface $entityExporter
    *   The entity exporter service.
@@ -41,7 +42,7 @@ class EntityExportForm extends FormBase {
     protected ExportableStatusBuilder $statusBuilder,
     protected LarkSettings $settings,
     protected AssetFileManager $assetFileManager,
-    protected EntityExportFormPluginManager $formPluginManager,
+    protected MetaOptionManager $formPluginManager,
   ) {}
 
   /**
@@ -56,7 +57,7 @@ class EntityExportForm extends FormBase {
       $container->get(ExportableStatusBuilder::class),
       $container->get(LarkSettings::class),
       $container->get(AssetFileManager::class),
-      $container->get(EntityExportFormPluginManager::class),
+      $container->get(MetaOptionManager::class),
     );
   }
 
@@ -259,6 +260,15 @@ class EntityExportForm extends FormBase {
               ],
             ],
           ],
+          'yaml_export' => [
+            '#type' => 'html_tag',
+            '#tag' => 'pre',
+            '#value' => Markup::create(\htmlentities($exportable->toYaml())),
+            '#attributes' => [
+              'class' => ['lark-yaml-export-pre'],
+            ],
+            '#weight' => 100,
+          ]
         ],
       ],
     ];

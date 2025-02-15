@@ -11,10 +11,10 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  * The lark_entity_export_form attribute.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class LarkEntityExportForm extends AttributeBase {
+final class LarkMetaOption extends AttributeBase {
 
   /**
-   * Constructs a new LarkEntityExportForm instance.
+   * Constructs a new LarkMetaOption instance.
    *
    * @param string $id
    *   The plugin ID. There are some implementation bugs that make the plugin

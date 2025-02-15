@@ -15,13 +15,13 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Plugin\Lark\EntityExportFormInterface;
+use Drupal\lark\Plugin\Lark\MetaOptionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base class for lark_entity_export_form plugins.
  */
-abstract class EntityExportFormPluginBase extends PluginBase implements EntityExportFormInterface,  ContainerFactoryPluginInterface {
+abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,  ContainerFactoryPluginInterface {
 
   use StringTranslationTrait;
 

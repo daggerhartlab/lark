@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Drupal\lark\Plugin\Lark\EntityExportForm;
+namespace Drupal\lark\Plugin\Lark\MetaOption;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\file\FileInterface;
-use Drupal\lark\Attribute\LarkEntityExportForm;
+use Drupal\lark\Attribute\LarkMetaOption;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Plugin\Lark\EntityExportFormPluginBase;
+use Drupal\lark\Plugin\Lark\MetaOptionBase;
 use Drupal\lark\Service\AssetFileManager;
 
 /**
  * Plugin implementation of the lark_entity_export_form.
  */
-#[LarkEntityExportForm(
+#[LarkMetaOption(
   id: "file_assets",
   label: new TranslatableMarkup("File Assets"),
   description: new TranslatableMarkup("Allows users to choose how file assets should be handled during export and import."),
 )]
-final class FileAssets extends EntityExportFormPluginBase {
+final class FileAssets extends MetaOptionBase {
 
   protected ?AssetFileManager $assetFileManager = NULL;
 
