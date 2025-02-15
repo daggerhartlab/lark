@@ -27,7 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityExportForm extends FormBase {
 
   /**
-   * MetaOption constructor.
+   * EntityExportForm constructor.
    *
    * @param \Drupal\lark\Service\ExporterInterface $entityExporter
    *   The entity exporter service.
