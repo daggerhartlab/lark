@@ -146,14 +146,20 @@ class ExportsManager extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function build(): array {
-    //$source_plugins = $this->sourceManager->getInstances();
-    $build = [
-      '#markup' => 'Hi',
-    ];
+    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
+    $sources = $this->entityTypeManager()->getStorage('lark_source')->loadByProperties([
+      'status' => 1,
+    ]);
 
-//    foreach ($source_plugins as $source) {
-//      //$build['sources'][$source->id()] = '';
-//    }
+    $build = [];
+    foreach ($sources as $source) {
+      $build[$source->id()] = [
+        '#type' => 'details',
+        '#title' => $source->label(),
+        '#open' => FALSE,
+        'source' => $this->sourceViewBuilder->viewSource($source),
+      ];
+    }
 
     return $build;
   }
