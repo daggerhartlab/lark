@@ -11,7 +11,7 @@ use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\MetaOptionManager;
 
-class ExportableTableFormHandler {
+class TableFormHandler {
 
   use StringTranslationTrait;
 
@@ -44,6 +44,9 @@ class ExportableTableFormHandler {
       '#theme' => 'table',
       '#header' => $this->headers(),
       '#rows' => [],
+      '#attached' => [
+        'library' => ['lark/admin']
+      ],
     ];
   }
 

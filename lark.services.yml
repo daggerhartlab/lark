@@ -28,8 +28,8 @@ services:
     class: Drupal\lark\Service\Utility\ExportableStatusResolver
     autowire: true
 
-  Drupal\lark\Service\Utility\ExportableTableFormHandler:
-    class: Drupal\lark\Service\Utility\ExportableTableFormHandler
+  Drupal\lark\Service\Utility\TableFormHandler:
+    class: Drupal\lark\Service\Utility\TableFormHandler
     autowire: true
 
   Drupal\lark\Service\ExportableFactoryInterface:

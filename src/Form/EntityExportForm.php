@@ -6,13 +6,11 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Service\AssetFileManager;
-use Drupal\lark\Service\MetaOptionManager;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
 use Drupal\lark\Service\ExporterInterface;
 use Drupal\lark\Service\SourceManagerInterface;
-use Drupal\lark\Service\Utility\ExportableTableFormHandler;
+use Drupal\lark\Service\Utility\TableFormHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -37,10 +35,7 @@ class EntityExportForm extends FormBase {
     protected SourceManagerInterface $sourceManager,
     protected ExportableFactoryInterface $exportableFactory,
     protected ExportableStatusBuilder $statusBuilder,
-    protected LarkSettings $settings,
-    protected AssetFileManager $assetFileManager,
-    protected MetaOptionManager $metaOptionManager,
-    protected ExportableTableFormHandler $tableFormHandler,
+    protected TableFormHandler $tableFormHandler,
   ) {}
 
   /**
@@ -53,10 +48,7 @@ class EntityExportForm extends FormBase {
       $container->get(SourceManagerInterface::class),
       $container->get(ExportableFactoryInterface::class),
       $container->get(ExportableStatusBuilder::class),
-      $container->get(LarkSettings::class),
-      $container->get(AssetFileManager::class),
-      $container->get(MetaOptionManager::class),
-      $container->get(ExportableTableFormHandler::class),
+      $container->get(TableFormHandler::class),
     );
   }
 
@@ -80,7 +72,6 @@ class EntityExportForm extends FormBase {
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
-    $form['#attached']['library'][] = 'lark/admin';
     $form['source'] = [
       '#type' => 'select',
       '#title' => $this->t('Export Source'),

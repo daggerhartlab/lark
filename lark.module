@@ -40,9 +40,9 @@ function lark_file_download($uri) {
     if (\Drupal::currentUser()->hasPermission('lark view diffs')) {
       $request = \Drupal::request();
       $date = DateTime::createFromFormat('U', $request->server->get('REQUEST_TIME'));
-      $date_string = $date->format('Y-m-d-H-i');
+      $date_string = $date->format('YmdHi');
       $hostname = str_replace('.', '-', $request->getHttpHost());
-      $filename = 'lark-export--' . $hostname . '-' . $date_string . '.tar.gz';
+      $filename = 'lark-export--' . $hostname . '--' . $date_string . '.tar.gz';
       $disposition = 'attachment; filename="' . $filename . '"';
       return [
         'Content-disposition' => $disposition,

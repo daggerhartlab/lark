@@ -155,8 +155,8 @@ final class FileAssets extends MetaOptionBase {
     }
 
     if ($should_export) {
-      $asset_path = $this->assetFileManager->exportAsset($entity, \dirname($archive->_tarname));
-      $archive->addModify([$asset_path], \dirname($exportable->getExportFilepath()), \dirname($archive->_tarname));
+      $asset_archive_path = $this->assetFileManager->exportAsset($entity, \dirname($exportable->getExportFilepath()));
+      $archive->addModify([$asset_archive_path], '', $exportable->getSource()->directory());
     }
   }
 
