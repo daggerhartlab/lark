@@ -41,46 +41,7 @@ class SourceViewBuilder {
     $source_root_exports = $this->getRootLevelExports($exports);
 
     $build = [
-      'details' => [
-        '#type' => 'table',
-        '#header' => [
-          'heading' => [
-            'colspan' => 2,
-            'class' => ['summary-heading'],
-            'data' => [
-              '#type' => 'html_tag',
-              '#tag' => 'span',
-              '#value' => $this->t('Source: %label', [
-                '%label' => $source->label(),
-              ]),
-            ],
-          ]
-        ],
-        '#rows' => [],
-        '#attributes' => [
-          'class' => ['lark-source-view-summary'],
-        ],
-      ],
-    ];
-    $build['details']['#rows'][] = [
-      'heading' => ['header' => TRUE, 'data' => $this->t('ID')],
-      'value' => $source->id(),
-    ];
-    $build['details']['#rows'][] = [
-      'heading' => ['header' => TRUE, 'data' => $this->t('Status')],
-      'value' => $source->status() ? $this->t('Enabled') : $this->t('Disabled'),
-    ];
-    $build['details']['#rows'][] = [
-      'heading' => ['header' => TRUE, 'data' => $this->t('Directory')],
-      'value' => ['class' => ['directory'], 'data' => $source->directory()]
-    ];
-    $build['details']['#rows'][] = [
-      'heading' => ['header' => TRUE, 'data' => $this->t('Absolute')],
-      'value' => ['class' => ['directory'], 'data' => $source->directoryProcessed()],
-    ];
-    $build['details']['#rows'][] = [
-      'heading' => ['header' => TRUE, 'data' => $this->t('Description')],
-      'value' => $source->description(),
+      'details' => $this->sourceDetails($source),
     ];
 
     foreach ($source_root_exports as $root_uuid => $root_export) {
@@ -106,7 +67,8 @@ class SourceViewBuilder {
 
       $status_summary = $this->statusBuilder->getExportablesSummary(array_merge([$root_uuid => $root_exportable], $dependency_exportables));
       $build[$root_uuid] = [
-        '#type' => 'container',
+        '#type' => 'details',
+        '#title' => $root_exportable->entity()->label(),
         'status_summary' => $status_summary,
         'root_table' => $this->tablePopulated($source, $root_exportable),
         'dependencies_heading' => [
@@ -132,6 +94,55 @@ class SourceViewBuilder {
     }
 
     return $build;
+  }
+
+  /**
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *
+   * @return array
+   */
+  public function sourceDetails(LarkSourceInterface $source): array {
+    return [
+      '#type' => 'table',
+      '#header' => [
+        'heading' => [
+          'colspan' => 2,
+          'class' => ['summary-heading'],
+          'data' => [
+            '#type' => 'html_tag',
+            '#tag' => 'span',
+            '#value' => $this->t('Source: %label', [
+              '%label' => $source->label(),
+            ]),
+          ],
+        ],
+      ],
+      '#rows' => [
+        [
+          'heading' => ['header' => TRUE, 'data' => $this->t('ID')],
+          'value' => $source->id(),
+        ],
+        [
+          'heading' => ['header' => TRUE, 'data' => $this->t('Status')],
+          'value' => $source->status() ? $this->t('Enabled') : $this->t('Disabled'),
+        ],
+        [
+          'heading' => ['header' => TRUE, 'data' => $this->t('Directory')],
+          'value' => ['class' => ['directory'], 'data' => $source->directory()]
+        ],
+        [
+          'heading' => ['header' => TRUE, 'data' => $this->t('Absolute')],
+          'value' => ['class' => ['directory'], 'data' => $source->directoryProcessed()],
+        ],
+        [
+          'heading' => ['header' => TRUE, 'data' => $this->t('Description')],
+          'value' => $source->description(),
+        ],
+      ],
+      '#attributes' => [
+        'class' => ['lark-source-view-summary'],
+      ],
+    ];
   }
 
   /**
