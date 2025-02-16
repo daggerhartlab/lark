@@ -65,16 +65,17 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
           'parent_id' => "lark.entities:$entity_type_id.lark_load",
         ];
 
-        $this->derivatives["$entity_type_id.lark_diff"] = [
-          'route_name' => "entity.$entity_type_id.lark_diff",
-          'title' => $this->t('Diff'),
-          'parent_id' => "lark.entities:$entity_type_id.lark_load",
-        ];
-
         $this->derivatives["$entity_type_id.lark_download"] = [
           'route_name' => "entity.$entity_type_id.lark_download",
           'title' => $this->t('Download'),
           'parent_id' => "lark.entities:$entity_type_id.lark_load",
+        ];
+
+        $this->derivatives["$entity_type_id.lark_diff"] = [
+          'route_name' => "entity.$entity_type_id.lark_diff",
+          'title' => $this->t('Diff'),
+          'parent_id' => "lark.entities:$entity_type_id.lark_load",
+          'weight' => 100,
         ];
       }
     }
