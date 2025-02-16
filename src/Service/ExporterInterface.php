@@ -2,6 +2,8 @@
 
 namespace Drupal\lark\Service;
 
+use Drupal\lark\Plugin\Lark\SourceInterface;
+
 /**
  * Export entities and their dependencies.
  */
@@ -19,7 +21,7 @@ interface ExporterInterface {
    * @param bool $show_messages
    *   Whether to show messages.
    * @param array $exports_meta_options_overrides
-   *   An array of values for the export _meta array, key by entity uuuid.
+   *   An array of values for the export _meta array, key by entity uuid.
    *
    * @return void
    *

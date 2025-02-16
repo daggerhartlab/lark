@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
+use Drupal\Core\StreamWrapper\StreamWrapperManager;
 
 /**
  * Implements hook_entity_type_alter().
@@ -26,4 +27,27 @@ function lark_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
   $class_resolver = \Drupal::service(ClassResolverInterface::class);
   $entity_type_info = $class_resolver->getInstanceFromDefinition(\Drupal\lark\Routing\EntityTypeInfo::class);
   return $entity_type_info->entityOperation($entity);
+}
+
+
+/**
+ * Implements hook_file_download().
+ */
+function lark_file_download($uri) {
+  $scheme = StreamWrapperManager::getScheme($uri);
+  $target = StreamWrapperManager::getTarget($uri);
+  if ($scheme == 'temporary' && $target == 'lark-export.tar.gz') {
+    if (\Drupal::currentUser()->hasPermission('lark view diffs')) {
+      $request = \Drupal::request();
+      $date = DateTime::createFromFormat('U', $request->server->get('REQUEST_TIME'));
+      $date_string = $date->format('Y-m-d-H-i');
+      $hostname = str_replace('.', '-', $request->getHttpHost());
+      $filename = 'lark-export--' . $hostname . '-' . $date_string . '.tar.gz';
+      $disposition = 'attachment; filename="' . $filename . '"';
+      return [
+        'Content-disposition' => $disposition,
+      ];
+    }
+    return -1;
+  }
 }

@@ -11,7 +11,6 @@ use Drupal\lark\Plugin\Lark\SourceInterface;
  */
 interface ExportableFactoryInterface {
 
-
   /**
    * Create an exportable from only a uuid.
    *
@@ -75,7 +74,8 @@ interface ExportableFactoryInterface {
    *   Entity type id.
    * @param int $entity_id
    *   Entity id.
-   * @param array $exportables
+   * @param \Drupal\lark\Plugin\Lark\SourceInterface|null $source
+   * @param array $exports_meta_option_overrides
    *   Exportable entity models.
    *
    * @return \Drupal\lark\Model\ExportableInterface[]
@@ -85,6 +85,6 @@ interface ExportableFactoryInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\lark\Exception\LarkEntityNotFoundException
    */
-  public function getEntityExportables(string $entity_type_id, int $entity_id, array &$exportables = []): array;
+  public function getEntityExportables(string $entity_type_id, int $entity_id, ?SourceInterface $source = NULL, array $exports_meta_option_overrides = []): array;
 
 }

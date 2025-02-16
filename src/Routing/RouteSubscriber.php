@@ -35,11 +35,14 @@ class RouteSubscriber extends RouteSubscriberBase {
       if ($route = $this->getEntityExportRoute($entity_type, 'lark-export')) {
         $collection->add("entity.$entity_type_id.lark_export", $route);
       }
-      if ($route = $this->getEntityImportRoute($entity_type, 'lark-import')) {
+      if ($route = $this->getEntityImportRoute($entity_type)) {
         $collection->add("entity.$entity_type_id.lark_import", $route);
       }
       if ($route = $this->getEntityDiffRoute($entity_type)) {
         $collection->add("entity.$entity_type_id.lark_diff", $route);
+      }
+      if ($route = $this->getEntityDownloadRoute($entity_type)) {
+        $collection->add("entity.$entity_type_id.lark_download", $route);
       }
     }
   }
@@ -127,6 +130,40 @@ class RouteSubscriber extends RouteSubscriberBase {
         ->addDefaults([
           '_title' => 'Lark Diff',
           '_controller'  => '\Drupal\lark\Controller\DiffViewer::build'
+        ])
+        ->addRequirements([
+          '_permission' => 'lark view diffs',
+        ])
+        ->setOption('_admin_route', TRUE)
+        ->setOption('_lark_entity_type_id', $entity_type->id());
+
+      // Set the parameters of the new route using the existing 'edit-form'
+      // route parameters. If there are none then we need to set the basic
+      // parameter [entity_type_id => [type => 'entity:entity_type_id']].
+      // @see https://gitlab.com/drupalspoons/devel/-/issues/377
+      $parameters = $this->getRouteParameters($entity_type, 'edit-form') ?: [$entity_type->id() => ['type' => 'entity:' . $entity_type->id()]];
+      $route->setOption('parameters', $parameters);
+
+      return $route;
+    }
+    return NULL;
+  }
+
+  /**
+   * Gets the entity load route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
+  protected function getEntityDownloadRoute(EntityTypeInterface $entity_type): ?Route {
+    if ($link = $entity_type->getLinkTemplate('lark-download')) {
+      $route = (new Route($link))
+        ->addDefaults([
+          '_title' => 'Lark Download',
+          '_form'  => '\Drupal\lark\Form\EntityDownloadForm'
         ])
         ->addRequirements([
           '_permission' => 'lark view diffs',

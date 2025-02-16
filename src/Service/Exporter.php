@@ -61,13 +61,10 @@ class Exporter implements ExporterInterface {
    */
   public function exportEntity(string $source_plugin_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_meta_options_overrides = []): void {
     $source = $this->sourceManager->getSourceInstance($source_plugin_id);
-    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id);
+    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id, $source, $exports_meta_options_overrides);
 
     foreach ($exportables as $exportable) {
-      // Add meta option overrides to the export.
-      $meta_option_overrides = $exports_meta_options_overrides[$exportable->entity()->uuid()] ?? [];
-
-      if ($this->writeToYaml($source, $exportable, $meta_option_overrides)) {
+      if ($this->writeToYaml($exportable)) {
         $message = $this->t('Exported @entity_type_id : @entity_id : @label', [
           '@entity_type_id' => $exportable->entity()->getEntityTypeId(),
           '@entity_id' => $exportable->entity()->id(),
@@ -96,51 +93,15 @@ class Exporter implements ExporterInterface {
   /**
    * Export an entity to YAML.
    *
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface $source
-   *   Source plugin.
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   Exportable entity model.
-   * @param array $meta_option_overrides
    *
    * @return bool
    *   Whether the export was successful.
    */
-  protected function writeToYaml(SourceInterface $source, ExportableInterface $exportable, array $meta_option_overrides = []): bool {
-    // Set and meta option overrides passed in from the caller.
-    foreach ($this->metaOptionManager->getInstances() as $meta_option) {
-      if (
-        $meta_option->applies($exportable->entity()) &&
-        array_key_exists($meta_option->id(), $meta_option_overrides) &&
-        !empty($meta_option_overrides[$meta_option->id()])
-      ) {
-        $exportable->setMetaOption($meta_option->id(), $meta_option_overrides[$meta_option->id()]);
-      }
-    }
-
-    $entity = $exportable->entity();
-    // Prepare the export destination.
-    $destination_directory = $source->getDestinationDirectory(
-      $entity->getEntityTypeId(),
-      $entity->bundle(),
-    );
-    $this->fileSystem->prepareDirectory($destination_directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-
-    $destination_filepath = $source->getDestinationFilepath(
-      $entity->getEntityTypeId(),
-      $entity->bundle(),
-      $exportable->getExportFilename(),
-    );
-    $exportable->setExportFilepath($destination_filepath);
-
-    // Allow meta option plugins to perform last minute changes or actions.
-    foreach ($this->metaOptionManager->getInstances() as $meta_option) {
-      if ($meta_option->applies($entity)) {
-        $meta_option->preExportWrite($exportable);
-      }
-    }
-
+  protected function writeToYaml(ExportableInterface $exportable): bool {
     return (bool) \file_put_contents(
-      $destination_filepath,
+      $exportable->getExportFilepath(),
       $exportable->toYaml(),
     );
   }

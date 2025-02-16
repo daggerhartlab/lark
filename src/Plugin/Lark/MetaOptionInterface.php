@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Plugin\Lark;
 
+use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -77,6 +78,16 @@ interface MetaOptionInterface {
    *   Processed values.
    */
   public function processFormValues(array $submitted_values, ExportableInterface $exportable, FormStateInterface $form_state): array;
+
+  /**
+   * Perform additional actions during the archiving of an exportable.
+   *
+   * @param \Drupal\Core\Archiver\ArchiveTar $archive
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
+   *
+   * @return void
+   */
+  public function preExportDownload(ArchiveTar $archive, ExportableInterface $exportable): void;
 
   /**
    * Perform additional actions and modifications to the exportable immediately
