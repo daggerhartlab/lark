@@ -43,7 +43,7 @@ class ExportableFactory implements ExportableFactoryInterface {
    * {@inheritdoc}
    */
   public function createFromEntity(ContentEntityInterface $entity): ExportableInterface {
-    $exportables = $this->getEntityExportables($entity->getEntityTypeId(), (int) $entity->id(), NULL, []);
+    $exportables = $this->getEntityExportables($entity->getEntityTypeId(), (int) $entity->id());
     $exportable = $exportables[$entity->uuid()];
     $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
     return $exportable;

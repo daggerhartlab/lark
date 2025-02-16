@@ -4,13 +4,11 @@ namespace Drupal\lark\Form;
 
 use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ExtensionPathResolver;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Serialization\Yaml;
-use Drupal\lark\Plugin\Lark\SourceBase;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\MetaOptionManager;
 use Drupal\lark\Service\SourceManagerInterface;
@@ -51,7 +49,7 @@ class EntityDownloadForm extends FormBase {
   }
 
   /**
-   * Downloads a tarball of the site configuration.
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $entity_type_id = $this->getRouteMatch()->getRouteObject()->getOption('_lark_entity_type_id');
@@ -80,6 +78,9 @@ class EntityDownloadForm extends FormBase {
     return $form;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $exportables = $this->exportableFactory->getEntityExportables(
       $form_state->getValue('entity_type_id'),
