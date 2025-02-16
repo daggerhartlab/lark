@@ -57,25 +57,16 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       // link using 'entity_type_id/{entity_type_id}' as the link. This allows
       // lark info to be viewed for any entity, even if the url has to be typed manually.
       // @see https://gitlab.com/drupalspoons/devel/-/issues/377
-      $link_template = $entity_type->getLinkTemplate('edit-form') ?: $entity_type_id . "/{{$entity_type_id}}";
+      $link_template = $entity_type->getLinkTemplate('delete-form') ?: $entity_type_id . "/{{$entity_type_id}}";
       $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-load', "/lark/$entity_type_id");
 
       // Create a subtask.
-      if ($entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical')) {
-        // We use canonical template to extract and set additional parameters
-        // dynamically.
-        $link_template = $entity_type->getLinkTemplate('canonical');
-        $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-export', "/lark/export/$entity_type_id");
-      }
-
-      if ($entity_type->hasLinkTemplate('lark-load') || $entity_type->hasLinkTemplate('lark-export')) {
+      if ($entity_type->hasLinkTemplate('lark-load')) {
         // We use canonical template to extract and set additional parameters
         // dynamically.
         $link_template = $entity_type->getLinkTemplate('lark-load');
-        if (empty($link_template)) {
-          $link_template = $entity_type->getLinkTemplate('lark-export');
-        }
 
+        $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-export', "/lark/export/$entity_type_id");
         $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-import', "/lark/import/$entity_type_id");
         $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-diff', "/lark/diff/$entity_type_id");
         $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-download', "/lark/download/$entity_type_id");

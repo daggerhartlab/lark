@@ -16,26 +16,6 @@ lark.exports_list:
   requirements:
     _permission: 'lark import export entities'
 
-lark.export_single:
-  path: '/admin/config/development/lark/entity-exports/entity-export/{source_plugin_id}/{entity_type_id}/{entity_id}'
-  defaults:
-    _title: 'Entity Export'
-    _controller: '\Drupal\lark\Controller\ExportsManager::exportEntity'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'lark import export entities'
-
-lark.import_single:
-  path: '/admin/config/development/lark/entity-exports/entity-import/{source_plugin_id}/{uuid}'
-  defaults:
-    _title: 'Entity Import'
-    _controller: '\Drupal\lark\Controller\ExportsManager::importEntity'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'lark import export entities'
-
 lark.import_source:
   path: '/admin/config/development/lark/entity-exports/entity-export/{source_plugin_id}'
   defaults:

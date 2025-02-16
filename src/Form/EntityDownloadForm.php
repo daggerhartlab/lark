@@ -117,8 +117,6 @@ class EntityDownloadForm extends FormBase {
       $meta_options_overrides,
     );
 
-    //dd($exportables);
-
     try {
       $this->fileSystem->delete($source->directory() . '/lark-export.tar.gz');
     }

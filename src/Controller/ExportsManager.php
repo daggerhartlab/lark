@@ -277,38 +277,45 @@ class ExportsManager extends ControllerBase {
 
     if (!$exportable->entity()->isNew()) {
       $entity_type = $this->entityTypeManager()->getDefinition($exportable->entity()->getEntityTypeId());
+
       if ($entity_type->hasLinkTemplate('canonical')) {
         $operations['view'] = [
           'title' => $this->t('View'),
           'url' => $exportable->entity()->toUrl(),
         ];
       }
-      if ($exportable->getStatus() === ExportableStatus::OutOfSync) {
-        $operations['diff'] = [
-          'title' => $this->t('Diff'),
-          'url' => Url::fromRoute('lark.diff_viewer', [
-            'source_plugin_id' => $source->id(),
-            'uuid' => $exportable->entity()->uuid(),
-          ]),
+      if ($entity_type->hasLinkTemplate('edit-form')) {
+        $operations['edit'] = [
+          'title' => $this->t('Edit'),
+          'url' => $exportable->entity()->toUrl('edit-form'),
         ];
       }
-      $operations['export'] = [
-        'title' => $this->t('Re-export'),
-        'url' => Url::fromRoute('lark.export_single', [
-          'source_plugin_id' => $source->id(),
-          'entity_type_id' => $exportable->entity()->getEntityTypeId(),
-          'entity_id' => $exportable->entity()->id(),
-        ]),
-      ];
-    }
+      if ($entity_type->hasLinkTemplate('lark-load')) {
+        $operations['lark'] = [
+          'title' => $this->t('Export'),
+          'url' => $exportable->entity()->toUrl('lark-load'),
+        ];
+      }
+      if ($entity_type->hasLinkTemplate('lark-import')) {
+        $operations['lark_import'] = [
+          'title' => $this->t('Import'),
+          'url' => $exportable->entity()->toUrl('lark-import'),
+        ];
+      }
+      if ($entity_type->hasLinkTemplate('lark-download')) {
+        $operations['lark_download'] = [
+          'title' => $this->t('Download'),
+          'url' => $exportable->entity()->toUrl('lark-download'),
+        ];
+      }
+      if ($entity_type->hasLinkTemplate('lark-diff')) {
+        $operations['lark_diff'] = [
+          'title' => $this->t('Diff'),
+          'url' => $exportable->entity()->toUrl('lark-diff'),
+        ];
+      }
 
-    $operations['import'] = [
-      'title' => $exportable->entity()->isNew() ? $this->t('Import') : $this->t('Re-import'),
-      'url' => Url::fromRoute('lark.import_single', [
-        'source_plugin_id' => $source->id(),
-        'uuid' => $exportable->entity()->uuid(),
-      ]),
-    ];
+    }
 
     return [
       '#type' => 'operations',
