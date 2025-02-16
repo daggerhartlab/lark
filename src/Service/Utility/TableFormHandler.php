@@ -44,6 +44,9 @@ class TableFormHandler {
       '#theme' => 'table',
       '#header' => $this->headers(),
       '#rows' => [],
+      '#attributes' => [
+        'class' => ['lark-exportables-table-form'],
+      ],
       '#attached' => [
         'library' => ['lark/admin']
       ],
@@ -55,7 +58,10 @@ class TableFormHandler {
    */
   public function headers(): array {
     return [
-      'icon' => $this->t('Status'),
+      'icon' => [
+        'class' => ['status-icon'],
+        'data' => $this->t('Status')
+      ],
       'entity_id' => $this->t('Entity ID'),
       'entity_type' => $this->t('Entity Type'),
       'bundle' => $this->t('Bundle'),
@@ -143,7 +149,10 @@ class TableFormHandler {
 
     // Data row.
     $data_row = [
-      'icon' => $status_details['icon'],
+      'icon' => [
+        'class' => ['status-icon'],
+        'data' => $status_details['icon_render']
+      ],
       'entity_id' => $entity->id(),
       'entity_type' => $entity->getEntityTypeId(),
       'bundle' => $entity->bundle(),

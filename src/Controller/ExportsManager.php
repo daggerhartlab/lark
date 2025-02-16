@@ -345,7 +345,7 @@ class ExportsManager extends ControllerBase {
       'data' => [
         'status' => [
           'class' => ['status'],
-          'data' => $status_details['render'],
+          'data' => $status_details['icon_render'],
         ],
         'entity_type' => [
           'class' => ['entity-type'],
@@ -397,7 +397,7 @@ class ExportsManager extends ControllerBase {
         'data' => [
           'status' => [
             'class' => ['status'],
-            'data' => $status_details['render'],
+            'data' => $status_details['icon_render'],
           ],
           'entity_type' => [
             'class' => ['entity-type'],
