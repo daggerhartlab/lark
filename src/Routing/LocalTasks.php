@@ -46,7 +46,6 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
       $has_canonical_path = $entity_type->hasLinkTemplate('canonical');
 
       if ($has_edit_path || $has_canonical_path) {
-
         $this->derivatives["$entity_type_id.lark_load"] = [
           'route_name' => "entity.$entity_type_id.lark_load",
           'title' => $this->t('Lark'),
@@ -58,20 +57,23 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
           'route_name' => "entity.$entity_type_id.lark_export",
           'title' => $this->t('Export'),
           'parent_id' => "lark.entities:$entity_type_id.lark_load",
-          'weight' => 100,
         ];
 
         $this->derivatives["$entity_type_id.lark_import"] = [
           'route_name' => "entity.$entity_type_id.lark_import",
-          'weight' => 100,
           'title' => $this->t('Import'),
           'parent_id' => "lark.entities:$entity_type_id.lark_load",
         ];
 
         $this->derivatives["$entity_type_id.lark_diff"] = [
           'route_name' => "entity.$entity_type_id.lark_diff",
-          'weight' => 100,
           'title' => $this->t('Diff'),
+          'parent_id' => "lark.entities:$entity_type_id.lark_load",
+        ];
+
+        $this->derivatives["$entity_type_id.lark_download"] = [
+          'route_name' => "entity.$entity_type_id.lark_download",
+          'title' => $this->t('Download'),
           'parent_id' => "lark.entities:$entity_type_id.lark_load",
         ];
       }

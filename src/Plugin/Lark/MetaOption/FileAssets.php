@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Plugin\Lark\MetaOption;
 
+use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -12,7 +13,6 @@ use Drupal\file\FileInterface;
 use Drupal\lark\Attribute\LarkMetaOption;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Plugin\Lark\MetaOptionBase;
-use Drupal\lark\Service\AssetFileManager;
 
 /**
  * Plugin implementation of the lark_entity_export_form.
@@ -136,6 +136,28 @@ final class FileAssets extends MetaOptionBase {
     }
 
     return $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preExportDownload(ArchiveTar $archive, ExportableInterface $exportable): void {
+    // If it's a file, export the file alongside the yaml.
+    /** @var FileInterface $entity */
+    $entity = $exportable->entity();
+    // Default to settings. Then, if an export override exists let it make the
+    // decision about exporting.
+    $should_export = $this->larkSettings->shouldExportAssets();
+    $export_override = $exportable->getMetaOption($this->id())['should_export'] ?? NULL;
+    $export_override_exists = !is_null($exportable);
+    if ($export_override_exists) {
+      $should_export = (bool) $export_override;
+    }
+
+    if ($should_export) {
+      $asset_path = $this->assetFileManager->exportAsset($entity, \dirname($archive->_tarname));
+      $archive->addModify([$asset_path], \dirname($exportable->getExportFilepath()), \dirname($archive->_tarname));
+    }
   }
 
   /**

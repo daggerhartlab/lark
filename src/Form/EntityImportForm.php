@@ -66,7 +66,7 @@ class EntityImportForm extends FormBase {
       return [];
     }
 
-    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id());
+    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id(), NULL, []);
     $exportable = $exportables[$entity->uuid()];
 
     $form['status_summary'] = $this->statusBuilder->getExportablesSummary($exportables);

@@ -6,6 +6,7 @@ namespace Drupal\lark\Plugin\Lark;
 
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormState;
@@ -97,6 +98,11 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
    * {@inheritdoc}
    */
   public function preExportWrite(ExportableInterface $exportable): void {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preExportDownload(ArchiveTar $archive, ExportableInterface $exportable): void {}
 
   /**
    * Takes a normal render array for a radios element and makes it work within
