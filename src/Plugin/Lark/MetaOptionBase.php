@@ -121,7 +121,6 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
     // First item in the parents array is the "tree name".
     $tree_name = reset($render_parents);
 
-
     // This container contains a hidden field that registers the $tree_name with
     // the $form_state. This trick allows our custom-rendered radios to be found
     // in $form_state->getValue($tree_name);
@@ -155,9 +154,10 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
     $radios = Element\Radios::processRadios($radios, $form_state, $form);
 
     foreach (Element::children($radios) as $index) {
-      // Radios::processRadios() doesn't set the #value field for the child radio
-      // elements, but later the Radio::preRenderRadio() method will expect it. We
-      // can set these values from the $radios #default_value if needed.
+      // Radios::processRadios() doesn't set the #value field for the child
+      // radio elements, but later the Radio::preRenderRadio() method will
+      // expect it. We can set these values from the $radios #default_value if
+      // needed.
       // - '#return_value' is the "value='123'" attribute for the form element.
       // - '#value' is the over-all value of the radios group of elements.
       $radios[$index]['#value'] = $radios[$index]['#value'] ?? $radios['#default_value'];
@@ -165,6 +165,11 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
       // Some other part of the rendering process isn't working, and this field
       // rendered as an <input> ends up not having a "name" attribute.
       $radios[$index]['#name'] = $child_name;
+
+      if ($radios['#disabled']) {
+        $radios[$index]['#disabled'] = TRUE;
+        $radios[$index]['#attributes']['disabled'] = 'disabled';
+      }
     }
 
     return $radios;

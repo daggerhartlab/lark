@@ -10,6 +10,7 @@ use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\SourceManagerInterface;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
+use Drupal\lark\Service\Utility\TableFormHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -21,6 +22,7 @@ class EntityImportForm extends FormBase {
     protected SourceManagerInterface $sourceManager,
     protected ImporterInterface $importer,
     protected ExportableStatusBuilder $statusBuilder,
+    protected TableFormHandler $tableFormHandler,
   ) {}
 
   /**
@@ -33,6 +35,7 @@ class EntityImportForm extends FormBase {
       $container->get(SourceManagerInterface::class),
       $container->get(ImporterInterface::class),
       $container->get(ExportableStatusBuilder::class),
+      $container->get(TableFormHandler::class),
     );
   }
 
@@ -69,7 +72,6 @@ class EntityImportForm extends FormBase {
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
-    $form['status_summary'] = $this->statusBuilder->getExportablesSummary($exportables);
     $form['source_plugin_id'] = [
       '#type' => 'select',
       '#title' => $this->t('Import Source'),
@@ -90,6 +92,16 @@ class EntityImportForm extends FormBase {
         '#type' => 'submit',
         '#value' => $this->t('Import with Dependencies'),
       ],
+    ];
+
+    $exportables = array_reverse($exportables);
+    $form['export_form_container'] = [
+      '#type' => 'container',
+      'divider' => [
+        '#markup' => '<hr>',
+      ],
+      'summary' => $this->statusBuilder->getExportablesSummary($exportables),
+      'table' => $this->tableFormHandler->tablePopulated($exportables, $form, $form_state, 'export_form_values')
     ];
 
     return $form;

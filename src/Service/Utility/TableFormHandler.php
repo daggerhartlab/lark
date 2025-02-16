@@ -90,6 +90,42 @@ class TableFormHandler {
   }
 
   /**
+   * @param string $tree_name
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function getSubmittedMetaOptionOverrides(string $tree_name, FormStateInterface $form_state): array {
+    $submitted_values = $form_state->getValues()[$tree_name] ?? [];
+    $overrides = [];
+    foreach ($submitted_values as $uuid => $values) {
+      $exportable = $this->exportableFactory->createFromUuid($uuid);
+
+      foreach ($this->metaOptionManager->getInstances() as $form_plugin) {
+        // Ensure the plugin applies to the entity.
+        if (!$form_plugin->applies($exportable->entity())) {
+          continue;
+        }
+
+        // Ensure it has submitted values.
+        if (!array_key_exists($form_plugin->id(), $values)) {
+          $values[$form_plugin->id()] = [];
+        }
+
+        // Allow the plugin to record the values to the export.
+        $plugin_values = $form_plugin->processFormValues($values[$form_plugin->id()], $exportable, $form_state);
+        if ($plugin_values) {
+          $overrides[$uuid][$form_plugin->id()] = $plugin_values;
+        }
+      }
+    }
+    return $overrides;
+  }
+
+  /**
    * Make the form rows for the given exports.
    *
    * @param \Drupal\lark\Model\ExportableInterface $exportable
@@ -181,39 +217,4 @@ class TableFormHandler {
     ];
   }
 
-  /**
-   * @param string $tree_name
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *
-   * @return array
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  public function getSubmittedMetaOptionOverrides(string $tree_name, FormStateInterface $form_state): array {
-    $submitted_values = $form_state->getValues()[$tree_name] ?? [];
-    $overrides = [];
-    foreach ($submitted_values as $uuid => $values) {
-      $exportable = $this->exportableFactory->createFromUuid($uuid);
-
-      foreach ($this->metaOptionManager->getInstances() as $form_plugin) {
-        // Ensure the plugin applies to the entity.
-        if (!$form_plugin->applies($exportable->entity())) {
-          continue;
-        }
-
-        // Ensure it has submitted values.
-        if (!array_key_exists($form_plugin->id(), $values)) {
-          $values[$form_plugin->id()] = [];
-        }
-
-        // Allow the plugin to record the values to the export.
-        $plugin_values = $form_plugin->processFormValues($values[$form_plugin->id()], $exportable, $form_state);
-        if ($plugin_values) {
-          $overrides[$uuid][$form_plugin->id()] = $plugin_values;
-        }
-      }
-    }
-    return $overrides;
-  }
 }
