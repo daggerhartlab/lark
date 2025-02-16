@@ -63,28 +63,6 @@ class ExportsManager extends ControllerBase {
   }
 
   /**
-   * Export single entity.
-   *
-   * @param string $source_plugin_id
-   *   Source plugin id.
-   * @param string $entity_type_id
-   *   Entity type id.
-   * @param string $entity_id
-   *   Entity id.
-   *
-   * @return \Symfony\Component\HttpFoundation\RedirectResponse
-   *   Redirect.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\lark\Exception\LarkEntityNotFoundException
-   */
-  public function exportEntity(string $source_plugin_id, string $entity_type_id, string $entity_id): RedirectResponse {
-    $this->exporter->exportEntity($source_plugin_id, $entity_type_id, (int) $entity_id);
-    return new RedirectResponse(Url::fromRoute('lark.exports_list')->toString());
-  }
-
-  /**
    * Import single entity.
    *
    * @param string $source_plugin_id
@@ -275,6 +253,15 @@ class ExportsManager extends ControllerBase {
     // Determine export status and possible operations.
     $operations = [];
 
+    if ($exportable->entity()->isNew()) {
+      $operations['import'] = [
+        'title' => $this->t('Import'),
+        'url' => Url::fromRoute('lark.import_single', [
+          'source_plugin_id' => $source->id(),
+          'uuid' => $exportable->entity()->uuid(),
+        ]),
+      ];
+    }
     if (!$exportable->entity()->isNew()) {
       $entity_type = $this->entityTypeManager()->getDefinition($exportable->entity()->getEntityTypeId());
 
