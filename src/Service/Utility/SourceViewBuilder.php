@@ -270,7 +270,7 @@ class SourceViewBuilder {
         ];
       }
       if ($entity_type->hasLinkTemplate('edit-form')) {
-        $operations['edit'] = [
+        $operations['edit_form'] = [
           'title' => $this->t('Edit'),
           'url' => $exportable->entity()->toUrl('edit-form'),
         ];

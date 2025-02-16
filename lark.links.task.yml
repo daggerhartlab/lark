@@ -4,18 +4,36 @@ lark.entities:
 
 lark.settings:
   route_name: lark.settings
-  title: 'Lark Settings'
   base_route: lark.settings
+  title: 'Lark Settings'
   weight: 0
+
+entity.lark_source.colletion:
+  route_name: entity.lark_source.collection
+  base_route: lark.settings
+  title: 'Sources'
+  weight: 1
 
 lark.exports_list:
   route_name: lark.exports_list
-  title: 'Exports Manager'
   base_route: lark.settings
-  weight: 1
+  title: 'Exports Manager'
+  weight: 2
 
 entity.lark_source.canonical:
   route_name: entity.lark_source.canonical
-  title: 'Sources'
-  base_route: lark.settings
+  base_route: entity.lark_source.edit_form
+  title: 'View'
+  weight: -10
+
+entity.lark_source.edit_form:
+  route_name: entity.lark_source.edit_form
+  base_route: entity.lark_source.edit_form
+  title: 'View'
   weight: 1
+
+entity.lark_source.delete_form:
+  route_name: entity.lark_source.delete_form
+  base_route: entity.lark_source.edit_form
+  title: 'View'
+  weight: 2

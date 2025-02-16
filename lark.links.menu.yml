@@ -3,6 +3,12 @@ lark.settings:
   parent: system.admin_content
   route_name: lark.settings
 
+entity.lark_source.collection:
+  title: Sources
+  description: 'List of sources to extend site functionality.'
+  route_name: entity.lark_source.collection
+  parent: lark.settings
+
 lark.exports_list:
   title: Exports Manager
   menu_name: main
@@ -10,7 +16,7 @@ lark.exports_list:
   route_name: lark.exports_list
 
 entity.lark_source.canonical:
-  title: Sources
-  parent: lark.settings
-  description: 'List of sources to extend site functionality.'
-  route_name: entity.lark_source.collection
+  title: Source
+  description: ''
+  parent: entity.lark_source.edit_form
+  route_name: entity.lark_source.canonical

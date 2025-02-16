@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Routing;
 
+use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteProviderInterface;
@@ -29,6 +30,10 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   protected function alterRoutes(RouteCollection $collection): void {
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
+      if (!($entity_type instanceof ContentEntityTypeInterface)) {
+        continue;
+      }
+
       if ($route = $this->getEntityExportRoute($entity_type, 'lark-load')) {
         $collection->add("entity.$entity_type_id.lark_load", $route);
       }

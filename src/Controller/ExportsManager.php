@@ -104,21 +104,36 @@ class ExportsManager extends ControllerBase {
     return new RedirectResponse(Url::fromRoute('lark.exports_list')->toString());
   }
 
-  public function viewSourceTitle(string $lark_source): TranslatableMarkup {
+  /**
+   * View source title.
+   *
+   * @param string $lark_source
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function viewSourceTitle(string $lark_source): string {
     $source = $this->entityTypeManager()->getStorage('lark_source')->load($lark_source);
 
-    return $this->t('Source: %label', [
+    return strtr('Source: %label', [
       '%label' => $source->label(),
     ]);
   }
 
+  /**
+   * @param string $lark_source
+   *
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
   public function viewSource(string $lark_source): array {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->entityTypeManager()->getStorage('lark_source')->load($lark_source);
-
     return $this->sourceViewBuilder->viewSource($source);
   }
-
 
   /**
    * List exported entities.

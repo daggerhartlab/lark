@@ -48,6 +48,7 @@ entity.lark_source.canonical:
   path: '/admin/lark/source/{lark_source}'
   defaults:
     _controller: '\Drupal\lark\Controller\ExportsManager::viewSource'
+    _title: 'View Source'
     _title_callback: '\Drupal\lark\Controller\ExportsManager::viewSourceTitle'
   requirements:
     _permission: 'administer lark_source'
