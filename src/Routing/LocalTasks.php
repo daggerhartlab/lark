@@ -41,15 +41,21 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
     $this->derivatives = [];
 
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
+      if ($entity_type->hasLinkTemplate('lark-load')) {
 
-      $has_edit_path = $entity_type->hasLinkTemplate('edit-form');
-      $has_canonical_path = $entity_type->hasLinkTemplate('canonical');
+        // Delete form seems to be the most common, so default to that.
+        $base_route_form = 'delete_form';
+        if ($entity_type->hasLinkTemplate('edit-form')) {
+          $base_route_form = 'edit_form';
+        }
+        if ($entity_type->hasLinkTemplate('canonical')) {
+          $base_route_form = 'canonical';
+        }
 
-      if ($has_edit_path || $has_canonical_path) {
         $this->derivatives["$entity_type_id.lark_load"] = [
           'route_name' => "entity.$entity_type_id.lark_load",
           'title' => $this->t('Lark'),
-          'base_route' => "entity.$entity_type_id." . ($has_canonical_path ? "canonical" : "edit_form"),
+          'base_route' => "entity.$entity_type_id." . $base_route_form,
           'weight' => 100,
         ];
 
@@ -65,16 +71,17 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
           'parent_id' => "lark.entities:$entity_type_id.lark_load",
         ];
 
-        $this->derivatives["$entity_type_id.lark_diff"] = [
-          'route_name' => "entity.$entity_type_id.lark_diff",
-          'title' => $this->t('Diff'),
-          'parent_id' => "lark.entities:$entity_type_id.lark_load",
-        ];
-
         $this->derivatives["$entity_type_id.lark_download"] = [
           'route_name' => "entity.$entity_type_id.lark_download",
           'title' => $this->t('Download'),
           'parent_id' => "lark.entities:$entity_type_id.lark_load",
+        ];
+
+        $this->derivatives["$entity_type_id.lark_diff"] = [
+          'route_name' => "entity.$entity_type_id.lark_diff",
+          'title' => $this->t('Diff'),
+          'parent_id' => "lark.entities:$entity_type_id.lark_load",
+          'weight' => 100,
         ];
       }
     }

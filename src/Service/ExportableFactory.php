@@ -137,12 +137,12 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     // Don't return cache if we're overriding meta_options.
-    if (empty($exports_meta_option_overrides) && array_key_exists($entity->uuid(), $this->exportablesCache)) {
+    if (array_key_exists($entity->uuid(), $this->exportablesCache) && (empty($source) || empty($exports_meta_option_overrides))) {
       return $this->exportablesCache[$entity->uuid()];
     }
 
     $exportables = [];
-    $exportables = $this->getEntityExportablesRecursive($entity, $exportables);
+    $exportables = $this->getEntityExportablesRecursive($entity, $exportables, $source, $exports_meta_option_overrides);
     // Because we're registering the entities in hierarchical order, reverse the
     // array to ensure that dependent entities are after their dependencies.
     $exportables = array_reverse($exportables);
@@ -159,6 +159,10 @@ class ExportableFactory implements ExportableFactoryInterface {
    *   The entity to get exportables for.
    * @param array $exportables
    *   The exportables array to populate.
+   * @param \Drupal\lark\Plugin\Lark\SourceInterface|null $source
+   *   Override the source for the exportables being gathered.
+   * @param array $exports_meta_option_overrides
+   *   Override meta option values for the exportables being gathered.
    *
    * @return array
    *   The exportables array.
@@ -167,7 +171,7 @@ class ExportableFactory implements ExportableFactoryInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function getEntityExportablesRecursive(ContentEntityInterface $entity, array &$exportables = []): array {
+  protected function getEntityExportablesRecursive(ContentEntityInterface $entity, array &$exportables = [], ?SourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
     // Allow modules to prevent the entity from being exported.
     $should_export = $this->moduleHandler->invokeAll('lark_should_export_entity', [$entity]);
     if (!empty($should_export)) {
@@ -212,7 +216,7 @@ class ExportableFactory implements ExportableFactoryInterface {
           }
 
           $dependencies[$referenced_entity->uuid()] = $referenced_entity->getEntityTypeId();
-          $exportables += $this->getEntityExportablesRecursive($referenced_entity, $exportables);
+          $exportables += $this->getEntityExportablesRecursive($referenced_entity, $exportables, $source, $exports_meta_option_overrides);
         }
       }
     }
@@ -220,12 +224,13 @@ class ExportableFactory implements ExportableFactoryInterface {
     // Exportable for the current entity.
     $exportable = new Exportable($entity);
     $exportable->setDependencies($dependencies);
-    $exportable->setSource($this->statusResolver->getExportableSource($exportable));
+    $exportable->setSource($source ?? $this->statusResolver->getExportableSource($exportable));
     $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
 
     if ($exportable->getExportExists() && isset($exportable->getExportedValues()['_meta']['options'])) {
       $exportable->setMetaOptions($exportable->getExportedValues()['_meta']['options']);
     }
+    $this->overrideMetaValues($exportable, $exports_meta_option_overrides);
 
     $exportables[$exportable->entity()->uuid()] = $exportable;
     return $exportables;
@@ -242,15 +247,15 @@ class ExportableFactory implements ExportableFactoryInterface {
    */
   protected function prepareExportables(array $exportables, ?SourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
     foreach ($exportables as $exportable) {
+      $entity = $exportable->entity();
+
       if (!$source && $exportable->getSource()) {
         $source = $exportable->getSource();
       }
+
       if (!$source) {
         $source = $this->sourceManager->getDefaultSource();
       }
-
-      $entity = $exportable->entity();
-      $uuid = $entity->uuid();
 
       if ($source) {
         // Prepare the export destination.
@@ -268,26 +273,38 @@ class ExportableFactory implements ExportableFactoryInterface {
         $exportable->setExportFilepath($destination_filepath);
       }
 
-      foreach ($this->metaOptionManager->getInstances() as $meta_option) {
-        if (!$meta_option->applies($entity)) {
-          continue;
-        }
-
-        // Set and meta option overrides passed in from the caller.
-        if (
-          array_key_exists($uuid, $exports_meta_option_overrides) &&
-          array_key_exists($meta_option->id(), $exports_meta_option_overrides[$uuid]) &&
-          !empty($exports_meta_option_overrides[$uuid][$meta_option->id()])
-        ) {
-          $exportable->setMetaOption($meta_option->id(), $exports_meta_option_overrides[$uuid][$meta_option->id()]);
-        }
-
-        // Allow meta option plugins to perform last minute changes or actions.
-        $meta_option->preExportWrite($exportable);
-      }
+      $this->overrideMetaValues($exportable, $exports_meta_option_overrides);
     }
 
     return $exportables;
+  }
+
+  /**
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
+   * @param array $exports_meta_option_overrides
+   *
+   * @return void
+   */
+  protected function overrideMetaValues(ExportableInterface $exportable, array $exports_meta_option_overrides): void {
+    $entity = $exportable->entity();
+    $uuid = $entity->uuid();
+    foreach ($this->metaOptionManager->getInstances() as $meta_option) {
+      if (!$meta_option->applies($entity)) {
+        continue;
+      }
+
+      // Set and meta option overrides passed in from the caller.
+      if (
+        array_key_exists($uuid, $exports_meta_option_overrides) &&
+        array_key_exists($meta_option->id(), $exports_meta_option_overrides[$uuid]) &&
+        !empty($exports_meta_option_overrides[$uuid][$meta_option->id()])
+      ) {
+        $exportable->setMetaOption($meta_option->id(), $exports_meta_option_overrides[$uuid][$meta_option->id()]);
+      }
+
+      // Allow meta option plugins to perform last minute changes or actions.
+      $meta_option->preExportWrite($exportable);
+    }
   }
 
 }

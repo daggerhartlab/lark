@@ -62,7 +62,7 @@ class SourceBase extends PluginBase implements SourceInterface {
       return $path;
     }, $directory);
 
-    if ($absolute) {
+    if ($absolute && !str_starts_with($directory, DIRECTORY_SEPARATOR)) {
       $path = DRUPAL_ROOT . DIRECTORY_SEPARATOR . $directory;
       if (\file_exists($path)) {
         return \realpath($path);

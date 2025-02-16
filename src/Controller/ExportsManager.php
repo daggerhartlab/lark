@@ -63,28 +63,6 @@ class ExportsManager extends ControllerBase {
   }
 
   /**
-   * Export single entity.
-   *
-   * @param string $source_plugin_id
-   *   Source plugin id.
-   * @param string $entity_type_id
-   *   Entity type id.
-   * @param string $entity_id
-   *   Entity id.
-   *
-   * @return \Symfony\Component\HttpFoundation\RedirectResponse
-   *   Redirect.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\lark\Exception\LarkEntityNotFoundException
-   */
-  public function exportEntity(string $source_plugin_id, string $entity_type_id, string $entity_id): RedirectResponse {
-    $this->exporter->exportEntity($source_plugin_id, $entity_type_id, (int) $entity_id);
-    return new RedirectResponse(Url::fromRoute('lark.exports_list')->toString());
-  }
-
-  /**
    * Import single entity.
    *
    * @param string $source_plugin_id
@@ -275,40 +253,56 @@ class ExportsManager extends ControllerBase {
     // Determine export status and possible operations.
     $operations = [];
 
+    if ($exportable->entity()->isNew()) {
+      $operations['import'] = [
+        'title' => $this->t('Import'),
+        'url' => Url::fromRoute('lark.import_single', [
+          'source_plugin_id' => $source->id(),
+          'uuid' => $exportable->entity()->uuid(),
+        ]),
+      ];
+    }
     if (!$exportable->entity()->isNew()) {
       $entity_type = $this->entityTypeManager()->getDefinition($exportable->entity()->getEntityTypeId());
+
       if ($entity_type->hasLinkTemplate('canonical')) {
         $operations['view'] = [
           'title' => $this->t('View'),
           'url' => $exportable->entity()->toUrl(),
         ];
       }
-      if ($exportable->getStatus() === ExportableStatus::OutOfSync) {
-        $operations['diff'] = [
-          'title' => $this->t('Diff'),
-          'url' => Url::fromRoute('lark.diff_viewer', [
-            'source_plugin_id' => $source->id(),
-            'uuid' => $exportable->entity()->uuid(),
-          ]),
+      if ($entity_type->hasLinkTemplate('edit-form')) {
+        $operations['edit'] = [
+          'title' => $this->t('Edit'),
+          'url' => $exportable->entity()->toUrl('edit-form'),
         ];
       }
-      $operations['export'] = [
-        'title' => $this->t('Re-export'),
-        'url' => Url::fromRoute('lark.export_single', [
-          'source_plugin_id' => $source->id(),
-          'entity_type_id' => $exportable->entity()->getEntityTypeId(),
-          'entity_id' => $exportable->entity()->id(),
-        ]),
-      ];
-    }
+      if ($entity_type->hasLinkTemplate('lark-load')) {
+        $operations['lark'] = [
+          'title' => $this->t('Export'),
+          'url' => $exportable->entity()->toUrl('lark-load'),
+        ];
+      }
+      if ($entity_type->hasLinkTemplate('lark-import')) {
+        $operations['lark_import'] = [
+          'title' => $this->t('Import'),
+          'url' => $exportable->entity()->toUrl('lark-import'),
+        ];
+      }
+      if ($entity_type->hasLinkTemplate('lark-download')) {
+        $operations['lark_download'] = [
+          'title' => $this->t('Download'),
+          'url' => $exportable->entity()->toUrl('lark-download'),
+        ];
+      }
+      if ($entity_type->hasLinkTemplate('lark-diff')) {
+        $operations['lark_diff'] = [
+          'title' => $this->t('Diff'),
+          'url' => $exportable->entity()->toUrl('lark-diff'),
+        ];
+      }
 
-    $operations['import'] = [
-      'title' => $exportable->entity()->isNew() ? $this->t('Import') : $this->t('Re-import'),
-      'url' => Url::fromRoute('lark.import_single', [
-        'source_plugin_id' => $source->id(),
-        'uuid' => $exportable->entity()->uuid(),
-      ]),
-    ];
+    }
 
     return [
       '#type' => 'operations',
@@ -338,7 +332,7 @@ class ExportsManager extends ControllerBase {
       'data' => [
         'status' => [
           'class' => ['status'],
-          'data' => $status_details['render'],
+          'data' => $status_details['icon_render'],
         ],
         'entity_type' => [
           'class' => ['entity-type'],
@@ -390,7 +384,7 @@ class ExportsManager extends ControllerBase {
         'data' => [
           'status' => [
             'class' => ['status'],
-            'data' => $status_details['render'],
+            'data' => $status_details['icon_render'],
           ],
           'entity_type' => [
             'class' => ['entity-type'],

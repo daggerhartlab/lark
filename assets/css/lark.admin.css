@@ -50,3 +50,53 @@ table.lark-diff-table td {
   max-width: 1024px;
   width: 98%;
 }
+
+/*
+ * Exportables table form.
+ */
+table.lark-exportables-table-form {}
+table.lark-exportables-table-form th.status-icon,
+table.lark-exportables-table-form td.status-icon {
+  width: 50px;
+  text-align: center;
+}
+
+/*
+ * Status summary table.
+ */
+table.lark-status-summary-table {
+  width: auto;
+  max-width: 260px;
+}
+table.lark-status-summary-table th,
+table.lark-status-summary-table td {
+  padding: 0;
+  height: 2em;
+  font-weight: normal;
+}
+table.lark-status-summary-table thead th {
+  background: transparent;
+}
+table.lark-status-summary-table .summary-heading {
+  font-style: italic;
+  padding: 2px 12px;
+}
+table.lark-status-summary-table .summary-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px;
+}
+table.lark-status-summary-table .summary-count {
+  display: block;
+  padding: 2px 12px;
+}
+table.lark-status-summary-table .summary-container-active,
+table.lark-status-summary-table .summary-count-active {
+  font-weight: bold;
+}
+table.lark-status-summary-table .summary-container-empty,
+table.lark-status-summary-table .summary-count-empty {
+  font-style: italic;
+  font-size: 0.9rem;
+}

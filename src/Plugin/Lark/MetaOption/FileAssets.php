@@ -70,10 +70,13 @@ final class FileAssets extends MetaOptionBase {
       $should_export_value = $meta_option['should_export'];
     }
 
+    // Disable changing values on the import form.
+    $disabled = str_contains($form_state->getFormObject()->getFormId(), '_import_');
     $element['should_export'] = $this->fixNestedRadios($form, $render_parents, 'should_export', [
       '#type' => 'radios',
       '#title' => $this->t('Asset Export'),
       '#default_value' => (int) $should_export_value,
+      '#disabled' => $disabled,
       '#options' => [
         0 => $this->t('(@default_desc) Do not export', [
           '@default_desc' => $this->larkSettings->shouldExportAssets() === FALSE ?
@@ -99,6 +102,7 @@ final class FileAssets extends MetaOptionBase {
       '#title' => $this->t('Asset Import'),
       '#description' => $this->t('HEREHRE'),
       '#default_value' => (int) $should_import_value,
+      '#disabled' => $disabled,
       '#options' => [
         '0' => $this->t('(@default_desc) Do not import', [
           '@default_desc' => $this->larkSettings->shouldImportAssets() === FALSE ? $this->t('Default') : $this->t('Override')
@@ -155,8 +159,8 @@ final class FileAssets extends MetaOptionBase {
     }
 
     if ($should_export) {
-      $asset_path = $this->assetFileManager->exportAsset($entity, \dirname($archive->_tarname));
-      $archive->addModify([$asset_path], \dirname($exportable->getExportFilepath()), \dirname($archive->_tarname));
+      $asset_archive_path = $this->assetFileManager->exportAsset($entity, \dirname($exportable->getExportFilepath()));
+      $archive->addModify([$asset_archive_path], '', $exportable->getSource()->directory());
     }
   }
 

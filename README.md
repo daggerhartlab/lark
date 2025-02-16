@@ -77,5 +77,3 @@ drush lark:import-entity <source_plugin_id> <uuid>
 # Attributions
 
 * <a href="https://www.flaticon.com/free-icons/yaml" title="yaml icons">Yaml icons created by IYIKON - Flaticon</a>
-* <a href="https://www.flaticon.com/free-icons/question-mark" title="question mark icons">Question mark icons created by Fathema Khanom - Flaticon</a>
-* <a href="https://www.flaticon.com/free-icons/alert" title="alert icons">Alert icons created by Good Ware - Flaticon</a>

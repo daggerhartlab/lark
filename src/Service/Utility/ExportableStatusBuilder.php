@@ -77,12 +77,24 @@ class ExportableStatusBuilder {
       $words = array_filter(preg_split('/(?=[A-Z])/', $status_name));
       $details['class_name'] = strtolower(implode('-', $words));
       $details['label'] = ucwords(strtolower(implode(' ', $words)));
-      $details['icon_url'] = Url::fromUri("base:/{$path}/assets/icons/status--{$details['class_name']}.png")->toString();
-      $details['icon'] = Markup::create("<img src='{$details['icon_url']}' alt='{$details['label']}' title='{$details['label']}' width='25px' height='25px' />");
-      $details['render'] = [
+      $details['label_render'] = [
         '#type' => 'html_tag',
         '#tag' => 'span',
-        '#value' => $details['icon'],
+        '#value' => $details['label'],
+        '#attributes' => [
+          'class' => ['summary-label'],
+        ],
+      ];
+      $details['icon_url'] = Url::fromUri("base:/{$path}/assets/icons/status--{$details['class_name']}.png")->toString();
+      $details['icon_render'] = [
+        '#theme' => 'image',
+        '#uri' => $details['icon_url'],
+        '#alt' => $details['label'],
+        '#attributes' => [
+          'width' => '25px',
+          'height' => '25px',
+          'class' => ['summary-icon'],
+        ],
       ];
 
       $statuses[$status_name] = $details;
@@ -102,22 +114,63 @@ class ExportableStatusBuilder {
    *   Summary string.
    */
   public function getExportablesSummary(array $exportables): array {
+    $summary = [
+      '#theme' => 'table',
+      '#header' => [
+        'heading' => [
+          'colspan' => 2,
+          'data' => [
+            '#type' => 'html_tag',
+            '#tag' => 'span',
+            '#value' => $this->t('Exports Status Summary'),
+            '#attributes' => [
+              'class' => ['summary-heading'],
+            ],
+          ],
+        ]
+      ],
+      '#rows' => [],
+      '#attributes' => [
+        'class' => ['lark-status-summary-table'],
+      ],
+    ];
+
     $status_counts = $this->getKeyedArray(0);
     $status_details = $this->getAllStatusRenderDetails();
-    $summary = [
-      '#theme' => 'item_list',
-      '#items' => [],
-    ];
 
     foreach ($exportables as $exportable) {
       $status_counts[$exportable->getStatus()->name] += 1;
     }
 
-    foreach (array_filter($status_counts) as $status_name => $count) {
+    foreach ($status_counts as $status_name => $count) {
       $details = $status_details[$status_name];
-      $summary['#items'][] = [
-        'data' => [
-          '#markup' => "{$details['icon']} <span class='status-count'>{$count}</span><span class='status-label'> - {$details['label']}</span>"
+      $summary['#rows'][] = [
+        'label' => [
+          'header' => TRUE,
+          'data' => [
+            '#type' => 'container',
+            '#attributes' => [
+              'class' => [
+                'summary-container',
+                ($count ? 'summary-container-active' : 'summary-container-empty'),
+              ],
+            ],
+            'icon' => $details['icon_render'],
+            'label' => $details['label_render'],
+          ],
+        ],
+        'count' => [
+          'data' => [
+            '#type' => 'html_tag',
+            '#tag' => 'span',
+            '#value' => $count,
+            '#attributes' => [
+              'class' => [
+                'summary-count',
+                ($count ? 'summary-count-active' : 'summary-count-empty'),
+              ],
+            ],
+          ],
         ],
       ];
     }
