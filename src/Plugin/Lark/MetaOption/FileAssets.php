@@ -160,7 +160,7 @@ final class FileAssets extends MetaOptionBase {
 
     if ($should_export) {
       $asset_archive_path = $this->assetFileManager->exportAsset($entity, \dirname($exportable->getExportFilepath()));
-      $archive->addModify([$asset_archive_path], '', $exportable->getSource()->directory());
+      $archive->addModify([$asset_archive_path], '', $exportable->getSource()->directoryProcessed());
     }
   }
 

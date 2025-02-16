@@ -159,7 +159,7 @@ final class SettingsForm extends ConfigFormBase {
             'provider' => $source->provider(),
             'id' => $source->id(),
             'label' => $source->label(),
-            'directory' => $source->directory(),
+            'directory' => $source->directoryProcessed(),
           ];
         }, $this->sourceManager->getInstances()),
       ],

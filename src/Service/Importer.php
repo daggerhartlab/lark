@@ -162,7 +162,7 @@ class Importer implements ImporterInterface {
     try {
       // Scan for all YAML files in the content directory.
       $finder = SymfonyFinder::create()
-        ->in($source->directory())
+        ->in($source->directoryProcessed())
         ->files()
         ->name('*.yml');
     }

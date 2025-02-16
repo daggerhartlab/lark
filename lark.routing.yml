@@ -1,5 +1,5 @@
 lark.settings:
-  path: '/admin/config/development/lark'
+  path: '/admin/lark'
   defaults:
     _title: 'Lark Settings'
     _form: 'Drupal\lark\Form\SettingsForm'
@@ -7,7 +7,7 @@ lark.settings:
     _permission: 'lark administer configuration'
 
 lark.exports_list:
-  path: '/admin/config/development/lark/entity-exports'
+  path: '/admin/lark/entity-exports'
   defaults:
     _title: 'Entity Exports Manager'
     _controller: '\Drupal\lark\Controller\ExportsManager::build'
@@ -17,7 +17,7 @@ lark.exports_list:
     _permission: 'lark import export entities'
 
 lark.import_single:
-  path: '/admin/config/development/lark/entity-exports/entity-import/{source_plugin_id}/{uuid}'
+  path: '/admin/lark/entity-exports/entity-import/{source_plugin_id}/{uuid}'
   defaults:
     _title: 'Entity Import'
     _controller: '\Drupal\lark\Controller\ExportsManager::importEntity'
@@ -27,7 +27,7 @@ lark.import_single:
     _permission: 'lark import export entities'
 
 lark.import_source:
-  path: '/admin/config/development/lark/entity-exports/entity-export/{source_plugin_id}'
+  path: '/admin/lark/entity-exports/entity-export/{source_plugin_id}'
   defaults:
     _title: 'Import All Source Entities'
     _controller: '\Drupal\lark\Controller\ExportsManager::importSource'
@@ -35,3 +35,47 @@ lark.import_source:
     _admin_route: TRUE
   requirements:
     _permission: 'lark import export entities'
+
+entity.lark_source.collection:
+  path: '/admin/lark/source'
+  defaults:
+    _entity_list: 'lark_source'
+    _title: 'Sources'
+  requirements:
+    _permission: 'administer lark_source'
+
+entity.lark_source.canonical:
+  path: '/admin/lark/source/{lark_source}'
+  defaults:
+    _controller: '\Drupal\lark\Controller\ExportsManager::viewSource'
+    _title_callback: '\Drupal\lark\Controller\ExportsManager::viewSourceTitle'
+  requirements:
+    _permission: 'administer lark_source'
+  options:
+    parameters:
+      lark_source:
+        type: machine_name
+
+entity.lark_source.add_form:
+  path: '/admin/lark/source/add'
+  defaults:
+    _entity_form: 'lark_source.add'
+    _title: 'Add a source'
+  requirements:
+    _permission: 'administer lark_source'
+
+entity.lark_source.edit_form:
+  path: '/admin/lark/source/{lark_source}/edit'
+  defaults:
+    _entity_form: 'lark_source.edit'
+    _title: 'Edit a source'
+  requirements:
+    _permission: 'administer lark_source'
+
+entity.lark_source.delete_form:
+  path: '/admin/lark/source/{lark_source}/delete'
+  defaults:
+    _entity_form: 'lark_source.delete'
+    _title: 'Delete a source'
+  requirements:
+    _permission: 'administer lark_source'

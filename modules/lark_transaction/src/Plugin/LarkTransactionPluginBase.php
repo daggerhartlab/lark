@@ -238,7 +238,7 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    *   The source content directory.
    */
   protected function sourceDirectory(string $source_plugin_id): string {
-    return $this->getSourcePluginInstance($source_plugin_id)->directory();
+    return $this->getSourcePluginInstance($source_plugin_id)->directoryProcessed();
   }
 
   /**

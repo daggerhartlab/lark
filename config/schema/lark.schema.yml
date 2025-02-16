@@ -21,3 +21,20 @@ lark.settings:
     asset_import_file_exists:
       type: string
       label: 'Default import conflict action'
+
+lark.lark_source.*:
+  type: config_entity
+  label: Source
+  mapping:
+    id:
+      type: string
+      label: ID
+    label:
+      type: label
+      label: Label
+    uuid:
+      type: string
+    description:
+      type: string
+    directory:
+      type: string

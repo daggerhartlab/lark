@@ -2,29 +2,35 @@
 
 declare(strict_types=1);
 
-namespace Drupal\lark\Plugin\Lark;
+namespace Drupal\lark\Entity;
 
-use Drupal\Component\Plugin\DerivativeInspectionInterface;
-use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\lark\Plugin\Lark\SourceInterface;
 
 /**
- * Interface for lark_source plugins.
+ * Provides an interface defining a source entity type.
  */
-interface SourceInterface {
+interface LarkSourceInterface extends SourceInterface, ConfigEntityInterface {
 
   /**
    * Returns the plugin ID.
    *
    * @return string
+   *   The entity identifier.
    */
   public function id();
 
   /**
    * Returns the translated plugin label.
    *
-   * @return string
+   * @return string|\Drupal\Core\StringTranslation\TranslatableMarkup|null
    */
   public function label();
+
+  /**
+   * @return string
+   */
+  public function description(): string;
 
   /**
    * Unprocessed raw directory string.

@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\lark\Entity\LarkSourceInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class EntityTypeInfo implements ContainerInjectionInterface {
@@ -128,6 +129,15 @@ class EntityTypeInfo implements ContainerInjectionInterface {
         ];
       }
     }
+
+    if ($entity instanceof LarkSourceInterface && $entity->hasLinkTemplate('canonical')) {
+      $operations['view'] = [
+        'title' => $this->t('View'),
+        'weight' => -10,
+        'url' => $entity->toUrl('canonical')->setRouteParameter('lark_source', $entity->id())
+      ];
+    }
+
     return $operations;
   }
 

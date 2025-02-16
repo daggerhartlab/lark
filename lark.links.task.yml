@@ -13,3 +13,9 @@ lark.exports_list:
   title: 'Exports Manager'
   base_route: lark.settings
   weight: 1
+
+entity.lark_source.canonical:
+  route_name: entity.lark_source.canonical
+  title: 'Sources'
+  base_route: lark.settings
+  weight: 1

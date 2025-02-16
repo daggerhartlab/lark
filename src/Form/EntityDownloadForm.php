@@ -118,17 +118,17 @@ class EntityDownloadForm extends FormBase {
     );
 
     try {
-      $this->fileSystem->delete($source->directory() . '/lark-export.tar.gz');
+      $this->fileSystem->delete($source->directoryProcessed() . '/lark-export.tar.gz');
     }
     catch (FileException $e) {
       // Ignore failed deletes.
     }
 
-    $archiver = new ArchiveTar($source->directory() . '/lark-export.tar.gz', 'gz');
+    $archiver = new ArchiveTar($source->directoryProcessed() . '/lark-export.tar.gz', 'gz');
 
     // Add all contents of the export storage to the archive.
     foreach ($exportables as $exportable) {
-      $filename = str_replace($source->directory(), '', $exportable->getExportFilepath());
+      $filename = str_replace($source->directoryProcessed(), '', $exportable->getExportFilepath());
       $archiver->addString($filename, Yaml::encode($exportable->toArray()));
 
       foreach ($this->metaOptionManager->getInstances() as $meta_option) {

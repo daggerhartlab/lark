@@ -1,11 +1,16 @@
 lark.settings:
   title: Lark
-  parent: system.admin_config_development
+  parent: system.admin_content
   route_name: lark.settings
-  weight: 10
 
 lark.exports_list:
   title: Exports Manager
   menu_name: main
   parent: lark.settings
   route_name: lark.exports_list
+
+entity.lark_source.canonical:
+  title: Sources
+  parent: lark.settings
+  description: 'List of sources to extend site functionality.'
+  route_name: entity.lark_source.collection

@@ -12,3 +12,6 @@ lark import export entities:
   title: 'Import and Export Entities'
   description: 'Export entities to YAML using Lark.'
   restrict access: true
+
+administer lark_source:
+  title: 'Administer source'

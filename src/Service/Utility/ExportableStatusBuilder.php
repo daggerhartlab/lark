@@ -119,13 +119,11 @@ class ExportableStatusBuilder {
       '#header' => [
         'heading' => [
           'colspan' => 2,
+          'class' => ['summary-heading'],
           'data' => [
             '#type' => 'html_tag',
             '#tag' => 'span',
             '#value' => $this->t('Exports Status Summary'),
-            '#attributes' => [
-              'class' => ['summary-heading'],
-            ],
           ],
         ]
       ],
