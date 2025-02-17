@@ -96,11 +96,9 @@ class ExportsManager extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function importSource(string $source_plugin_id): RedirectResponse {
-    $this->importer->importSource($source_plugin_id);
-
-    $source = $this->entityTypeManager()->getStorage('lark_source')->load($source_plugin_id);
-    return new RedirectResponse($source->toUrl()->toString());
+  public function importSource(LarkSourceInterface $lark_source): RedirectResponse {
+    $this->importer->importSource($lark_source->id());
+    return new RedirectResponse($lark_source->toUrl()->toString());
   }
 
   /**
