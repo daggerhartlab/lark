@@ -222,7 +222,7 @@ class SourceViewBuilder {
    *   Table row.
    */
   protected function tableDataRow(SourceInterface $source, ExportableInterface $exportable): array {
-    $relative = str_replace($source->directoryProcessed() . DIRECTORY_SEPARATOR, '', $exportable->getExportFilepath());
+    $relative = str_replace($source->directoryProcessed(FALSE) . DIRECTORY_SEPARATOR, '', $exportable->getExportFilepath());
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
     return [
       'class' => [
