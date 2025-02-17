@@ -6,6 +6,9 @@ namespace Drupal\lark_transaction\Plugin;
 
 /**
  * Interface for lark transaction plugins.
+ *
+ * @deprecated
+ *   Remove in v2.
  */
 interface LarkTransactionInterface {
 

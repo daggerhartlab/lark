@@ -10,6 +10,9 @@ use Drupal\lark_transaction\Attribute\LarkTransaction;
 
 /**
  * Plugin implementation of the lark transaction.
+ *
+ * @deprecated
+ *   Remove in v2.
  */
 #[LarkTransaction(
   id: 'examples',

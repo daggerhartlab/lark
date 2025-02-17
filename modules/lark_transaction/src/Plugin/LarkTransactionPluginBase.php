@@ -24,6 +24,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base class for lark transaction plugins.
+ *
+ * @deprecated
+ *   Remove in v2.
  */
 abstract class LarkTransactionPluginBase extends PluginBase implements LarkTransactionInterface, ContainerFactoryPluginInterface {
 

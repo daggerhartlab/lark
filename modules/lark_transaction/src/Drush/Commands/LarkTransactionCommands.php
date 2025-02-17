@@ -9,6 +9,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Lark transaction commands.
+ *
+ * @deprecated
+ *   Remove in v2.
  */
 class LarkTransactionCommands extends DrushCommands {
 
