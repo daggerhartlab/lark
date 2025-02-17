@@ -2,6 +2,8 @@
 
 namespace Drupal\lark\Model;
 
+use Drupal\Core\Entity\ContentEntityInterface;
+
 /**
  * Object for array of data exported to yaml.
  */
@@ -16,15 +18,19 @@ class ExportArray extends \ArrayObject {
       'path' => '',
       'uuid' => '',
       'default_langcode' => '',
+      // Array of UUID : entity_type_id pairs.
       'depends' => [],
       'options' => [],
     ],
+    // Content fields for the default translation.
     'default' => [],
+    // Content fields for additional translations, keyed by langcode.
     'translations' => [],
   ];
 
   /**
    * @param object|array $array
+   *   Array should follow the ::SCHEMA array.
    * @param int $flags
    * @param string $iteratorClass
    */
@@ -32,6 +38,18 @@ class ExportArray extends \ArrayObject {
     $array = array_replace_recursive(static::SCHEMA, $array);
 
     parent::__construct($array, $flags, $iteratorClass);
+  }
+
+  public static function createFromEntity(ContentEntityInterface $entity): static {
+    $default = $entity->getTranslation(\Drupal::languageManager()->getDefaultLanguage()->getId());
+    $export = new static();
+    $export->setEntityTypeId($entity->getEntityTypeId());
+    $export->setBundle($entity->bundle());
+    $export->setEntityId($entity->id());
+    $export->setLabel($entity->label());
+    $export->setUuid($export->uuid());
+    $export->setDefaultLangcode($default->language()->getId());
+    return $export;
   }
 
   public function entityTypeId(): string {
@@ -58,10 +76,7 @@ class ExportArray extends \ArrayObject {
     $this->setMeta('entity_id', (string) $entity_id);
   }
 
-  /**
-   * @return string|null
-   */
-  public function label(): ?string {
+  public function label(): string {
     return $this->getMeta('label');
   }
 
@@ -95,6 +110,10 @@ class ExportArray extends \ArrayObject {
 
   public function dependencies(): array {
     return $this->getMeta('depends', []);
+  }
+
+  public function hasDependency(string $uuid): bool {
+    return array_key_exists($uuid, $this->dependencies());
   }
 
   public function setDependencies(array $dependencies): void {

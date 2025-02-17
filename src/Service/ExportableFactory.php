@@ -233,8 +233,8 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exportable->setSource($source ?? $this->statusResolver->getExportableSource($exportable));
     $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
 
-    if ($exportable->getExportExists() && isset($exportable->getExportArray()['_meta']['options'])) {
-      $exportable->setMetaOptions($exportable->getExportArray()['_meta']['options']);
+    if ($exportable->getExportExists() && isset($exportable->getSourceExportedArray()['_meta']['options'])) {
+      $exportable->setMetaOptions($exportable->getSourceExportedArray()['_meta']['options']);
     }
     $this->overrideMetaValues($exportable, $exports_meta_option_overrides);
 

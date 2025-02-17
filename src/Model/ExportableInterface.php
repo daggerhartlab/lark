@@ -96,7 +96,7 @@ interface ExportableInterface {
    *
    * @return \Drupal\lark\Model\ExportArray
    */
-  public function getExportArray(): ExportArray;
+  public function getSourceExportedArray(): ExportArray;
 
   /**
    * Get status code.

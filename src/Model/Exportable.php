@@ -14,6 +14,20 @@ use Drupal\lark\Service\Exporter;
 class Exportable implements ExportableInterface {
 
   /**
+   * If the export exists, this is the array of values that was exported.
+   *
+   * @var \Drupal\lark\Model\ExportArray
+   */
+  protected ExportArray $sourceExportedArray;
+
+  /**
+   * This is the new export array that we'll modify and use for export.
+   *
+   * @var \Drupal\lark\Model\ExportArray
+   */
+  protected ExportArray $exportArray;
+
+  /**
    * Actual export file path.
    *
    * @var string|null
@@ -33,13 +47,6 @@ class Exportable implements ExportableInterface {
    * @var bool
    */
   protected bool $exportExists = FALSE;
-
-  /**
-   * If the export exists, this is the array of values that was exported.
-   *
-   * @var \Drupal\lark\Model\ExportArray
-   */
-  protected ExportArray $exportArray;
 
   /**
    * Dependencies array keys are entity UUIDs, values are entity type IDs.
@@ -67,7 +74,8 @@ class Exportable implements ExportableInterface {
    *   Entity.
    */
   public function __construct(protected ContentEntityInterface $entity) {
-    $this->exportArray = new ExportArray();
+    $this->exportArray = ExportArray::createFromEntity($this->entity);
+    $this->sourceExportedArray = new ExportArray();
   }
 
   /**
@@ -132,8 +140,8 @@ class Exportable implements ExportableInterface {
   /**
    * {@inheritdoc}
    */
-  public function getExportArray(): ExportArray {
-    return $this->exportArray;
+  public function getSourceExportedArray(): ExportArray {
+    return $this->sourceExportedArray;
   }
 
   /**
@@ -209,7 +217,7 @@ class Exportable implements ExportableInterface {
     $this->exportFilepath = $filepath;
     $this->setExportExists(\file_exists($filepath));
     if ($this->getExportExists()) {
-      $this->exportArray = new ExportArray(Yaml::decode(\file_get_contents($filepath)));
+      $this->sourceExportedArray = new ExportArray(Yaml::decode(\file_get_contents($filepath)));
     }
 
     return $this;
@@ -235,7 +243,7 @@ class Exportable implements ExportableInterface {
   public function toArray(): array {
     // Use a new ExportArray instead of ::exportArray because this method is
     // called when generating a Diff.
-    $export = new ExportArray();
+    $export = clone $this->exportArray;
     $export->setEntityTypeId($this->entity()->getEntityTypeId());
     $export->setBundle($this->entity()->bundle());
     $export->setEntityId($this->entity()->id());

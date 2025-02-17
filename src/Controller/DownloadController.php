@@ -116,7 +116,7 @@ class DownloadController extends ControllerBase {
     // If we export root level items, we'll get their dependencies.
     $root_level_exports = array_filter($exports, function ($export, $uuid) use ($exports) {
       foreach ($exports as $other_export) {
-        if (isset($other_export->dependencies()[$uuid])) {
+        if ($other_export->hasDependency($uuid)) {
           return FALSE;
         }
       }
