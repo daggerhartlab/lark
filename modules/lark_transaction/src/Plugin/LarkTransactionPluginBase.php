@@ -211,7 +211,7 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
   /**
    * Get the source plugin instance.
    *
-   * @param string $source_plugin_id
+   * @param string $source_id
    *   Source plugin id.
    *
    * @return \Drupal\lark\Entity\LarkSourceInterface
@@ -219,8 +219,8 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  protected function getSourcePluginInstance(string $source_plugin_id): LarkSourceInterface {
-    return $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
+  protected function getSourcePluginInstance(string $source_id): LarkSourceInterface {
+    return $this->entityTypeManager->getStorage('lark_source')->load($source_id);
   }
 
   /**

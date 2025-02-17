@@ -38,14 +38,20 @@ class SourceViewBuilder {
    */
   public function viewSource(LarkSourceInterface $source): array {
     $import_link = Link::createFromRoute('Import All', 'lark.action_import_source', [
-      'source_plugin_id' => $source->id(),
+      'lark_source' => $source->id(),
     ])->toRenderable();
     $import_link['#attributes']['class'][] = 'button';
+
+    $download_link = Link::createFromRoute('Download', 'lark.action_download_source', [
+      'lark_source' => $source->id(),
+    ])->toRenderable();
+    $download_link['#attributes']['class'][] = 'button';
 
     $build = [
       'details' => $this->sourceDetails($source),
       'actions' => [
         'import' => $import_link,
+        'download' => $download_link,
       ],
       'table' => $this->tablePopulated($source),
     ];
@@ -347,7 +353,7 @@ class SourceViewBuilder {
       $operations['import'] = [
         'title' => $this->t('Import'),
         'url' => Url::fromRoute('lark.action_import_source_entity', [
-          'source_plugin_id' => $source->id(),
+          'lark_source' => $source->id(),
           'uuid' => $exportable->entity()->uuid(),
         ]),
       ];

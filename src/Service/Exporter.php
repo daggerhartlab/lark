@@ -56,8 +56,8 @@ class Exporter implements ExporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function exportEntity(string $source_plugin_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_meta_options_overrides = []): void {
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
+  public function exportEntity(string $source_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_meta_options_overrides = []): void {
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id, $source, $exports_meta_options_overrides);
 
     foreach ($exportables as $exportable) {

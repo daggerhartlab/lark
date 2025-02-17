@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Controller;
 
+use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityRepositoryInterface;
+use Drupal\Core\File\Exception\FileException;
+use Drupal\Core\Serialization\Yaml;
 use Drupal\Core\Url;
+use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
 use Drupal\lark\Service\ExporterInterface;
@@ -14,7 +18,9 @@ use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\SourceViewBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Entity exports controller.
@@ -39,6 +45,7 @@ class ExportsManager extends ControllerBase {
     protected ExportableStatusBuilder $statusBuilder,
     protected LarkSettings $settings,
     protected SourceViewBuilder $sourceViewBuilder,
+    protected DownloadController $downloadController,
   ) {}
 
   /**
@@ -53,14 +60,14 @@ class ExportsManager extends ControllerBase {
       $container->get(ExportableStatusBuilder::class),
       $container->get(LarkSettings::class),
       $container->get(SourceViewBuilder::class),
+      DownloadController::create($container),
     );
   }
 
   /**
    * Import single entity.
    *
-   * @param string $source_plugin_id
-   *   Source plugin id.
+   * @param \Drupal\lark\Entity\LarkSourceInterface $lark_source
    * @param string $uuid
    *   The UUID of the entity to import.
    *
@@ -68,20 +75,19 @@ class ExportsManager extends ControllerBase {
    *   Redirect response.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function importEntity(string $source_plugin_id, string $uuid): RedirectResponse {
-    $this->importer->importSourceEntity($source_plugin_id, $uuid);
-
-    $source = $this->entityTypeManager()->getStorage('lark_source')->load($source_plugin_id);
-    return new RedirectResponse($source->toUrl()->toString());
+  public function importEntity(LarkSourceInterface $lark_source, string $uuid): RedirectResponse {
+    $this->importer->importSourceEntity($lark_source->id(), $uuid);
+    return new RedirectResponse($lark_source->toUrl()->toString());
   }
 
   /**
    * Import all entities from a single source.
    *
-   * @param string $source_plugin_id
-   *   The source plugin id.
+   * @param \Drupal\lark\Entity\LarkSourceInterface $lark_source
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   Redirect response.
@@ -89,12 +95,11 @@ class ExportsManager extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  public function importSource(string $source_plugin_id): RedirectResponse {
-    $this->importer->importSource($source_plugin_id);
-
-    $source = $this->entityTypeManager()->getStorage('lark_source')->load($source_plugin_id);
-    return new RedirectResponse($source->toUrl()->toString());
+  public function importSource(LarkSourceInterface $lark_source): RedirectResponse {
+    $this->importer->importSource($lark_source->id());
+    return new RedirectResponse($lark_source->toUrl()->toString());
   }
 
   /**
@@ -126,6 +131,17 @@ class ExportsManager extends ControllerBase {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->entityTypeManager()->getStorage('lark_source')->load($lark_source);
     return $this->sourceViewBuilder->viewSource($source);
+  }
+
+  /**
+   * @param string $source_id
+   *
+   * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function downloadSource(LarkSourceInterface $lark_source): BinaryFileResponse {
+    return $this->downloadController->downloadSourceResponse($lark_source);
   }
 
 }

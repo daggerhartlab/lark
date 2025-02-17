@@ -42,7 +42,7 @@ interface ExportableFactoryInterface {
   /**
    * Factory for creating from yaml export file.
    *
-   * @param string $source_plugin_id
+   * @param string $source_id
    *   Source plugin id.
    * @param string $uuid
    *   Export entity uuid.
@@ -53,19 +53,19 @@ interface ExportableFactoryInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function createFromSource(string $source_plugin_id, string $uuid): ?ExportableInterface;
+  public function createFromSource(string $source_id, string $uuid): ?ExportableInterface;
 
   /**
    * Factory for creating exportables with dependencies.
    *
-   * @param string $source_plugin_id
+   * @param string $source_id
    *   Source plugin id.
    * @param string $root_uuid
    *   Root entity uuid.
    *
    * @return \Drupal\lark\Model\ExportableInterface[]
    */
-  public function createFromSourceWithDependencies(string $source_plugin_id, string $root_uuid): array;
+  public function createFromSourceWithDependencies(string $source_id, string $root_uuid): array;
 
   /**
    * Get the entity and prepare it for export.

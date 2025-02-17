@@ -35,10 +35,7 @@ class DiffViewer extends ControllerBase {
   /**
    * Display diff between exported and current entity.
    *
-   * @param string $source_plugin_id
-   *   The source plugin id.
-   * @param string $uuid
-   *   The UUID of the entity to import.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *
    * @return array
    *   Render array.

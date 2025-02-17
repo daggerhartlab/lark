@@ -19,33 +19,6 @@ function lark_help($route_name, RouteMatchInterface $route_match) {
 }
 
 /**
- * Convert readme to html.
- *
- * @return \Drupal\Component\Render\MarkupInterface|string
- * @throws \League\CommonMark\Exception\CommonMarkException
- */
-function _lark_readme_to_html() {
-  $path_resolver = \Drupal::service(ExtensionPathResolver::class);
-  $readme_path = $path_resolver->getPath('module', 'lark') . '/README.md';
-  if (\file_exists($readme_path)) {
-    $converter = new GithubFlavoredMarkdownConverter([
-      'html_input' => 'strip',
-      'allow_unsafe_links' => FALSE,
-    ]);
-
-    // Remove first line to prevent a double H1.
-    $content = \file_get_contents($readme_path);
-    $lines = explode("\n", $content);
-    array_shift($lines);
-    $content = implode("\n", $lines);
-
-    return Markup::create($converter->convert($content));
-  }
-
-  return '';
-}
-
-/**
  * Implements hook_entity_type_alter().
  */
 function lark_entity_type_alter(array &$entity_types) {
@@ -71,20 +44,21 @@ function lark_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
   return $entity_type_info->entityOperation($entity);
 }
 
-
 /**
  * Implements hook_file_download().
  */
 function lark_file_download($uri) {
   $scheme = StreamWrapperManager::getScheme($uri);
   $target = StreamWrapperManager::getTarget($uri);
-  if ($scheme == 'temporary' && $target == 'lark-export.tar.gz') {
+  $targets = ['lark-export.tar.gz', 'lark-source.tar.gz'];
+  if ($scheme == 'temporary' && in_array($target, $targets)) {
     if (\Drupal::currentUser()->hasPermission('lark view diffs')) {
       $request = \Drupal::request();
       $date = DateTime::createFromFormat('U', $request->server->get('REQUEST_TIME'));
       $date_string = $date->format('YmdHi');
       $hostname = str_replace('.', '-', $request->getHttpHost());
-      $filename = 'lark-export--' . $hostname . '--' . $date_string . '.tar.gz';
+      $prefix = str_replace('.tar.gz', '', $target);
+      $filename = "{$prefix}--{$hostname}--{$date_string}.tar.gz";
       $disposition = 'attachment; filename="' . $filename . '"';
       return [
         'Content-disposition' => $disposition,
@@ -92,4 +66,31 @@ function lark_file_download($uri) {
     }
     return -1;
   }
+}
+
+/**
+ * Convert readme to html.
+ *
+ * @return \Drupal\Component\Render\MarkupInterface|string
+ * @throws \League\CommonMark\Exception\CommonMarkException
+ */
+function _lark_readme_to_html() {
+  $path_resolver = \Drupal::service(ExtensionPathResolver::class);
+  $readme_path = $path_resolver->getPath('module', 'lark') . '/README.md';
+  if (\file_exists($readme_path)) {
+    $converter = new GithubFlavoredMarkdownConverter([
+      'html_input' => 'strip',
+      'allow_unsafe_links' => FALSE,
+    ]);
+
+    // Remove first line to prevent a double H1.
+    $content = \file_get_contents($readme_path);
+    $lines = explode("\n", $content);
+    array_shift($lines);
+    $content = implode("\n", $lines);
+
+    return Markup::create($converter->convert($content));
+  }
+
+  return '';
 }

@@ -134,8 +134,8 @@ class SourceManager extends DefaultPluginManager implements SourceManagerInterfa
   /**
    * {@inheritdoc}
    */
-  public function getSourceInstance(string $source_plugin_id): LarkSourceInterface {
-    return $this->getInstances()[$source_plugin_id];
+  public function getSourceInstance(string $source_id): LarkSourceInterface {
+    return $this->getInstances()[$source_id];
   }
 
   /**

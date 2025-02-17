@@ -13,7 +13,7 @@ interface ImporterInterface {
   /**
    * Import a single entity by its uuid.
    *
-   * @param string $source_plugin_id
+   * @param string $source_id
    *   The source plugin id.
    * @param string $uuid
    *   The UUID of the entity to import.
@@ -26,7 +26,7 @@ interface ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function importSourceEntity(string $source_plugin_id, string $uuid, bool $show_messages = TRUE): void;
+  public function importSourceEntity(string $source_id, string $uuid, bool $show_messages = TRUE): void;
 
   /**
    * Import all lark exported content.
@@ -45,7 +45,7 @@ interface ImporterInterface {
   /**
    * Import all content from a single source.
    *
-   * @param string $source_plugin_id
+   * @param string $source_id
    *   The source plugin id.
    * @param bool $show_messages
    *   Whether to show messages.
@@ -56,7 +56,7 @@ interface ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function importSource(string $source_plugin_id, bool $show_messages = TRUE): void;
+  public function importSource(string $source_id, bool $show_messages = TRUE): void;
 
   /**
    * Discover this source's exportables and dependencies.
