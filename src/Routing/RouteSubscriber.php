@@ -34,7 +34,7 @@ class RouteSubscriber extends RouteSubscriberBase {
         continue;
       }
 
-      if ($route = $this->getEntityExportRoute($entity_type, 'lark-load')) {
+      if ($route = $this->getEntityLoadRoute($entity_type, 'lark-load')) {
         $collection->add("entity.$entity_type_id.lark_load", $route);
       }
       if ($route = $this->getEntityExportRoute($entity_type, 'lark-export')) {
@@ -61,6 +61,40 @@ class RouteSubscriber extends RouteSubscriberBase {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
+  protected function getEntityLoadRoute(EntityTypeInterface $entity_type, string $link_key): ?Route {
+    if ($link = $entity_type->getLinkTemplate($link_key)) {
+      $route = (new Route($link))
+        ->addDefaults([
+          '_controller' => '\Drupal\lark\Controller\ExportsManager::larkLoad',
+          '_title' => 'Lark',
+        ])
+        ->addRequirements([
+          '_permission' => 'lark export entity,lark import entity',
+        ])
+        ->setOption('_admin_route', TRUE)
+        ->setOption('_lark_entity_type_id', $entity_type->id());
+
+      // Set the parameters of the new route using the existing 'edit-form'
+      // route parameters. If there are none then we need to set the basic
+      // parameter [entity_type_id => [type => 'entity:entity_type_id']].
+      // @see https://gitlab.com/drupalspoons/devel/-/issues/377
+      $parameters = $this->getRouteParameters($entity_type, 'edit-form') ?: [$entity_type->id() => ['type' => 'entity:' . $entity_type->id()]];
+      $route->setOption('parameters', $parameters);
+
+      return $route;
+    }
+    return NULL;
+  }
+
+  /**
+   * Gets the entity load route.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   The entity type.
+   *
+   * @return \Symfony\Component\Routing\Route|null
+   *   The generated route, if available.
+   */
   protected function getEntityExportRoute(EntityTypeInterface $entity_type, string $link_key): ?Route {
     if ($link = $entity_type->getLinkTemplate($link_key)) {
       $route = (new Route($link))
@@ -69,7 +103,7 @@ class RouteSubscriber extends RouteSubscriberBase {
           '_title' => 'Lark Export',
         ])
         ->addRequirements([
-          '_permission' => 'lark import export entities',
+          '_permission' => 'lark export entity',
         ])
         ->setOption('_admin_route', TRUE)
         ->setOption('_lark_entity_type_id', $entity_type->id());
@@ -103,7 +137,7 @@ class RouteSubscriber extends RouteSubscriberBase {
           '_title' => 'Lark Import',
         ])
         ->addRequirements([
-          '_permission' => 'lark import export entities',
+          '_permission' => 'lark import entity',
         ])
         ->setOption('_admin_route', TRUE)
         ->setOption('_lark_entity_type_id', $entity_type->id());
@@ -137,7 +171,7 @@ class RouteSubscriber extends RouteSubscriberBase {
           '_controller'  => '\Drupal\lark\Controller\DiffViewer::build'
         ])
         ->addRequirements([
-          '_permission' => 'lark view diffs',
+          '_permission' => 'lark export entity',
         ])
         ->setOption('_admin_route', TRUE)
         ->setOption('_lark_entity_type_id', $entity_type->id());
@@ -171,7 +205,7 @@ class RouteSubscriber extends RouteSubscriberBase {
           '_form'  => '\Drupal\lark\Form\EntityDownloadForm'
         ])
         ->addRequirements([
-          '_permission' => 'lark view diffs',
+          '_permission' => 'lark export entity',
         ])
         ->setOption('_admin_route', TRUE)
         ->setOption('_lark_entity_type_id', $entity_type->id());

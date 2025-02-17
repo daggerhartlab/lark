@@ -52,7 +52,7 @@ function lark_file_download($uri) {
   $target = StreamWrapperManager::getTarget($uri);
   $targets = ['lark-export.tar.gz', 'lark-source.tar.gz'];
   if ($scheme == 'temporary' && in_array($target, $targets)) {
-    if (\Drupal::currentUser()->hasPermission('lark view diffs')) {
+    if (\Drupal::currentUser()->hasPermission('lark export entity')) {
       $request = \Drupal::request();
       $date = DateTime::createFromFormat('U', $request->server->get('REQUEST_TIME'));
       $date_string = $date->format('YmdHi');

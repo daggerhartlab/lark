@@ -30,7 +30,7 @@ use Drupal\Core\Extension\ExtensionPathResolver;
  *     },
  *   },
  *   config_prefix = "lark_source",
- *   admin_permission = "administer lark_source",
+ *   admin_permission = "lark administer configuration",
  *   links = {
  *     "canonical" = "/admin/lark/source/{lark_source}",
  *     "collection" = "/admin/lark/source",

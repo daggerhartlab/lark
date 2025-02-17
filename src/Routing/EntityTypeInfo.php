@@ -120,7 +120,10 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    */
   public function entityOperation(EntityInterface $entity): array {
     $operations = [];
-    if ($this->currentUser->hasPermission('lark import export entities')) {
+    if (
+      $this->currentUser->hasPermission('lark export entity') ||
+      $this->currentUser->hasPermission('lark import entity')
+    ) {
       if ($entity->hasLinkTemplate('lark-load')) {
         $operations['lark'] = [
           'title' => $this->t('Lark'),
