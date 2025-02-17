@@ -9,6 +9,9 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * The lark transaction attribute.
+ *
+ * @deprecated
+ *   Remove in v2.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class LarkTransaction extends AttributeBase {

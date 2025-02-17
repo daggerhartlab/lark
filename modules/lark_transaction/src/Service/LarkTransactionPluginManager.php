@@ -14,6 +14,9 @@ use Drupal\lark_transaction\Attribute\LarkTransaction;
 
 /**
  * Lark transactions plugin manager.
+ *
+ * @deprecated
+ *   Remove in v2.
  */
 class LarkTransactionPluginManager extends DefaultPluginManager {
 

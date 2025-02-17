@@ -1,6 +1,6 @@
 name: 'Lark Transactions'
 type: module
-description: 'Plugin type for performing dynamic content updates.'
+description: 'Deprecated: Will be removed in version Lark v2. Plugin type for performing dynamic content updates.'
 package: Development
 core_version_requirement: ^10 || ^11
 dependencies:

@@ -1,4 +1,4 @@
-# Lark Transaction module
+# Lark Transaction - Deprecated, do not use
 
 ## Drush commands
 

@@ -14,6 +14,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Returns responses for Transaction execution routes.
+ *
+ * @deprecated
+ *   Remove in v2.
  */
 class TransactionsPluginsController extends ControllerBase {
 
