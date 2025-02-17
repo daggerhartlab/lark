@@ -12,6 +12,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\file\FileInterface;
 use Drupal\lark\Attribute\LarkMetaOption;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Plugin\Lark\MetaOptionBase;
 
 /**
@@ -189,7 +190,7 @@ final class FileAssets extends MetaOptionBase {
   /**
    * {@inheritdoc}
    */
-  public function preImportSave(ContentEntityInterface $entity, array $export): void {
+  public function preImportSave(ContentEntityInterface $entity, ExportArray $export): void {
     /** @var \Drupal\file\FileInterface $entity */
 
     // Default to settings. Then, if an import override exists let it make

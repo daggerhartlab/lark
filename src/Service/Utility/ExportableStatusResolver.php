@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ImporterInterface;
@@ -55,7 +56,7 @@ class ExportableStatusResolver {
    *
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   The exportable entity.
-   * @param array $export
+   * @param \Drupal\lark\Model\ExportArray|null $export
    *   The export array.
    *
    * @return \Drupal\lark\ExportableStatus
@@ -63,7 +64,7 @@ class ExportableStatusResolver {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function getExportableStatus(ExportableInterface $exportable, array $export = []): ExportableStatus {
+  public function getExportableStatus(ExportableInterface $exportable, ?ExportArray $export = NULL): ExportableStatus {
     $entity = $exportable->entity();
     $source = $this->getExportableSource($exportable);
 
@@ -88,13 +89,13 @@ class ExportableStatusResolver {
 
       // The database doesn't store our meta options, and during a diff they
       // wouldn't have changed.
-      if (isset($export['_meta']['options'])) {
+      if ($export->metaOptions()) {
         $exportable->setMetaOptions($export['_meta']['options']);
       }
     }
 
     $left = $export;
-    $left = $this->processExportArrayForComparison($left);
+    $left = $this->processExportArrayForComparison((array) $left);
     $right = $this->processExportArrayForComparison($exportable->toArray());
 
     if ($left === $right) {
@@ -130,15 +131,15 @@ class ExportableStatusResolver {
    * Process the export array for comparison by removing values that diff from
    * one environment to another.
    *
-   * @param array $export
+   * @param array $array
    *   The export array.
    *
    * @return array
    *   The processed export array.
    */
-  public function processExportArrayForComparison(array $export): array {
-    $this->deepUnsetAll($export, $this->settings->ignoredComparisonKeysArray());
-    return $export;
+  public function processExportArrayForComparison(array $array): array {
+    $this->deepUnsetAll($array, $this->settings->ignoredComparisonKeysArray());
+    return $array;
   }
 
   /**

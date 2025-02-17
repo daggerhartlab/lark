@@ -16,6 +16,7 @@ use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Exception\LarkImportException;
+use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
@@ -176,9 +177,8 @@ class Importer implements ImporterInterface {
     $graph = $files = [];
     /** @var \Symfony\Component\Finder\SplFileInfo $file */
     foreach ($finder as $file) {
-      /** @var array{_meta: array{uuid: string|null, depends: array<string, string>|null}} $decoded */
-      $decoded = Yaml::decode($file->getContents());
-      $uuid = $decoded['_meta']['uuid'] ?? throw new LarkImportException($decoded['_meta']['path'] . ' does not have a UUID.');
+      $decoded = new ExportArray(Yaml::decode($file->getContents()));
+      $uuid = $decoded->uuid();
       $files[$uuid] = $decoded;
 
       // For the graph to work correctly, every entity must be mentioned in it.
@@ -191,7 +191,7 @@ class Importer implements ImporterInterface {
         ],
       ];
 
-      foreach ($decoded['_meta']['depends'] ?? [] as $dependency_uuid => $entity_type) {
+      foreach ($decoded->dependencies() as $dependency_uuid => $entity_type) {
         $graph[$dependency_uuid]['edges'][$uuid] = TRUE;
         $graph[$dependency_uuid]['uuid'] = $dependency_uuid;
       }
@@ -218,7 +218,7 @@ class Importer implements ImporterInterface {
    *
    * @param string $uuid
    *   UUID of the export.
-   * @param array $exports
+   * @param \Drupal\lark\Model\ExportArray[] $exports
    *   Found files array.
    * @param array $dependency_registry
    *   Reference array to track all dependencies to prevent duplicates.
@@ -233,7 +233,7 @@ class Importer implements ImporterInterface {
 
     $export = $exports[$uuid];
     $dependencies = [];
-    foreach ($export['_meta']['depends'] as $dependency_uuid => $entity_type) {
+    foreach ($export->dependencies() as $dependency_uuid => $entity_type) {
       // Look for the dependency export.
       // @todo - Handle missing dependencies?
       if (
@@ -242,7 +242,7 @@ class Importer implements ImporterInterface {
         && !array_key_exists($dependency_uuid, $dependency_registry)
       ) {
         // Recurse and get dependencies of this dependency.
-        if (!empty($exports[$dependency_uuid]['_meta']['depends'])) {
+        if (!empty($exports[$dependency_uuid]->dependencies())) {
 
           // Register the dependency to prevent redundant calls.
           $dependency_registry[$dependency_uuid] = NULL;
@@ -264,7 +264,7 @@ class Importer implements ImporterInterface {
   /**
    * Validate import results.
    *
-   * @param array $exports
+   * @param \Drupal\lark\Model\ExportArray[] $exports
    *   Lark source exports data.
    * @param bool $show_messages
    *   Whether to show messages.
@@ -275,8 +275,8 @@ class Importer implements ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function validateImportResults(array $exports, bool $show_messages): void {
-    foreach ($exports as $uuid => $file) {
-      $entity_type = $file['_meta']['entity_type'];
+    foreach ($exports as $uuid => $export) {
+      $entity_type = $export->entityTypeId();
       if (isset($existing[$uuid])) {
         $message = $this->t('Skipped import of @entity_type "@label" with UUID @uuid because it already exists with ID "@entity_id".', [
           '@entity_type' => $entity_type,
@@ -320,7 +320,7 @@ class Importer implements ImporterInterface {
   /**
    * Imports content entities from disk.
    *
-   * @param array $exports
+   * @param \Drupal\lark\Model\ExportArray[] $exports
    *   The source exports data, which has information on the entities to create
    *   in the necessary dependency order.
    *
@@ -338,11 +338,11 @@ class Importer implements ImporterInterface {
       $this->validateExport($export);
       $this->normalizeDefaultLanguage($export);
       $entity = $this->upserter->getOrCreateEntity(
-        $export['_meta']['uuid'],
-        $export['_meta']['entity_type'],
-        $export['_meta']['bundle'],
-        $export['_meta']['default_langcode'],
-        $export['_meta']['label'] ?? NULL
+        $export->uuid(),
+        $export->entityTypeId(),
+        $export->bundle(),
+        $export->defaultLangcode(),
+        $export->label(),
       );
 
       $this->processValuesForImport($entity, $export);
@@ -370,33 +370,33 @@ class Importer implements ImporterInterface {
   /**
    * Validate a single export array.
    *
-   * @param array $export
+   * @param \Drupal\lark\Model\ExportArray $export
    *   Decoded yaml export data.
    *
    * @return void
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function validateExport(array $export): void {
-    if (empty($export['_meta']['uuid'])) {
+  protected function validateExport(ExportArray $export): void {
+    if (empty($export->uuid())) {
       throw new LarkImportException('The uuid metadata must be specified as [_meta][uuid].');
     }
-    if (empty($export['_meta']['entity_type'])) {
+    if (empty($export->entityTypeId())) {
       throw new LarkImportException('The entity type metadata must be specified as [_meta][entity_type].');
     }
-    if (empty($export['_meta']['bundle'])) {
+    if (empty($export->bundle())) {
       throw new LarkImportException('The bundle metadata must be specified as [_meta][bundle].');
     }
-    if (empty($export['_meta']['path'])) {
+    if (empty($export->path())) {
       throw new LarkImportException('The export file yaml path must be specified as [_meta][path].');
     }
-    if (empty($export['_meta']['default_langcode'])) {
+    if (empty($export->defaultLangcode())) {
       throw new LarkImportException('The default_langcode metadata must be specified as [_meta][default_langcode].');
     }
 
-    $entity_type = $this->entityTypeManager->getDefinition($export['_meta']['entity_type']);
+    $entity_type = $this->entityTypeManager->getDefinition($export->entityTypeId());
     /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
     if (!$entity_type->entityClassImplements(ContentEntityInterface::class)) {
-      throw new LarkImportException("Only content entities can be imported. Export {$export['_meta']['uuid']} is a '{$export['_meta']['entity_type']}'.");
+      throw new LarkImportException("Only content entities can be imported. Export {$export->uuid()} is a '{$export->entityTypeId()}'.");
     }
   }
 
@@ -406,10 +406,10 @@ class Importer implements ImporterInterface {
    * Will attempt to switch to an alternative translation or just import it
    * with the site default language.
    *
-   * @param array $export
+   * @param \Drupal\lark\Model\ExportArray $export
    *   The normalized entity data.
    */
-  protected function normalizeDefaultLanguage(array &$export) {
+  protected function normalizeDefaultLanguage(ExportArray $export) {
     $default_langcode = $export['_meta']['default_langcode'];
     $default_language = $this->languageManager->getDefaultLanguage();
     // Check the language. If the default language isn't known, import as one
@@ -441,13 +441,13 @@ class Importer implements ImporterInterface {
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The entity being imported.
-   * @param array $export
+   * @param ExportArray $export
    *   The export data.
    *
    * @return void
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  protected function processValuesForImport(ContentEntityInterface $entity, array &$export) {
+  protected function processValuesForImport(ContentEntityInterface $entity, ExportArray $export) {
     foreach ($export['default'] as $field_name => $values) {
       if (is_array($values) && $entity->hasField($field_name)) {
         $field = $entity->get($field_name);
