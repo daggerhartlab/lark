@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Drupal\lark\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
-use Drupal\lark\Plugin\Lark\SourceInterface;
 
 /**
  * Provides an interface defining a source entity type.
  */
-interface LarkSourceInterface extends SourceInterface, ConfigEntityInterface {
+interface LarkSourceInterface extends ConfigEntityInterface {
 
   /**
    * Returns the plugin ID.

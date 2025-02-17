@@ -7,7 +7,7 @@ use Drupal\Core\Extension\Exception\UnknownExtensionException;
 use Drupal\Core\Extension\ExtensionPathResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class SourceBase extends PluginBase implements SourceInterface {
+class SourceBase extends PluginBase implements LarkSourceInterface {
 
   public function __construct(
     array $configuration,

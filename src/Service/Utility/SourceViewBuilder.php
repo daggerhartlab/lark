@@ -9,7 +9,6 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Plugin\Lark\SourceInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
 
@@ -190,7 +189,7 @@ class SourceViewBuilder {
   /**
    * Same as the data row, but with toggle instead of operations.
    *
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   Source plugin.
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   Exportable entity.
@@ -198,7 +197,7 @@ class SourceViewBuilder {
    * @return array
    *   Table row.
    */
-  protected function tableToggleRow(SourceInterface $source, ExportableInterface $exportable): array {
+  protected function tableToggleRow(LarkSourceInterface $source, ExportableInterface $exportable): array {
     $row = $this->tableDataRow($source, $exportable);
     //unset($row['data']['operations']);
     $row['data']['toggle'] = [
@@ -222,7 +221,7 @@ class SourceViewBuilder {
   /**
    * Build single table row for exportable entity.
    *
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   Source plugin.
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   Exportable entity.
@@ -230,7 +229,7 @@ class SourceViewBuilder {
    * @return array
    *   Table row.
    */
-  protected function tableDataRow(SourceInterface $source, ExportableInterface $exportable): array {
+  protected function tableDataRow(LarkSourceInterface $source, ExportableInterface $exportable): array {
     $relative = str_replace($source->directoryProcessed(FALSE) . DIRECTORY_SEPARATOR, '', $exportable->getExportFilepath());
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
     return [
@@ -302,14 +301,14 @@ class SourceViewBuilder {
   }
 
   /**
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
    * @param string $root_uuid
    *
    * @return array
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function getRootDependencyExportables(SourceInterface $source, string $root_uuid): array {
+  protected function getRootDependencyExportables(LarkSourceInterface $source, string $root_uuid): array {
     $dependency_exports = $this->importer->discoverSourceExport($source, $root_uuid);
     $dependency_exports = array_reverse($dependency_exports);
     $dependency_exportables = [];
@@ -330,7 +329,7 @@ class SourceViewBuilder {
   /**
    * Build operation links for given exportable.
    *
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   Source plugin.
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   Exportable entity.
@@ -340,7 +339,7 @@ class SourceViewBuilder {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  protected function sourceExportableOperations(SourceInterface $source, ExportableInterface $exportable): array {
+  protected function sourceExportableOperations(LarkSourceInterface $source, ExportableInterface $exportable): array {
     // Determine export status and possible operations.
     $operations = [];
 

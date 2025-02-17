@@ -3,7 +3,7 @@
 namespace Drupal\lark\Service;
 
 
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 
 /**
  * Import entities and their dependencies.
@@ -26,7 +26,7 @@ interface ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function importSingleEntityFromSource(string $source_plugin_id, string $uuid, bool $show_messages = TRUE): void;
+  public function importSourceEntity(string $source_plugin_id, string $uuid, bool $show_messages = TRUE): void;
 
   /**
    * Import all lark exported content.
@@ -40,7 +40,7 @@ interface ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function importFromAllSources(bool $show_messages = TRUE): void;
+  public function importSourcesAll(bool $show_messages = TRUE): void;
 
   /**
    * Import all content from a single source.
@@ -56,12 +56,12 @@ interface ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function importFromSingleSource(string $source_plugin_id, bool $show_messages = TRUE): void;
+  public function importSource(string $source_plugin_id, bool $show_messages = TRUE): void;
 
   /**
    * Discover this source's exportables and dependencies.
    *
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   The source plugin.
    *
    * @return array
@@ -71,12 +71,12 @@ interface ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function discoverSourceExports(SourceInterface $source): array;
+  public function discoverSourceExports(LarkSourceInterface $source): array;
 
   /**
    * Discover a single exportable and its dependencies in this source.
    *
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   The source plugin.
    * @param string $uuid
    *   The UUID of the exportable to discover.
@@ -84,6 +84,6 @@ interface ImporterInterface {
    * @return array
    *   Array of export and dependencies found in this source directory.
    */
-  public function discoverSourceExport(SourceInterface $source, string $uuid): array;
+  public function discoverSourceExport(LarkSourceInterface $source, string $uuid): array;
 
 }

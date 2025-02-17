@@ -17,7 +17,7 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\FileInterface;
 use Drupal\file\FileUsage\FileUsageInterface;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\SourceManagerInterface;
 use Drupal\media\MediaInterface;
 use Psr\Log\LoggerInterface;
@@ -219,12 +219,12 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    * @param string $source_plugin_id
    *   Source plugin id.
    *
-   * @return \Drupal\lark\Plugin\Lark\SourceInterface
+   * @return \Drupal\lark\Entity\LarkSourceInterface
    *   Source plugin instance.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  protected function getSourcePluginInstance(string $source_plugin_id): SourceInterface {
+  protected function getSourcePluginInstance(string $source_plugin_id): LarkSourceInterface {
     return $this->sourceManager->getSourceInstance($source_plugin_id);
   }
 

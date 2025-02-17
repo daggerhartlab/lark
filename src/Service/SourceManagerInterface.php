@@ -3,7 +3,7 @@
 namespace Drupal\lark\Service;
 
 
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 
 /**
  * Defines a plugin manager to deal with lark_sources.
@@ -19,14 +19,14 @@ use Drupal\lark\Plugin\Lark\SourceInterface;
  * @endcode
  *
  * @see \Drupal\lark\Plugin\Lark\Source\DefaultSource
- * @see \Drupal\lark\Plugin\Lark\SourceInterface
+ * @see \Drupal\lark\Entity\LarkSourceInterface
  */
 interface SourceManagerInterface {
 
   /**
    * Get plugin instances.
    *
-   * @return \Drupal\lark\Plugin\Lark\SourceInterface[]
+   * @return \Drupal\lark\Entity\LarkSourceInterface[]
    *   Array of plugin instances.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
@@ -36,13 +36,13 @@ interface SourceManagerInterface {
   /**
    * Get the default source.
    *
-   * @return \Drupal\lark\Plugin\Lark\SourceInterface
+   * @return \Drupal\lark\Entity\LarkSourceInterface
    *   The default source plugin.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\lark\Exception\LarkDefaultSourceNotFound
    */
-  public function getDefaultSource(): SourceInterface;
+  public function getDefaultSource(): LarkSourceInterface;
 
   /**
    * Get the sources as options.
@@ -58,11 +58,11 @@ interface SourceManagerInterface {
    * @param string $source_plugin_id
    *   The source plugin id.
    *
-   * @return \Drupal\lark\Plugin\Lark\SourceInterface
+   * @return \Drupal\lark\Entity\LarkSourceInterface
    *   The plugin instance.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function getSourceInstance(string $source_plugin_id): SourceInterface;
+  public function getSourceInstance(string $source_plugin_id): LarkSourceInterface;
 
 }

@@ -4,7 +4,7 @@ namespace Drupal\lark\Service;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 
 /**
  * Factory for creating exportable entities.
@@ -74,7 +74,7 @@ interface ExportableFactoryInterface {
    *   Entity type id.
    * @param int $entity_id
    *   Entity id.
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface|null $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
    * @param array $exports_meta_option_overrides
    *   Exportable entity models.
    *
@@ -85,6 +85,6 @@ interface ExportableFactoryInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\lark\Exception\LarkEntityNotFoundException
    */
-  public function getEntityExportables(string $entity_type_id, int $entity_id, ?SourceInterface $source = NULL, array $exports_meta_option_overrides = []): array;
+  public function getEntityExportables(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $exports_meta_option_overrides = []): array;
 
 }

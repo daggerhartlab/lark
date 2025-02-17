@@ -7,8 +7,6 @@ namespace Drupal\lark\Entity;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Extension\Exception\UnknownExtensionException;
 use Drupal\Core\Extension\ExtensionPathResolver;
-use Drupal\lark\Entity\LarkSourceInterface;
-use Drupal\lark\Plugin\Lark\SourceInterface;
 
 /**
  * Defines the source entity type.

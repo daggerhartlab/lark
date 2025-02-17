@@ -30,7 +30,7 @@ final class LarkSourceListBuilder extends ConfigEntityListBuilder {
    */
   public function buildRow(EntityInterface $entity): array {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $entity */
-    $row['label'] = $entity->label();
+    $row['label'] = $entity->toLink($entity->label());
     $row['id'] = $entity->id();
     $row['description'] = Markup::create("<pre style='font-size: small;'>{$entity->directory()}</pre>{$entity->description()}");
     $row['status'] = $entity->status() ? $this->t('Enabled') : $this->t('Disabled');

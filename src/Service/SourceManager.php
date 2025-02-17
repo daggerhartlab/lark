@@ -15,7 +15,7 @@ use Drupal\Core\Plugin\Factory\ContainerFactory;
 use Drupal\lark\Exception\LarkDefaultSourceNotFound;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Plugin\Lark\Source\DefaultSource;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 
 /**
  * Defines a plugin manager to deal with lark_sources.
@@ -30,14 +30,14 @@ use Drupal\lark\Plugin\Lark\SourceInterface;
  * @endcode
  *
  * @see \Drupal\lark\Plugin\Lark\Source\DefaultSource
- * @see \Drupal\lark\Plugin\Lark\SourceInterface
+ * @see \Drupal\lark\Entity\LarkSourceInterface
  */
 class SourceManager extends DefaultPluginManager implements SourceManagerInterface {
 
   /**
    * Plugin instances.
    *
-   * @var \Drupal\lark\Plugin\Lark\SourceInterface[]
+   * @var \Drupal\lark\Entity\LarkSourceInterface[]
    */
   protected array $instances = [];
 
@@ -106,7 +106,7 @@ class SourceManager extends DefaultPluginManager implements SourceManagerInterfa
   /**
    * {@inheritdoc}
    */
-  public function getDefaultSource(): SourceInterface {
+  public function getDefaultSource(): LarkSourceInterface {
     if (!$this->settings->defaultSource()) {
       $default_source_id = key($this->getDefinitions());
       if (!$default_source_id) {
@@ -131,23 +131,23 @@ class SourceManager extends DefaultPluginManager implements SourceManagerInterfa
   /**
    * {@inheritdoc}
    */
-  public function getSourceInstance(string $source_plugin_id): SourceInterface {
+  public function getSourceInstance(string $source_plugin_id): LarkSourceInterface {
     return $this->getInstances()[$source_plugin_id];
   }
 
   /**
    * {@inheritdoc}
    *
-   * @return \Drupal\lark\Plugin\Lark\SourceInterface
+   * @return \Drupal\lark\Entity\LarkSourceInterface
    *   The plugin instance.
    */
   public function createInstance($plugin_id, array $configuration = []) {
-    /** @var \Drupal\lark\Plugin\Lark\SourceInterface $plugin */
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $plugin */
     $plugin = parent::createInstance($plugin_id, $configuration);
     return $plugin;
   }
 
-  public function findSourceByUuid(string $uuid): ?SourceInterface {
+  public function findSourceByUuid(string $uuid): ?LarkSourceInterface {
     foreach ($this->getInstances() as $instance) {
       $instance->exportExistsInSource($uuid);
     }

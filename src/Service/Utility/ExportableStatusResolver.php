@@ -9,7 +9,7 @@ use Drupal\lark\ExportableStatus;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\SourceManagerInterface;
 
@@ -31,12 +31,12 @@ class ExportableStatusResolver {
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   The exportable entity.
    *
-   * @return \Drupal\lark\Plugin\Lark\SourceInterface|null
+   * @return \Drupal\lark\Entity\LarkSourceInterface|null
    *   The source plugin or NULL if not found.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function getExportableSource(ExportableInterface $exportable): ?SourceInterface {
+  public function getExportableSource(ExportableInterface $exportable): ?LarkSourceInterface {
     $entity = $exportable->entity();
     foreach ($this->sourceManager->getInstances() as $source) {
       if ($source->exportExistsInSource($entity->getEntityTypeId(), $entity->bundle(), $entity->uuid())) {

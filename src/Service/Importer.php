@@ -17,7 +17,7 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Exception\LarkImportException;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
 
@@ -74,17 +74,17 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function importFromAllSources(bool $show_messages = TRUE): void {
+  public function importSourcesAll(bool $show_messages = TRUE): void {
     $sources = $this->sourceManager->getDefinitions();
     foreach ($sources as $source_plugin_id => $source) {
-      $this->importFromSingleSource($source_plugin_id, $show_messages);
+      $this->importSource($source_plugin_id, $show_messages);
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function importFromSingleSource(string $source_plugin_id, bool $show_messages = TRUE): void {
+  public function importSource(string $source_plugin_id, bool $show_messages = TRUE): void {
     $source = $this->sourceManager->getSourceInstance($source_plugin_id);
     $exports = $this->discoverSourceExports($source);
 
@@ -103,7 +103,7 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function importSingleEntityFromSource(string $source_plugin_id, string $uuid, bool $show_messages = TRUE): void {
+  public function importSourceEntity(string $source_plugin_id, string $uuid, bool $show_messages = TRUE): void {
     $source = $this->sourceManager->getSourceInstance($source_plugin_id);
     $exports = $this->discoverSourceExport($source, $uuid);
     if (!isset($exports[$uuid])) {
@@ -134,7 +134,7 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function discoverSourceExports(SourceInterface $source): array {
+  public function discoverSourceExports(LarkSourceInterface $source): array {
     if (array_key_exists($source->id(), $this->discoveryCache)) {
       return $this->discoveryCache[$source->id()];
     }
@@ -146,7 +146,7 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function discoverSourceExport(SourceInterface $source, string $uuid): array {
+  public function discoverSourceExport(LarkSourceInterface $source, string $uuid): array {
     return $this->filterSingleExportWithDependencies($uuid, $this->discoverSourceExports($source));
   }
 
@@ -158,7 +158,7 @@ class Importer implements ImporterInterface {
    *
    * @see \Drupal\Core\DefaultContent\Finder
    */
-  protected function getExportsWithDependencies(SourceInterface $source): array {
+  protected function getExportsWithDependencies(LarkSourceInterface $source): array {
     try {
       // Scan for all YAML files in the content directory.
       $finder = SymfonyFinder::create()

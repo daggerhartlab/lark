@@ -10,7 +10,7 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 /**
  * Interface for lark_source plugins.
  */
-interface SourceInterface {
+interface LarkSourceInterface {
 
   /**
    * Returns the plugin ID.
