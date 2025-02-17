@@ -1,23 +1,21 @@
-lark.settings:
+lark.base:
   path: '/admin/lark'
+  defaults:
+    _title: 'Lark Settings'
+    _controller: '\Drupal\lark\Controller\LarkOverview::build'
+  requirements:
+    _permission: 'lark administer configuration'
+
+lark.settings:
+  path: '/admin/lark/settings'
   defaults:
     _title: 'Lark Settings'
     _form: 'Drupal\lark\Form\SettingsForm'
   requirements:
     _permission: 'lark administer configuration'
 
-lark.import_single:
-  path: '/admin/lark/entity-exports/entity-import/{source_plugin_id}/{uuid}'
-  defaults:
-    _title: 'Entity Import'
-    _controller: '\Drupal\lark\Controller\ExportsManager::importEntity'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'lark import export entities'
-
-lark.import_source:
-  path: '/admin/lark/entity-exports/entity-export/{source_plugin_id}'
+lark.action_import_source:
+  path: '/admin/lark/action/import-source/{source_plugin_id}'
   defaults:
     _title: 'Import All Source Entities'
     _controller: '\Drupal\lark\Controller\ExportsManager::importSource'
@@ -26,6 +24,17 @@ lark.import_source:
   requirements:
     _permission: 'lark import export entities'
 
+lark.action_import_source_entity:
+  path: '/admin/lark/action/import-source-entity/{source_plugin_id}/{uuid}'
+  defaults:
+    _title: 'Entity Import'
+    _controller: '\Drupal\lark\Controller\ExportsManager::importEntity'
+  options:
+    _admin_route: TRUE
+  requirements:
+    _permission: 'lark import export entities'
+
+# Lark source entities.
 entity.lark_source.collection:
   path: '/admin/lark/source'
   defaults:
@@ -34,6 +43,7 @@ entity.lark_source.collection:
   requirements:
     _permission: 'administer lark_source'
 
+# Provide a canonical route so we can easily view the source.
 entity.lark_source.canonical:
   path: '/admin/lark/source/{lark_source}'
   defaults:

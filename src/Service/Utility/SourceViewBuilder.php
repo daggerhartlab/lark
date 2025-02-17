@@ -37,7 +37,7 @@ class SourceViewBuilder {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function viewSource(LarkSourceInterface $source): array {
-    $import_link = Link::createFromRoute('Import All', 'lark.import_source', [
+    $import_link = Link::createFromRoute('Import All', 'lark.action_import_source', [
       'source_plugin_id' => $source->id(),
     ])->toRenderable();
     $import_link['#attributes']['class'][] = 'button';
@@ -346,7 +346,7 @@ class SourceViewBuilder {
     if ($exportable->entity()->isNew()) {
       $operations['import'] = [
         'title' => $this->t('Import'),
-        'url' => Url::fromRoute('lark.import_single', [
+        'url' => Url::fromRoute('lark.action_import_source_entity', [
           'source_plugin_id' => $source->id(),
           'uuid' => $exportable->entity()->uuid(),
         ]),
