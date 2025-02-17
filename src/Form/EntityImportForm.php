@@ -74,7 +74,7 @@ class EntityImportForm extends FormBase {
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
-    $form['source_plugin_id'] = [
+    $form['source_id'] = [
       '#type' => 'select',
       '#title' => $this->t('Import Source'),
       '#options' => $import_source_options,
@@ -113,9 +113,9 @@ class EntityImportForm extends FormBase {
    * @inheritDoc
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $source_plugin_id = $form_state->getValue('source_plugin_id');
+    $source_id = $form_state->getValue('source_id');
     $uuid = $form_state->getValue('entity_uuid');
-    $this->importer->importSourceEntity($source_plugin_id, $uuid);
+    $this->importer->importSourceEntity($source_id, $uuid);
   }
 
 }

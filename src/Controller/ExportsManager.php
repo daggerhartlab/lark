@@ -67,8 +67,7 @@ class ExportsManager extends ControllerBase {
   /**
    * Import single entity.
    *
-   * @param string $source_plugin_id
-   *   Source plugin id.
+   * @param \Drupal\lark\Entity\LarkSourceInterface $lark_source
    * @param string $uuid
    *   The UUID of the entity to import.
    *
@@ -76,7 +75,9 @@ class ExportsManager extends ControllerBase {
    *   Redirect response.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function importEntity(LarkSourceInterface $lark_source, string $uuid): RedirectResponse {
     $this->importer->importSourceEntity($lark_source->id(), $uuid);
@@ -86,8 +87,7 @@ class ExportsManager extends ControllerBase {
   /**
    * Import all entities from a single source.
    *
-   * @param string $source_plugin_id
-   *   The source plugin id.
+   * @param \Drupal\lark\Entity\LarkSourceInterface $lark_source
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   Redirect response.
@@ -95,6 +95,7 @@ class ExportsManager extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function importSource(LarkSourceInterface $lark_source): RedirectResponse {
     $this->importer->importSource($lark_source->id());

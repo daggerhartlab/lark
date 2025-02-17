@@ -77,17 +77,17 @@ class Importer implements ImporterInterface {
       'status' => 1,
     ]);
 
-    foreach ($sources as $source_plugin_id => $source) {
-      $this->importSource($source_plugin_id, $show_messages);
+    foreach ($sources as $source) {
+      $this->importSource($source->id(), $show_messages);
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function importSource(string $source_plugin_id, bool $show_messages = TRUE): void {
+  public function importSource(string $source_id, bool $show_messages = TRUE): void {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
     $exports = $this->discoverSourceExports($source);
 
     try {
@@ -105,9 +105,9 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function importSourceEntity(string $source_plugin_id, string $uuid, bool $show_messages = TRUE): void {
+  public function importSourceEntity(string $source_id, string $uuid, bool $show_messages = TRUE): void {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
     $exports = $this->discoverSourceExport($source, $uuid);
     if (!isset($exports[$uuid])) {
       $message = $this->t('No export found with UUID @uuid in source @source.', [

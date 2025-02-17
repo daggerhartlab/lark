@@ -26,13 +26,13 @@ the Source plugin and export the entity and its dependencies.
 To export an entity using drush, the following command can be used:
 
 ```bash
-drush lark:export-entity <source_plugin_id> <entity type> <entity id>
+drush lark:export-entity <source id> <entity type> <entity id>
 ```
 
 ## Importing Entities
 
 Exported entities can be imported using the Source's UI, located at
-`/admin/lark/source/<source_id>`. This page will list all  exports
+`/admin/lark/source/<source id>`. This page will list all  exports
 available within the source along with their export status.
 
 To import entities using drush, the following commands can be used:
@@ -42,10 +42,10 @@ To import entities using drush, the following commands can be used:
 drush lark:import-all-entities
 
 # Import all entities within a given source.
-drush lark:import-source <source_plugin_id>
+drush lark:import-source <source id>
 
 # Import a single entity and its dependencies from a specific Lark Source.
-drush lark:import-entity <source_plugin_id> <uuid>
+drush lark:import-entity <source id> <uuid>
 ```
 
 ## User Interface:

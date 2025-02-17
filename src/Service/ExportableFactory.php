@@ -90,21 +90,21 @@ class ExportableFactory implements ExportableFactoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function createFromSource(string $source_plugin_id, string $uuid): ?ExportableInterface {
-    $exportables = $this->createFromSourceWithDependencies($source_plugin_id, $uuid);
+  public function createFromSource(string $source_id, string $uuid): ?ExportableInterface {
+    $exportables = $this->createFromSourceWithDependencies($source_id, $uuid);
     return $exportables[$uuid] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createFromSourceWithDependencies(string $source_plugin_id, string $root_uuid): array {
+  public function createFromSourceWithDependencies(string $source_id, string $root_uuid): array {
     if (array_key_exists($root_uuid, $this->exportablesCache)) {
       return $this->exportablesCache[$root_uuid];
     }
 
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
     $exports = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
     foreach ($exports as $uuid => $export) {

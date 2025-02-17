@@ -58,7 +58,7 @@ interface SourceManagerInterface {
   /**
    * Get a source plugin instance.
    *
-   * @param string $source_plugin_id
+   * @param string $source_id
    *   The source plugin id.
    *
    * @return \Drupal\lark\Entity\LarkSourceInterface
@@ -66,6 +66,6 @@ interface SourceManagerInterface {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function getSourceInstance(string $source_plugin_id): LarkSourceInterface;
+  public function getSourceInstance(string $source_id): LarkSourceInterface;
 
 }
