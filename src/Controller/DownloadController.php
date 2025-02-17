@@ -116,7 +116,7 @@ class DownloadController extends ControllerBase {
     // If we export root level items, we'll get their dependencies.
     $root_level_exports = array_filter($exports, function ($export, $uuid) use ($exports) {
       foreach ($exports as $other_export) {
-        if (isset($other_export['_meta']['depends'][$uuid])) {
+        if (isset($other_export->dependencies()[$uuid])) {
           return FALSE;
         }
       }
@@ -127,7 +127,7 @@ class DownloadController extends ControllerBase {
     // Loop through each root-level export and add its entity to the archive.
     foreach ($root_level_exports as $uuid => $export) {
       // Get the entity's id by its uuid.
-      $entity_type_id = $export['_meta']['entity_type'];
+      $entity_type_id = $export;
       $entity = $this->entityTypeManager->getStorage($entity_type_id)->loadByProperties([
         'uuid' => $uuid,
       ]);

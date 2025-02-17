@@ -108,18 +108,18 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exports = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
     foreach ($exports as $uuid => $export) {
-      $entity = $this->entityRepository->loadEntityByUuid($export['_meta']['entity_type'], $export['_meta']['uuid']);
+      $entity = $this->entityRepository->loadEntityByUuid($export->entityTypeId(), $export->uuid());
 
       if (!$entity) {
-        $entity = $this->entityTypeManager->getStorage($export['_meta']['entity_type'])->create($export['default']);
+        $entity = $this->entityTypeManager->getStorage($export->entityTypeId())->create($export->content());
       }
 
       $exportable = new Exportable($entity);
       $exportable
-        ->setDependencies($export['_meta']['depends'] ?? [])
-        ->setMetaOptions($export['_meta']['options'] ?? [])
+        ->setDependencies($export->dependencies())
+        ->setMetaOptions($export->options())
         ->setSource($source)
-        ->setExportFilepath($export['_meta']['path'])
+        ->setExportFilepath($export->path())
         ->setStatus($this->statusResolver->getExportableStatus($exportable, $export));
 
       $exportables[$uuid] = $exportable;

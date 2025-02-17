@@ -410,7 +410,7 @@ class Importer implements ImporterInterface {
    *   The normalized entity data.
    */
   protected function normalizeDefaultLanguage(ExportArray $export) {
-    $default_langcode = $export['_meta']['default_langcode'];
+    $default_langcode = $export->defaultLangcode();
     $default_language = $this->languageManager->getDefaultLanguage();
     // Check the language. If the default language isn't known, import as one
     // of the available translations if one exists with those values. If none
@@ -420,10 +420,10 @@ class Importer implements ImporterInterface {
     // instead.
     if (!$this->languageManager->getLanguage($default_langcode) || (InstallerKernel::installationAttempted() && $default_language->getId() !== $default_langcode)) {
       $use_default = TRUE;
-      foreach ($export['translations'] ?? [] as $langcode => $translation_data) {
+      foreach ($export->translations() as $langcode => $translation_data) {
         if ($this->languageManager->getLanguage($langcode)) {
-          $export['_meta']['default_langcode'] = $langcode;
-          $export['default'] = \array_merge($export['default'], $translation_data);
+          $export->setDefaultLangcode($langcode);
+          $export->setContent(\array_merge($export->content(), $translation_data));
           unset($export['translations'][$langcode]);
           $use_default = FALSE;
           break;
@@ -431,7 +431,7 @@ class Importer implements ImporterInterface {
       }
 
       if ($use_default) {
-        $export['_meta']['default_langcode'] = $default_language->getId();
+        $export->setDefaultLangcode($default_language->getId());
       }
     }
   }
@@ -448,14 +448,14 @@ class Importer implements ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   protected function processValuesForImport(ContentEntityInterface $entity, ExportArray $export) {
-    foreach ($export['default'] as $field_name => $values) {
+    foreach ($export->content() as $field_name => $values) {
       if (is_array($values) && $entity->hasField($field_name)) {
         $field = $entity->get($field_name);
         $export['default'][$field_name] = $this->fieldTypeManager->alterImportValues($export['default'][$field_name], $field);
       }
     }
 
-    foreach ($export['translations'] ?? [] as $langcode => $translation) {
+    foreach ($export->translations() as $langcode => $translation) {
       foreach ($translation as $field_name => $values) {
         if (is_array($values) && $entity->hasField($field_name)) {
           $field = $entity->get($field_name);

@@ -195,17 +195,18 @@ final class FileAssets extends MetaOptionBase {
 
     // Default to settings. Then, if an import override exists let it make
     // the decision about importing.
+    $file_assets = $export->getOption($this->id());
     $should_import = $this->larkSettings->shouldImportAssets();
-    $import_override_exists = isset($export['_meta']['options']['file_asset']['should_import']);
+    $import_override_exists = isset($file_assets['should_import']);
     if ($import_override_exists) {
-      $should_import = (bool) $export['_meta']['options']['file_asset']['should_import'];
+      $should_import = (bool) $file_assets['should_import'];
     }
 
     if ($should_import) {
       $this->assetFileManager->importAsset(
         $entity,
-        dirname($export['_meta']['path']),
-        $export['default']['uri'][0]['value']
+        dirname($export->path()),
+        $export->content()['uri'][0]['value']
       );
     }
   }

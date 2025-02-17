@@ -64,7 +64,7 @@ interface ImporterInterface {
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   The source plugin.
    *
-   * @return array
+   * @return \Drupal\lark\Model\ExportArray[]
    *   Array of exports and dependencies found in this source directory.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -81,7 +81,7 @@ interface ImporterInterface {
    * @param string $uuid
    *   The UUID of the exportable to discover.
    *
-   * @return array
+   * @return \Drupal\lark\Model\ExportArray[]
    *   Array of export and dependencies found in this source directory.
    */
   public function discoverSourceExport(LarkSourceInterface $source, string $uuid): array;
