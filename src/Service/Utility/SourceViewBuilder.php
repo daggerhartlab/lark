@@ -3,6 +3,7 @@
 namespace Drupal\lark\Service\Utility;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
@@ -37,8 +38,16 @@ class SourceViewBuilder {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function viewSource(LarkSourceInterface $source): array {
+    $import_link = Link::createFromRoute('Import All', 'lark.import_source', [
+      'source_plugin_id' => $source->id(),
+    ])->toRenderable();
+    $import_link['#attributes']['class'][] = 'button';
+
     $build = [
       'details' => $this->sourceDetails($source),
+      'actions' => [
+        'import' => $import_link,
+      ],
       'table' => $this->tablePopulated($source),
     ];
 

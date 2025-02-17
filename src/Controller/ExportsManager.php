@@ -77,7 +77,9 @@ class ExportsManager extends ControllerBase {
    */
   public function importEntity(string $source_plugin_id, string $uuid): RedirectResponse {
     $this->importer->importSingleEntityFromSource($source_plugin_id, $uuid);
-    return new RedirectResponse(Url::fromRoute('lark.exports_list')->toString());
+
+    $source = $this->entityTypeManager()->getStorage('lark_source')->load($source_plugin_id);
+    return new RedirectResponse($source->toUrl()->toString());
   }
 
   /**
@@ -95,7 +97,9 @@ class ExportsManager extends ControllerBase {
    */
   public function importSource(string $source_plugin_id): RedirectResponse {
     $this->importer->importFromSingleSource($source_plugin_id);
-    return new RedirectResponse(Url::fromRoute('lark.exports_list')->toString());
+
+    $source = $this->entityTypeManager()->getStorage('lark_source')->load($source_plugin_id);
+    return new RedirectResponse($source->toUrl()->toString());
   }
 
   /**
