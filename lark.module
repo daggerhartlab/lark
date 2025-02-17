@@ -1,7 +1,49 @@
 <?php
 
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
+use Drupal\Core\Extension\ExtensionPathResolver;
+use Drupal\Core\Render\Markup;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManager;
+use League\CommonMark\GithubFlavoredMarkdownConverter;
+
+/**
+ * Implements hook_help().
+ */
+function lark_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.lark':
+      $output = _lark_readme_to_html();
+      return $output;
+  }
+}
+
+/**
+ * Convert readme to html.
+ *
+ * @return \Drupal\Component\Render\MarkupInterface|string
+ * @throws \League\CommonMark\Exception\CommonMarkException
+ */
+function _lark_readme_to_html() {
+  $path_resolver = \Drupal::service(ExtensionPathResolver::class);
+  $readme_path = $path_resolver->getPath('module', 'lark') . '/README.md';
+  if (\file_exists($readme_path)) {
+    $converter = new GithubFlavoredMarkdownConverter([
+      'html_input' => 'strip',
+      'allow_unsafe_links' => FALSE,
+    ]);
+
+    // Remove first line to prevent a double H1.
+    $content = \file_get_contents($readme_path);
+    $lines = explode("\n", $content);
+    array_shift($lines);
+    $content = implode("\n", $lines);
+
+    return Markup::create($converter->convert($content));
+  }
+
+  return '';
+}
 
 /**
  * Implements hook_entity_type_alter().

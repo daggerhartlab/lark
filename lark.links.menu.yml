@@ -15,6 +15,7 @@ lark.settings:
   route_name: lark.settings
   title: 'Settings'
   description: ''
+  weight: 10
 
 # Lark source entity "View" menu item
 entity.lark_source.canonical:

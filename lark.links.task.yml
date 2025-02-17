@@ -11,7 +11,8 @@ entity.lark_source.collection:
 lark.settings:
   route_name: lark.settings
   base_route: lark.base
-  title: 'Lark Settings'
+  title: 'Settings'
+  weight: 10
 
 # Generate "Lark" tabs for all exportable entity types.
 lark.entities:

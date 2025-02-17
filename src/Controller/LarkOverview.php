@@ -4,7 +4,9 @@ namespace Drupal\lark\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\ExtensionPathResolver;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class LarkOverview extends ControllerBase {
 
@@ -18,18 +20,19 @@ class LarkOverview extends ControllerBase {
     );
   }
 
-  public function build(): array {
-
-    $readme_path = $this->extensionPathResolver->getPath('module', 'lark') . '/README.md';
-    if (\file_exists($readme_path)) {
-
+  /**
+   * @return array|\Symfony\Component\HttpFoundation\RedirectResponse
+   * @throws \League\CommonMark\Exception\CommonMarkException
+   */
+  public function build() {
+    $readme = _lark_readme_to_html();
+    if ($readme) {
+      return [
+        '#markup' => $readme,
+      ];
     }
 
-    return [
-      'hi' => [
-        '#markup' => 'J!',
-      ],
-    ];
+    return new RedirectResponse(Url::fromRoute('lark.settings')->toString());
   }
 
 }

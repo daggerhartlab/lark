@@ -1,7 +1,7 @@
 lark.base:
   path: '/admin/lark'
   defaults:
-    _title: 'Lark Settings'
+    _title: 'Lark'
     _controller: '\Drupal\lark\Controller\LarkOverview::build'
   requirements:
     _permission: 'lark administer configuration'
@@ -17,7 +17,7 @@ lark.settings:
 lark.action_import_source:
   path: '/admin/lark/action/import-source/{source_plugin_id}'
   defaults:
-    _title: 'Import All Source Entities'
+    _title: 'Import Source'
     _controller: '\Drupal\lark\Controller\ExportsManager::importSource'
   options:
     _admin_route: TRUE
@@ -27,7 +27,7 @@ lark.action_import_source:
 lark.action_import_source_entity:
   path: '/admin/lark/action/import-source-entity/{source_plugin_id}/{uuid}'
   defaults:
-    _title: 'Entity Import'
+    _title: 'Import Source Entity'
     _controller: '\Drupal\lark\Controller\ExportsManager::importEntity'
   options:
     _admin_route: TRUE
