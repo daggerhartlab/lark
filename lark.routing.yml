@@ -25,12 +25,28 @@ lark.action_import_source:
     _permission: 'lark import export entities'
 
 lark.action_import_source_entity:
-  path: '/admin/lark/action/import-source-entity/{source_plugin_id}/{uuid}'
+  path: '/admin/lark/action/import-source-entity/{lark_source}/{uuid}'
   defaults:
     _title: 'Import Source Entity'
     _controller: '\Drupal\lark\Controller\ExportsManager::importEntity'
   options:
     _admin_route: TRUE
+    parameters:
+      lark_source:
+        type: entity:lark_source
+  requirements:
+    _permission: 'lark import export entities'
+
+lark.action_download_source:
+  path: '/admin/lark/action/download-source/{lark_source}'
+  defaults:
+    _title: 'Download Source Archive'
+    _controller: '\Drupal\lark\Controller\ExportsManager::downloadSource'
+  options:
+    _admin_route: TRUE
+    parameters:
+      lark_source:
+        type: entity:lark_source
   requirements:
     _permission: 'lark import export entities'
 

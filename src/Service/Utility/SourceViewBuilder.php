@@ -42,10 +42,16 @@ class SourceViewBuilder {
     ])->toRenderable();
     $import_link['#attributes']['class'][] = 'button';
 
+    $download_link = Link::createFromRoute('Download', 'lark.action_download_source', [
+      'lark_source' => $source->id(),
+    ])->toRenderable();
+    $download_link['#attributes']['class'][] = 'button';
+
     $build = [
       'details' => $this->sourceDetails($source),
       'actions' => [
         'import' => $import_link,
+        'download' => $download_link,
       ],
       'table' => $this->tablePopulated($source),
     ];
