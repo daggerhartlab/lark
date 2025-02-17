@@ -119,6 +119,26 @@ class ExportArray extends \ArrayObject {
     $this['default'] = $data;
   }
 
+  public function getField(string $field_name, string $langcode = 'default') {
+    if ($langcode === $this->defaultLangcode()) {
+      $langcode = 'default';
+    }
+
+    return $langcode === 'default' ?
+      $this['default'][$field_name] :
+      ($this['translations'][$langcode][$field_name] ?? NULL);
+  }
+
+  public function setField(string $field_name, $value, string $langcode = 'default'): void {
+    if ($langcode === $this->defaultLangcode()) {
+      $langcode = 'default';
+    }
+
+    if ($langcode === 'default') {
+      $this['default'][$field_name] = $value;
+    }
+  }
+
   public function translations(): array {
     return $this['translations'] ?? [];
   }
@@ -129,6 +149,10 @@ class ExportArray extends \ArrayObject {
 
   public function setTranslation(string $langcode, array $data): void {
     $this['translations'][$langcode] = $data;
+  }
+
+  public function unsetTranslation(string $langcode): void {
+    \unset($this['translations'][$langcode]);
   }
 
   public function hasMeta(string $name): bool {
@@ -153,6 +177,10 @@ class ExportArray extends \ArrayObject {
 
   public function setOption(string $name, $value): void {
     $this['_meta']['options'][$name] = $value;
+  }
+
+  public function unsetOption(string $name): void {
+    \unset($this['_meta']['options'][$name]);
   }
 
   /**

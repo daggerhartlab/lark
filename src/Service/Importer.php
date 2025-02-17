@@ -424,7 +424,7 @@ class Importer implements ImporterInterface {
         if ($this->languageManager->getLanguage($langcode)) {
           $export->setDefaultLangcode($langcode);
           $export->setContent(\array_merge($export->content(), $translation_data));
-          unset($export['translations'][$langcode]);
+          $export->unsetTranslation($langcode);
           $use_default = FALSE;
           break;
         }
@@ -451,7 +451,8 @@ class Importer implements ImporterInterface {
     foreach ($export->content() as $field_name => $values) {
       if (is_array($values) && $entity->hasField($field_name)) {
         $field = $entity->get($field_name);
-        $export['default'][$field_name] = $this->fieldTypeManager->alterImportValues($export['default'][$field_name], $field);
+        $value = $this->fieldTypeManager->alterImportValues($export->getField($field_name), $field);
+        $export->setField($field_name, $value);
       }
     }
 
@@ -459,7 +460,8 @@ class Importer implements ImporterInterface {
       foreach ($translation as $field_name => $values) {
         if (is_array($values) && $entity->hasField($field_name)) {
           $field = $entity->get($field_name);
-          $export['translations'][$langcode][$field_name] = $this->fieldTypeManager->alterImportValues($export['translations'][$langcode][$field_name], $field);
+          $value = $this->fieldTypeManager->alterImportValues($export->getField($field_name, $langcode), $field);
+          $export->setField($field_name, $value, $langcode);
         }
       }
     }
