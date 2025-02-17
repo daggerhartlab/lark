@@ -9,14 +9,8 @@ entity.lark_source.collection:
   route_name: entity.lark_source.collection
   parent: lark.settings
 
-lark.exports_list:
-  title: Exports Manager
-  menu_name: main
-  parent: lark.settings
-  route_name: lark.exports_list
-
 entity.lark_source.canonical:
   title: Source
-  description: ''
+  description: 'View'
   parent: entity.lark_source.edit_form
   route_name: entity.lark_source.canonical

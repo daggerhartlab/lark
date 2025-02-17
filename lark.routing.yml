@@ -6,16 +6,6 @@ lark.settings:
   requirements:
     _permission: 'lark administer configuration'
 
-lark.exports_list:
-  path: '/admin/lark/entity-exports'
-  defaults:
-    _title: 'Entity Exports Manager'
-    _controller: '\Drupal\lark\Controller\ExportsManager::build'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'lark import export entities'
-
 lark.import_single:
   path: '/admin/lark/entity-exports/entity-import/{source_plugin_id}/{uuid}'
   defaults:

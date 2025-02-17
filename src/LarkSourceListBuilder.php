@@ -6,6 +6,7 @@ namespace Drupal\lark;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\lark\Service\SourceManagerInterface;
 
 /**
@@ -19,7 +20,6 @@ final class LarkSourceListBuilder extends ConfigEntityListBuilder {
   public function buildHeader(): array {
     $header['label'] = $this->t('Label');
     $header['id'] = $this->t('Machine name');
-    $header['directory'] = $this->t('Directory');
     $header['description'] = $this->t('Description');
     $header['status'] = $this->t('Status');
     return $header + parent::buildHeader();
@@ -32,8 +32,7 @@ final class LarkSourceListBuilder extends ConfigEntityListBuilder {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $entity */
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
-    $row['directory'] = $entity->directory();
-    $row['description'] = $entity->description();
+    $row['description'] = Markup::create("<pre style='font-size: small;'>{$entity->directory()}</pre>{$entity->description()}");
     $row['status'] = $entity->status() ? $this->t('Enabled') : $this->t('Disabled');
 
     return $row + parent::buildRow($entity);

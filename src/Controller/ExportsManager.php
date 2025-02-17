@@ -6,15 +6,9 @@ namespace Drupal\lark\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Render\Markup;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
-use Drupal\lark\Entity\LarkSourceInterface;
-use Drupal\lark\ExportableStatus;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
-use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Plugin\Lark\SourceInterface;
 use Drupal\lark\Service\ExporterInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
@@ -133,35 +127,6 @@ class ExportsManager extends ControllerBase {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->entityTypeManager()->getStorage('lark_source')->load($lark_source);
     return $this->sourceViewBuilder->viewSource($source);
-  }
-
-  /**
-   * List exported entities.
-   *
-   * @return array
-   *   Render array.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   */
-  public function build(): array {
-    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->entityTypeManager()->getStorage('lark_source')->loadByProperties([
-      'status' => 1,
-    ]);
-
-    $build = [];
-    foreach ($sources as $source) {
-      $build[$source->id()] = [
-        '#type' => 'details',
-        '#title' => $source->label(),
-        '#open' => FALSE,
-        'source' => $this->sourceViewBuilder->viewSource($source),
-      ];
-    }
-
-    return $build;
   }
 
 }

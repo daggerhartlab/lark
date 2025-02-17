@@ -37,61 +37,10 @@ class SourceViewBuilder {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function viewSource(LarkSourceInterface $source): array {
-    $exports = $this->importer->discoverSourceExports($source);
-    $source_root_exports = $this->getRootLevelExports($exports);
-
     $build = [
       'details' => $this->sourceDetails($source),
+      'table' => $this->tablePopulated($source),
     ];
-
-    foreach ($source_root_exports as $root_uuid => $root_export) {
-      // Get the root_export's Exportable along with dependencies.
-      $root_exportable = $this->exportableFactory->createFromSource($source->id(), $root_uuid);
-      if (!$root_exportable) {
-        continue;
-      }
-
-      $dependency_exports = $this->importer->discoverSourceExport($source, $root_uuid);
-      $dependency_exports = array_reverse($dependency_exports);
-      $dependency_exportables = [];
-      foreach ($dependency_exports as $dependency_uuid => $dependency_export) {
-        if ($dependency_uuid === $root_uuid) {
-          continue;
-        }
-
-        $dependency_exportable = $this->exportableFactory->createFromSource($source->id(), $dependency_uuid);
-        if ($dependency_exportable) {
-          $dependency_exportables[] = $dependency_exportable;
-        }
-      }
-
-      $status_summary = $this->statusBuilder->getExportablesSummary(array_merge([$root_uuid => $root_exportable], $dependency_exportables));
-      $build[$root_uuid] = [
-        '#type' => 'details',
-        '#title' => $root_exportable->entity()->label(),
-        'status_summary' => $status_summary,
-        'root_table' => $this->tablePopulated($source, $root_exportable),
-        'dependencies_heading' => [
-          '#type' => 'html_tag',
-          '#tag' => 'h4',
-          '#value' => $this->t('Dependencies'),
-        ],
-        'dependencies_description' => [
-          '#type' => 'html_tag',
-          '#tag' => 'small',
-          '#value' => $this->t('All dependencies of an entity are imported along with the parent entities.'),
-        ],
-        'dependencies_table' => [
-          '#type' => 'table',
-          '#attributes' => ['class' => ['lark-exports-table']],
-          '#empty' => $this->t('No dependencies found.'),
-          '#header' => $this->headers(),
-          '#rows' => array_map(function (ExportableInterface $exportable) use ($source) {
-            return $this->buildExportableTableRow($source, $exportable);
-          }, $dependency_exportables),
-        ],
-      ];
-    }
 
     return $build;
   }
@@ -151,16 +100,48 @@ class SourceViewBuilder {
    *
    * @return array
    */
-  public function tablePopulated(LarkSourceInterface $source, ExportableInterface $root_exportable): array {
+  public function tablePopulated(LarkSourceInterface $source): array {
+    $exports = $this->importer->discoverSourceExports($source);
+    $source_root_exports = $this->getRootLevelExports($exports);
+
     $table = $this->table();
-    $table['#rows'][] = $this->buildExportableTableRow($source, $root_exportable);
+
+    // The root export is a top-level table row
+    foreach ($source_root_exports as $root_uuid => $root_export) {
+      // Get the root_export's Exportable along with dependencies.
+      $root_exportable = $this->exportableFactory->createFromSource($source->id(), $root_uuid);
+      if (!$root_exportable) {
+        continue;
+      }
+
+      $table['#rows'][] = $this->tableToggleRow($source, $root_exportable);
+      $table['#rows'][] = $this->tableDetailsRow($source, $root_exportable);
+    }
+
     return $table;
+  }
+
+  /**
+   * @return array
+   */
+  protected function table(): array {
+    return [
+      '#type' => 'table',
+      '#header' => $this->toggleHeaders(),
+      '#rows' => [],
+      '#attributes' => [
+        'class' => ['lark-source-table'],
+      ],
+      '#attached' => [
+        'library' => ['lark/admin'],
+      ],
+    ];
   }
 
   /**
    * @return array[]
    */
-  public function headers(): array {
+  protected function headers(): array {
     return [
       'status' => [
         'class' => ['status'],
@@ -186,20 +167,47 @@ class SourceViewBuilder {
   }
 
   /**
-   * @return array
+   * @return array[]
    */
-  public function table(): array {
-    return [
-      '#type' => 'table',
-      '#header' => $this->headers(),
-      '#rows' => [],
-      '#attributes' => [
-        'class' => ['lark-sources-table'],
-      ],
-      '#attached' => [
-        'library' => ['lark/admin'],
+  protected function toggleHeaders(): array {
+    return $this->headers() + [
+        'toggle' => [
+          'class' => ['toggle'],
+          'data' => $this->t('Details'),
+        ]
+      ];
+  }
+
+  /**
+   * Same as the data row, but with toggle instead of operations.
+   *
+   * @param \Drupal\lark\Plugin\Lark\SourceInterface $source
+   *   Source plugin.
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
+   *   Exportable entity.
+   *
+   * @return array
+   *   Table row.
+   */
+  protected function tableToggleRow(SourceInterface $source, ExportableInterface $exportable): array {
+    $row = $this->tableDataRow($source, $exportable);
+    //unset($row['data']['operations']);
+    $row['data']['toggle'] = [
+      'class' => ['lark-toggle-handle'],
+      'data-uuid' => $exportable->entity()->uuid(),
+      'data' => [
+        'icon' => [
+          '#theme' => 'image',
+          '#alt' => 'Toggle row',
+          '#attributes' => [
+            'src' => '/modules/contrib/lark/assets/icons/file-yaml.png',
+            'width' => '35',
+            'height' => '35',
+          ],
+        ],
       ],
     ];
+    return $row;
   }
 
   /**
@@ -213,13 +221,13 @@ class SourceViewBuilder {
    * @return array
    *   Table row.
    */
-  protected function buildExportableTableRow(SourceInterface $source, ExportableInterface $exportable): array {
+  protected function tableDataRow(SourceInterface $source, ExportableInterface $exportable): array {
     $relative = str_replace($source->directoryProcessed() . DIRECTORY_SEPARATOR, '', $exportable->getExportFilepath());
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
     return [
       'class' => [
-        'lark-exports-row',
-        'lark-exports-row--' . $status_details['class_name']
+        'lark-toggle-row',
+        'lark-toggle-row--' . $status_details['class_name']
       ],
       'data' => [
         'status' => [
@@ -239,10 +247,75 @@ class SourceViewBuilder {
           'data' => Markup::create("<small title='{$exportable->getExportFilepath()}'><code>{$relative}</code></small>"),
         ],
         'operations' => [
-          'data' => $this->buildExportableOperations($source, $exportable),
+          'data' => $this->sourceExportableOperations($source, $exportable),
         ],
       ],
     ];
+  }
+
+  /**
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   * @param \Drupal\lark\Model\ExportableInterface $root_exportable
+   *
+   * @return array[]
+   */
+  protected function tableDetailsRow(LarkSourceInterface $source, ExportableInterface $root_exportable): array {
+    $root_uuid = $root_exportable->entity()->uuid();
+    $dependency_exportables = $this->getRootDependencyExportables($source, $root_uuid);
+
+    return [
+      'details' => [
+        'colspan' => count($this->toggleHeaders()),
+        'class' => ['lark-toggle-details-row', 'lark-toggle-details-row--' . $root_uuid],
+        'data' => [
+          'dependencies_heading' => [
+            '#type' => 'html_tag',
+            '#tag' => 'h4',
+            '#value' => $this->t('Dependencies'),
+          ],
+          'dependencies_description' => [
+            '#type' => 'html_tag',
+            '#tag' => 'small',
+            '#value' => $this->t('All dependencies of an entity are imported along with the parent entities.'),
+          ],
+          'dependencies_table' => [
+            '#type' => 'table',
+            '#attributes' => ['class' => ['lark-exports-table']],
+            '#empty' => $this->t('No dependencies found.'),
+            '#header' => $this->headers(),
+            '#rows' => array_map(function (ExportableInterface $exportable) use ($source) {
+              return $this->tableDataRow($source, $exportable);
+            }, $dependency_exportables),
+          ],
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * @param \Drupal\lark\Plugin\Lark\SourceInterface $source
+   * @param string $root_uuid
+   *
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function getRootDependencyExportables(SourceInterface $source, string $root_uuid): array {
+    $dependency_exports = $this->importer->discoverSourceExport($source, $root_uuid);
+    $dependency_exports = array_reverse($dependency_exports);
+    $dependency_exportables = [];
+    foreach ($dependency_exports as $dependency_uuid => $dependency_export) {
+      if ($dependency_uuid === $root_uuid) {
+        continue;
+      }
+
+      $dependency_exportable = $this->exportableFactory->createFromSource($source->id(), $dependency_uuid);
+      if ($dependency_exportable) {
+        $dependency_exportables[] = $dependency_exportable;
+      }
+    }
+
+    return $dependency_exportables;
   }
 
   /**
@@ -258,7 +331,7 @@ class SourceViewBuilder {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
-  protected function buildExportableOperations(SourceInterface $source, ExportableInterface $exportable): array {
+  protected function sourceExportableOperations(SourceInterface $source, ExportableInterface $exportable): array {
     // Determine export status and possible operations.
     $operations = [];
 
