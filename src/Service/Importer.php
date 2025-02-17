@@ -38,8 +38,6 @@ class Importer implements ImporterInterface {
    *
    * @param \Drupal\lark\Model\LarkSettings $settings
    *   Lark settings.
-   * @param \Drupal\lark\Service\SourceManagerInterface $sourceManager
-   *   The lark source plugin manager.
    * @param \Drupal\lark\Service\EntityUpdaterInterface $upserter
    *   Service for upserting entities.
    * @param \Drupal\lark\Service\AssetFileManager $assetFileManager,
@@ -59,7 +57,6 @@ class Importer implements ImporterInterface {
    */
   public function __construct(
     protected LarkSettings $settings,
-    protected SourceManagerInterface $sourceManager,
     protected EntityUpdaterInterface $upserter,
     protected AssetFileManager $assetFileManager,
     protected MetaOptionManager $metaOptionManager,
@@ -75,7 +72,11 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function importSourcesAll(bool $show_messages = TRUE): void {
-    $sources = $this->sourceManager->getDefinitions();
+    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
+    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+      'status' => 1,
+    ]);
+
     foreach ($sources as $source_plugin_id => $source) {
       $this->importSource($source_plugin_id, $show_messages);
     }
@@ -85,7 +86,8 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function importSource(string $source_plugin_id, bool $show_messages = TRUE): void {
-    $source = $this->sourceManager->getSourceInstance($source_plugin_id);
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
     $exports = $this->discoverSourceExports($source);
 
     try {
@@ -104,7 +106,8 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function importSourceEntity(string $source_plugin_id, string $uuid, bool $show_messages = TRUE): void {
-    $source = $this->sourceManager->getSourceInstance($source_plugin_id);
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
     $exports = $this->discoverSourceExport($source, $uuid);
     if (!isset($exports[$uuid])) {
       $message = $this->t('No export found with UUID @uuid in source @source.', [

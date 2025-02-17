@@ -6,11 +6,11 @@ namespace Drupal\lark\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\TypedConfigManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileExists;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Service\SourceManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -25,14 +25,12 @@ final class SettingsForm extends ConfigFormBase {
    *   The config factory.
    * @param $typedConfigManager
    *   The typed config manager.
-   * @param \Drupal\lark\Service\SourceManagerInterface $sourceManager
-   *   The Lark source plugin manager.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     TypedConfigManagerInterface $typedConfigManager,
-    protected SourceManagerInterface $sourceManager,
-    protected LarkSettings $settings,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected LarkSettings $larkSettings,
   ) {
     parent::__construct($config_factory, $typedConfigManager);
   }
@@ -41,7 +39,7 @@ final class SettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
-      $container->get(SourceManagerInterface::class),
+      $container->get(EntityTypeManagerInterface::class),
       $container->get(LarkSettings::class),
     );
   }
@@ -64,19 +62,28 @@ final class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
+    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+      'status' => 1,
+    ]);
+    $source_options = [];
+    foreach ($sources as $source) {
+      $source_options[$source->id()] = $source->label();
+    }
+
     $form['default_source'] = [
       '#type' => 'select',
       '#title' => $this->t('Default Source'),
       '#description' => $this->t('The default source plugin to use for Lark.'),
       '#required' => TRUE,
-      '#default_value' => $this->settings->defaultSource(),
-      '#options' => $this->sourceManager->getOptions(),
+      '#default_value' => $this->larkSettings->defaultSource(),
+      '#options' => $source_options,
     ];
     $form['ignored_comparison_keys'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Ignored Comparison Keys'),
       '#description' => $this->t('Provide a list of keys to ignore when determining their export status. Separate each key with a new line. This can be useful for mitigating false positives, such as the "changed" key on entities.'),
-      '#default_value' => $this->settings->ignoredComparisonKeys(),
+      '#default_value' => $this->larkSettings->ignoredComparisonKeys(),
     ];
 
     $form['asset_management_settings'] = [
@@ -93,7 +100,7 @@ final class SettingsForm extends ConfigFormBase {
         '#type' => 'radios',
         '#title' => $this->t('Export asset action'),
         '#description' => $this->t('Choose the default action that should be taken when exporting an asset attached to a File entity.'),
-        '#default_value' => (int) $this->settings->shouldExportAssets(),
+        '#default_value' => (int) $this->larkSettings->shouldExportAssets(),
         '#options' => [
           0 => $this->t('Do not export assets attached to File entities by default.'),
           1 => $this->t('Export assets.'),
@@ -103,7 +110,7 @@ final class SettingsForm extends ConfigFormBase {
         '#type' => 'radios',
         '#title' => $this->t('Export asset exists resolution action'),
         '#description' => $this->t('When exporting an asset and the asset already exists in the Source, what should happen?'),
-        '#default_value' => $this->settings->assetExportFileExists()->name,
+        '#default_value' => $this->larkSettings->assetExportFileExists()->name,
         '#options' => [
           FileExists::Error->name => $this->t('Do nothing.'),
           //FileExists::Rename->name => $this->t('Rename the asset being exported and update the export.'),
@@ -119,7 +126,7 @@ final class SettingsForm extends ConfigFormBase {
         '#type' => 'radios',
         '#title' => $this->t('Import asset action'),
         '#description' => $this->t('Choose the default action that should be taken when importing an asset attached to a File entity.'),
-        '#default_value' => (int) $this->settings->shouldImportAssets(),
+        '#default_value' => (int) $this->larkSettings->shouldImportAssets(),
         '#options' => [
           0 => $this->t('Do not import assets attached to File entities by default.'),
           1 => $this->t('Import assets.'),
@@ -129,7 +136,7 @@ final class SettingsForm extends ConfigFormBase {
         '#type' => 'radios',
         '#title' => $this->t('Import asset exists resolution action'),
         '#description' => $this->t('When importing an asset and the asset already exists in the file system, what should happen?'),
-        '#default_value' => $this->settings->assetImportFileExists()->name,
+        '#default_value' => $this->larkSettings->assetImportFileExists()->name,
         '#options' => [
           FileExists::Error->name => $this->t('Do nothing.'),
           FileExists::Rename->name => $this->t('Rename the asset being imported and update the File entity.'),
@@ -161,7 +168,7 @@ final class SettingsForm extends ConfigFormBase {
             'label' => $source->label(),
             'directory' => $source->directoryProcessed(),
           ];
-        }, $this->sourceManager->getInstances()),
+        }, $sources),
       ],
     ];
 

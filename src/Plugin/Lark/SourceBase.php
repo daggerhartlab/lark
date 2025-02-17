@@ -7,6 +7,10 @@ use Drupal\Core\Extension\Exception\UnknownExtensionException;
 use Drupal\Core\Extension\ExtensionPathResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * @deprecated
+ *   Replaced by lark_source config entity.
+ */
 class SourceBase extends PluginBase implements LarkSourceInterface {
 
   public function __construct(

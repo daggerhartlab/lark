@@ -12,6 +12,9 @@ use Drupal\lark\Entity\LarkSourceInterface;
  * contained in the module's base directory. Each lark_source has the following
  * structure:
  *
+ * @deprecated
+ *   Replaced by lark_source config entity.
+ *
  * @code
  *   MACHINE_NAME:
  *     label: STRING

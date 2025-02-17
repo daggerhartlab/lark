@@ -16,6 +16,7 @@ use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\Utility\ExportableStatusResolver;
 use Drupal\user\UserInterface;
 
@@ -30,8 +31,8 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected ConfigFactoryInterface $configFactory,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
+    protected LarkSettings $larkSettings,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
-    protected SourceManagerInterface $sourceManager,
     protected ImporterInterface $importer,
     protected ExportableStatusResolver $statusResolver,
     protected ModuleHandlerInterface $moduleHandler,
@@ -72,7 +73,11 @@ class ExportableFactory implements ExportableFactoryInterface {
       return $this->createFromEntity($found);
     }
 
-    foreach ($this->sourceManager->getInstances() as $source) {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
+    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+      'status' => 1,
+    ]);
+    foreach ($sources as $source) {
       $exportable = $this->createFromSource($source->id(), $uuid);
       if ($exportable) {
         return $exportable;
@@ -98,7 +103,8 @@ class ExportableFactory implements ExportableFactoryInterface {
       return $this->exportablesCache[$root_uuid];
     }
 
-    $source = $this->sourceManager->createInstance($source_plugin_id);
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
     $exports = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
     foreach ($exports as $uuid => $export) {
@@ -254,7 +260,7 @@ class ExportableFactory implements ExportableFactoryInterface {
       }
 
       if (!$source) {
-        $source = $this->sourceManager->getDefaultSource();
+        $source = $this->entityTypeManager->getStorage('lark_source')->load($this->larkSettings->defaultSource());
       }
 
       if ($source) {

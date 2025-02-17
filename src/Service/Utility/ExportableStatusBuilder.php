@@ -2,9 +2,7 @@
 
 namespace Drupal\lark\Service\Utility;
 
-use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\lark\ExportableStatus;

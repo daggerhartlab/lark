@@ -51,6 +51,7 @@ services:
     arguments:
       $cache_backend: '@cache.default'
 
+  # @deprecated
   Drupal\lark\Service\SourceManagerInterface:
     class: Drupal\lark\Service\SourceManager
     autowire: true

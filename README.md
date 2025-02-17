@@ -22,7 +22,9 @@ within your module or theme and define the directory path for the Lark Source.
 You can make your exports directory relative to a module or theme by providing
 the module or theme name within brackets in the directory path.
 
-### Source Examples
+### Source Examples - @deprecated
+
+**Replaced with a `lark_source` config entity type.**
 
 ```yaml
 # Directory outside of the webroot.

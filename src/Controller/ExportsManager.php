@@ -12,7 +12,6 @@ use Drupal\lark\Service\Utility\ExportableStatusBuilder;
 use Drupal\lark\Service\ExporterInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
-use Drupal\lark\Service\SourceManagerInterface;
 use Drupal\lark\Service\Utility\SourceViewBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -29,15 +28,12 @@ class ExportsManager extends ControllerBase {
    *   The entity exporter service.
    * @param \Drupal\lark\Service\ImporterInterface $importer
    *   The entity importer service.
-   * @param \Drupal\lark\Service\SourceManagerInterface $sourceManager
-   *   The Lark source plugin manager service.
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   The Lark exportable factory service.
    */
   public function __construct(
     protected ExporterInterface $exporter,
     protected ImporterInterface $importer,
-    protected SourceManagerInterface $sourceManager,
     protected ExportableFactoryInterface $exportableFactory,
     protected EntityRepositoryInterface $entityRepository,
     protected ExportableStatusBuilder $statusBuilder,
@@ -52,7 +48,6 @@ class ExportsManager extends ControllerBase {
     return new static(
       $container->get(ExporterInterface::class),
       $container->get(ImporterInterface::class),
-      $container->get(SourceManagerInterface::class),
       $container->get(ExportableFactoryInterface::class),
       $container->get(EntityRepositoryInterface::class),
       $container->get(ExportableStatusBuilder::class),

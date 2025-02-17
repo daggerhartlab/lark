@@ -7,7 +7,6 @@ namespace Drupal\lark;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Render\Markup;
-use Drupal\lark\Service\SourceManagerInterface;
 
 /**
  * Provides a listing of sources.

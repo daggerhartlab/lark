@@ -9,6 +9,9 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 
 /**
  * Interface for lark_source plugins.
+ *
+ * @deprecated
+ *   Replaced by lark_source config entity.
  */
 interface LarkSourceInterface {
 
