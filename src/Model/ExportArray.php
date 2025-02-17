@@ -29,9 +29,7 @@ class ExportArray extends \ArrayObject {
    * @param string $iteratorClass
    */
   public function __construct(object|array $array = [], int $flags = 0, string $iteratorClass = "ArrayIterator") {
-    if (!$array) {
-      $array = static::SCHEMA;
-    }
+    $array = array_replace_recursive(static::SCHEMA, $array);
 
     parent::__construct($array, $flags, $iteratorClass);
   }
