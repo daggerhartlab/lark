@@ -149,25 +149,28 @@ class TableFormHandler {
 
     // Data row.
     $data_row = [
-      'icon' => [
-        'class' => ['status-icon'],
-        'data' => $status_details['icon_render']
-      ],
-      'entity_id' => $entity->id(),
-      'entity_type' => $entity->getEntityTypeId(),
-      'bundle' => $entity->bundle(),
-      'label' => $entity->label(),
-      'toggle'  => [
-        'class' => ['lark-toggle-row'],
-        'data-uuid' => $uuid,
-        'data' => [
-          'icon' => [
-            '#theme' => 'image',
-            '#alt' => 'Toggle row',
-            '#attributes' => [
-              'src' => '/modules/contrib/lark/assets/icons/file-yaml.png',
-              'width' => '35',
-              'height' => '35',
+      'class' => ['lark-toggle-row'],
+      'data' => [
+        'icon' => [
+          'class' => ['status-icon'],
+          'data' => $status_details['icon_render']
+        ],
+        'entity_id' => $entity->id(),
+        'entity_type' => $entity->getEntityTypeId(),
+        'bundle' => $entity->bundle(),
+        'label' => $entity->label(),
+        'toggle'  => [
+          'class' => ['lark-toggle-handle'],
+          'data-uuid' => $uuid,
+          'data' => [
+            'icon' => [
+              '#theme' => 'image',
+              '#alt' => 'Toggle row',
+              '#attributes' => [
+                'src' => '/modules/contrib/lark/assets/icons/file-yaml.png',
+                'width' => '35',
+                'height' => '35',
+              ],
             ],
           ],
         ],
@@ -177,8 +180,8 @@ class TableFormHandler {
     // Form & Yaml row.
     $form_row = [
       'form' => [
-        'class' => ['lark-yaml-row', 'lark-yaml-row--' . $uuid],
-        'colspan' => count($data_row),
+        'class' => ['lark-toggle-details-row', 'lark-toggle-details-row--' . $uuid],
+        'colspan' => count($this->headers()),
         'data' => [
           'heading' => [
             '#type' => 'html_tag',
@@ -194,10 +197,7 @@ class TableFormHandler {
             '#links' => [
               'import_all' => [
                 'title' => $this->t('View diff'),
-                'url' => Url::fromRoute('lark.diff_viewer', [
-                  'source_plugin_id' => $exportable->getSource()?->id(),
-                  'uuid' => $exportable->entity()->uuid(),
-                ]),
+                'url' => $exportable->entity()->toUrl('lark-diff'),
               ],
             ],
           ],

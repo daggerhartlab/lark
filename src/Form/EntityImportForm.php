@@ -5,21 +5,19 @@ namespace Drupal\lark\Form;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\SourceManagerInterface;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
 use Drupal\lark\Service\Utility\TableFormHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class EntityImportForm extends FormBase {
 
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected LarkSettings $larkSettings,
     protected ExportableFactoryInterface $exportableFactory,
-    protected SourceManagerInterface $sourceManager,
     protected ImporterInterface $importer,
     protected ExportableStatusBuilder $statusBuilder,
     protected TableFormHandler $tableFormHandler,
@@ -31,8 +29,8 @@ class EntityImportForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get(EntityTypeManagerInterface::class),
+      $container->get(LarkSettings::class),
       $container->get(ExportableFactoryInterface::class),
-      $container->get(SourceManagerInterface::class),
       $container->get(ImporterInterface::class),
       $container->get(ExportableStatusBuilder::class),
       $container->get(TableFormHandler::class),
@@ -58,7 +56,11 @@ class EntityImportForm extends FormBase {
 
     // Get a list of sources where this entity may be exported.
     $import_source_options = [];
-    foreach ($this->sourceManager->getInstances() as $source) {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
+    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+      'status' => 1,
+    ]);
+    foreach ($sources as $source) {
       if ($source->exportExistsInSource($entity_type_id, $entity->bundle(), $entity->uuid())) {
         $import_source_options[$source->id()] = $source->label();
       }
@@ -76,7 +78,7 @@ class EntityImportForm extends FormBase {
       '#type' => 'select',
       '#title' => $this->t('Import Source'),
       '#options' => $import_source_options,
-      '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->sourceManager->getDefaultSource()->id(),
+      '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->larkSettings->defaultSource(),
       '#required' => TRUE,
       '#weight' => -101,
     ];
@@ -113,7 +115,7 @@ class EntityImportForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $source_plugin_id = $form_state->getValue('source_plugin_id');
     $uuid = $form_state->getValue('entity_uuid');
-    $this->importer->importSingleEntityFromSource($source_plugin_id, $uuid);
+    $this->importer->importSourceEntity($source_plugin_id, $uuid);
   }
 
 }

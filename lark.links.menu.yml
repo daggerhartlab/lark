@@ -1,11 +1,25 @@
+lark.base:
+  parent: system.admin_content
+  route_name: entity.lark_source.collection
+  title: 'Lark'
+  description: 'List of sources to extend site functionality.'
+
+entity.lark_source.collection:
+  parent: lark.base
+  route_name: entity.lark_source.collection
+  title: 'Sources'
+  description: 'List of sources to extend site functionality.'
+
 lark.settings:
-  title: Lark
-  parent: system.admin_config_development
+  parent: lark.base
   route_name: lark.settings
+  title: 'Settings'
+  description: ''
   weight: 10
 
-lark.exports_list:
-  title: Exports Manager
-  menu_name: main
-  parent: lark.settings
-  route_name: lark.exports_list
+# Lark source entity "View" menu item
+entity.lark_source.canonical:
+  parent: entity.lark_source.edit_form
+  route_name: entity.lark_source.canonical
+  title: 'Source'
+  description: 'View'

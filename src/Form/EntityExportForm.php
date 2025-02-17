@@ -9,7 +9,6 @@ use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
 use Drupal\lark\Service\ExporterInterface;
-use Drupal\lark\Service\SourceManagerInterface;
 use Drupal\lark\Service\Utility\TableFormHandler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -24,15 +23,18 @@ class EntityExportForm extends FormBase {
   /**
    * EntityExportForm constructor.
    *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\lark\Model\LarkSettings $larkSettings
    * @param \Drupal\lark\Service\ExporterInterface $entityExporter
    *   The entity exporter service.
-   * @param \Drupal\lark\Service\SourceManagerInterface $sourceManager
-   *   The Lark source plugin manager service.
+   * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
+   * @param \Drupal\lark\Service\Utility\ExportableStatusBuilder $statusBuilder
+   * @param \Drupal\lark\Service\Utility\TableFormHandler $tableFormHandler
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected LarkSettings $larkSettings,
     protected ExporterInterface $entityExporter,
-    protected SourceManagerInterface $sourceManager,
     protected ExportableFactoryInterface $exportableFactory,
     protected ExportableStatusBuilder $statusBuilder,
     protected TableFormHandler $tableFormHandler,
@@ -44,8 +46,8 @@ class EntityExportForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get(EntityTypeManagerInterface::class),
+      $container->get(LarkSettings::class),
       $container->get(ExporterInterface::class),
-      $container->get(SourceManagerInterface::class),
       $container->get(ExportableFactoryInterface::class),
       $container->get(ExportableStatusBuilder::class),
       $container->get(TableFormHandler::class),
@@ -72,11 +74,19 @@ class EntityExportForm extends FormBase {
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
+    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+      'status' => 1,
+    ]);
+    $options = [];
+    foreach ($sources as $source) {
+      $options[$source->id()] = $source->label();
+    }
+
     $form['source'] = [
       '#type' => 'select',
       '#title' => $this->t('Export Source'),
-      '#options' => $this->sourceManager->getOptions(),
-      '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->sourceManager->getDefaultSource()->id(),
+      '#options' => $options,
+      '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->larkSettings->defaultSource(),
       '#required' => TRUE,
       '#weight' => -101,
     ];

@@ -1,37 +1,82 @@
+lark.base:
+  path: '/admin/lark'
+  defaults:
+    _title: 'Lark'
+    _controller: '\Drupal\lark\Controller\LarkOverview::build'
+  requirements:
+    _permission: 'lark administer configuration'
+
 lark.settings:
-  path: '/admin/config/development/lark'
+  path: '/admin/lark/settings'
   defaults:
     _title: 'Lark Settings'
     _form: 'Drupal\lark\Form\SettingsForm'
   requirements:
     _permission: 'lark administer configuration'
 
-lark.exports_list:
-  path: '/admin/config/development/lark/entity-exports'
+lark.action_import_source:
+  path: '/admin/lark/action/import-source/{source_plugin_id}'
   defaults:
-    _title: 'Entity Exports Manager'
-    _controller: '\Drupal\lark\Controller\ExportsManager::build'
+    _title: 'Import Source'
+    _controller: '\Drupal\lark\Controller\ExportsManager::importSource'
   options:
     _admin_route: TRUE
   requirements:
     _permission: 'lark import export entities'
 
-lark.import_single:
-  path: '/admin/config/development/lark/entity-exports/entity-import/{source_plugin_id}/{uuid}'
+lark.action_import_source_entity:
+  path: '/admin/lark/action/import-source-entity/{source_plugin_id}/{uuid}'
   defaults:
-    _title: 'Entity Import'
+    _title: 'Import Source Entity'
     _controller: '\Drupal\lark\Controller\ExportsManager::importEntity'
   options:
     _admin_route: TRUE
   requirements:
     _permission: 'lark import export entities'
 
-lark.import_source:
-  path: '/admin/config/development/lark/entity-exports/entity-export/{source_plugin_id}'
+# Lark source entities.
+entity.lark_source.collection:
+  path: '/admin/lark/source'
   defaults:
-    _title: 'Import All Source Entities'
-    _controller: '\Drupal\lark\Controller\ExportsManager::importSource'
-  options:
-    _admin_route: TRUE
+    _entity_list: 'lark_source'
+    _title: 'Sources'
   requirements:
-    _permission: 'lark import export entities'
+    _permission: 'administer lark_source'
+
+# Provide a canonical route so we can easily view the source.
+entity.lark_source.canonical:
+  path: '/admin/lark/source/{lark_source}'
+  defaults:
+    _controller: '\Drupal\lark\Controller\ExportsManager::viewSource'
+    _title: 'View Source'
+    _title_callback: '\Drupal\lark\Controller\ExportsManager::viewSourceTitle'
+  requirements:
+    _permission: 'administer lark_source'
+  options:
+    parameters:
+      lark_source:
+        type: machine_name
+
+entity.lark_source.add_form:
+  path: '/admin/lark/source/add'
+  defaults:
+    _entity_form: 'lark_source.add'
+    _title: 'Add a source'
+  requirements:
+    _permission: 'administer lark_source'
+
+entity.lark_source.edit_form:
+  path: '/admin/lark/source/{lark_source}/edit'
+  defaults:
+    _entity_form: 'lark_source.edit'
+    _title: 'Edit a source'
+  requirements:
+    _permission: 'administer lark_source'
+
+entity.lark_source.delete_form:
+  path: '/admin/lark/source/{lark_source}/delete'
+  defaults:
+    _entity_form: 'lark_source.delete'
+    _title: 'Delete a source'
+  requirements:
+    _permission: 'administer lark_source'

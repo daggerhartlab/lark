@@ -1,0 +1,5 @@
+entity.lark_source.add_form:
+  route_name: 'entity.lark_source.add_form'
+  title: 'Add source'
+  appears_on:
+    - entity.lark_source.collection

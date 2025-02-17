@@ -5,7 +5,7 @@ namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\lark\ExportableStatus;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 
 /**
  * Model for wrapping entities for export.
@@ -147,21 +147,21 @@ interface ExportableInterface {
   /**
    * Get source plugin.
    *
-   * @return \Drupal\lark\Plugin\Lark\SourceInterface|null
+   * @return \Drupal\lark\Entity\LarkSourceInterface|null
    *   Source plugin.
    */
-  public function getSource(): ?SourceInterface;
+  public function getSource(): ?LarkSourceInterface;
 
   /**
    * Set source plugin.
    *
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface|null $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
    *   Source plugin.
    *
    * @return $this
    *   Return self.
    */
-  public function setSource(?SourceInterface $source): self;
+  public function setSource(?LarkSourceInterface $source): self;
 
   /**
    * Get actual export filepath.

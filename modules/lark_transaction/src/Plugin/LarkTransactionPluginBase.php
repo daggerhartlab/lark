@@ -17,8 +17,7 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\FileInterface;
 use Drupal\file\FileUsage\FileUsageInterface;
-use Drupal\lark\Plugin\Lark\SourceInterface;
-use Drupal\lark\Service\SourceManagerInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\media\MediaInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -39,8 +38,6 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    *   Plugin ID.
    * @param $plugin_definition
    *   Plugin definition.
-   * @param \Drupal\lark\Service\SourceManagerInterface $sourceManager
-   *   Lark source plugin manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager service.
    * @param \Psr\Log\LoggerInterface $logger
@@ -64,7 +61,6 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
     array                                $configuration,
                                          $plugin_id,
                                          $plugin_definition,
-    protected SourceManagerInterface     $sourceManager,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected LoggerInterface            $logger,
     protected MessengerInterface         $messenger,
@@ -91,7 +87,6 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get(SourceManagerInterface::class),
       $container->get('entity_type.manager'),
       $container->get('lark.transaction_logger'),
       $container->get('messenger'),
@@ -219,13 +214,13 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    * @param string $source_plugin_id
    *   Source plugin id.
    *
-   * @return \Drupal\lark\Plugin\Lark\SourceInterface
+   * @return \Drupal\lark\Entity\LarkSourceInterface
    *   Source plugin instance.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  protected function getSourcePluginInstance(string $source_plugin_id): SourceInterface {
-    return $this->sourceManager->getSourceInstance($source_plugin_id);
+  protected function getSourcePluginInstance(string $source_plugin_id): LarkSourceInterface {
+    return $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
   }
 
   /**
@@ -238,7 +233,7 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    *   The source content directory.
    */
   protected function sourceDirectory(string $source_plugin_id): string {
-    return $this->getSourcePluginInstance($source_plugin_id)->directory();
+    return $this->getSourcePluginInstance($source_plugin_id)->directoryProcessed();
   }
 
   /**

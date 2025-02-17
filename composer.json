@@ -9,5 +9,7 @@
             "email": "jonathan@daggerhartlab.com"
         }
     ],
-    "require": {}
+    "require": {
+        "league/commonmark" : "^2.6"
+    }
 }

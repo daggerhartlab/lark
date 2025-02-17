@@ -3,15 +3,13 @@
 namespace Drupal\lark\Service\Utility;
 
 use Drupal\Component\Diff\Diff;
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\ExportableStatus;
-use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\SourceManagerInterface;
 
 /**
  * Used to determine the status of an exportable entity and prepare exports for
@@ -20,7 +18,7 @@ use Drupal\lark\Service\SourceManagerInterface;
 class ExportableStatusResolver {
 
   public function __construct(
-    protected SourceManagerInterface $sourceManager,
+    protected EntityTypeManagerInterface $entityTypeManager,
     protected ImporterInterface $importer,
     protected LarkSettings $settings,
   ) {}
@@ -31,14 +29,19 @@ class ExportableStatusResolver {
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   The exportable entity.
    *
-   * @return \Drupal\lark\Plugin\Lark\SourceInterface|null
+   * @return \Drupal\lark\Entity\LarkSourceInterface|null
    *   The source plugin or NULL if not found.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function getExportableSource(ExportableInterface $exportable): ?SourceInterface {
+  public function getExportableSource(ExportableInterface $exportable): ?LarkSourceInterface {
     $entity = $exportable->entity();
-    foreach ($this->sourceManager->getInstances() as $source) {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
+    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+      'status' => 1,
+    ]);
+
+    foreach ($sources as $source) {
       if ($source->exportExistsInSource($entity->getEntityTypeId(), $entity->bundle(), $entity->uuid())) {
         return $source;
       }

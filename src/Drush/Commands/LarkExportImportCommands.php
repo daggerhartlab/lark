@@ -39,7 +39,7 @@ class LarkExportImportCommands extends DrushCommands {
   #[CLI\Command(name: 'lark:import-all-entities', aliases: ['limpall'])]
   #[CLI\Usage(name: 'lark:import-all-entities', description: 'Import all entities exported by Lark.')]
   public function importAll(): void {
-    $this->entityImporter->importFromAllSources(FALSE);
+    $this->entityImporter->importSourcesAll(FALSE);
     $this->logger()->success(dt('Import complete.'));
   }
 
@@ -58,7 +58,7 @@ class LarkExportImportCommands extends DrushCommands {
   #[CLI\Argument(name: 'uuid', description: 'Entity UUID.')]
   #[CLI\Usage(name: 'lark:import-entity source_plugin_id entity_uuid', description: 'Import a single entity with its dependencies.')]
   public function importEntity(string $source_plugin_id, string $uuid): void {
-    $this->entityImporter->importSingleEntityFromSource($source_plugin_id, $uuid, FALSE);
+    $this->entityImporter->importSourceEntity($source_plugin_id, $uuid, FALSE);
     $this->logger()->success(dt("Import of {$uuid} from {$source_plugin_id} complete."));
   }
 
@@ -76,7 +76,7 @@ class LarkExportImportCommands extends DrushCommands {
   #[CLI\Argument(name: 'source_plugin_id', description: 'Source plugin id.')]
   #[CLI\Usage(name: 'lark:import-source source_plugin_id', description: 'Import all entities within a given source.')]
   public function importSource(string $source_plugin_id): void {
-    $this->entityImporter->importFromSingleSource($source_plugin_id, FALSE);
+    $this->entityImporter->importSource($source_plugin_id, FALSE);
     $this->logger()->success(dt("Import from {$source_plugin_id} complete."));
   }
 

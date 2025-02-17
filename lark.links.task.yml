@@ -1,15 +1,39 @@
+lark.base:
+  route_name: lark.base
+  base_route: lark.base
+  title: 'Lark'
+
+entity.lark_source.collection:
+  route_name: entity.lark_source.collection
+  base_route: lark.base
+  title: 'Sources'
+
+lark.settings:
+  route_name: lark.settings
+  base_route: lark.base
+  title: 'Settings'
+  weight: 10
+
+# Generate "Lark" tabs for all exportable entity types.
 lark.entities:
   class: \Drupal\Core\Menu\LocalTaskDefault
   deriver: \Drupal\lark\Routing\LocalTasks
 
-lark.settings:
-  route_name: lark.settings
-  title: 'Lark Settings'
-  base_route: lark.settings
-  weight: 0
+# Lark source entity tabs.
+entity.lark_source.canonical:
+  route_name: entity.lark_source.canonical
+  base_route: entity.lark_source.edit_form
+  title: 'View'
+  weight: -10
 
-lark.exports_list:
-  route_name: lark.exports_list
-  title: 'Exports Manager'
-  base_route: lark.settings
+entity.lark_source.edit_form:
+  route_name: entity.lark_source.edit_form
+  base_route: entity.lark_source.edit_form
+  title: 'Edit'
   weight: 1
+
+entity.lark_source.delete_form:
+  route_name: entity.lark_source.delete_form
+  base_route: entity.lark_source.edit_form
+  title: 'Delete'
+  weight: 2

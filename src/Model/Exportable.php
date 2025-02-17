@@ -5,7 +5,7 @@ namespace Drupal\lark\Model;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\ExportableStatus;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\Exporter;
 
 /**
@@ -23,9 +23,9 @@ class Exportable implements ExportableInterface {
   /**
    * Source plugin for this exportable, if known.
    *
-   * @var \Drupal\lark\Plugin\Lark\SourceInterface|null
+   * @var \Drupal\lark\Entity\LarkSourceInterface|null
    */
-  protected ?SourceInterface $source = NULL;
+  protected ?LarkSourceInterface $source = NULL;
 
   /**
    * True if the export file for this entity exists.
@@ -174,14 +174,14 @@ class Exportable implements ExportableInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSource(): ?SourceInterface {
+  public function getSource(): ?LarkSourceInterface {
     return $this->source;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setSource(?SourceInterface $source): self {
+  public function setSource(?LarkSourceInterface $source): self {
     $this->source = $source;
     if ($source && !$this->getExportFilepath()) {
       $this->setExportFilepath($source->getDestinationFilepath(

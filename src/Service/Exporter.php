@@ -14,7 +14,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 
 /**
  * Export entities and their dependencies.
@@ -28,8 +28,6 @@ class Exporter implements ExporterInterface {
    *
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   The lark exportable factory service.
-   * @param \Drupal\lark\Service\SourceManagerInterface $sourceManager
-   *   The lark source plugin manager service.
    * @param \Drupal\lark\Service\FieldTypeHandlerManagerInterface $fieldTypeManager
    *   The lark field type handler plugin manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
@@ -46,7 +44,6 @@ class Exporter implements ExporterInterface {
   public function __construct(
     protected LarkSettings $settings,
     protected ExportableFactoryInterface $exportableFactory,
-    protected SourceManagerInterface $sourceManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected FileSystemInterface $fileSystem,
@@ -60,7 +57,7 @@ class Exporter implements ExporterInterface {
    * {@inheritdoc}
    */
   public function exportEntity(string $source_plugin_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_meta_options_overrides = []): void {
-    $source = $this->sourceManager->getSourceInstance($source_plugin_id);
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id, $source, $exports_meta_options_overrides);
 
     foreach ($exportables as $exportable) {

@@ -2,25 +2,41 @@
 
 declare(strict_types=1);
 
-namespace Drupal\lark\Plugin\Lark;
+namespace Drupal\lark\Entity;
 
-use Drupal\Component\Plugin\DerivativeInspectionInterface;
-use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
 
 /**
- * Interface for lark_source plugins.
+ * Provides an interface defining a source entity type.
  */
-interface SourceInterface extends PluginInspectionInterface, DerivativeInspectionInterface {
+interface LarkSourceInterface extends ConfigEntityInterface {
 
   /**
    * Returns the plugin ID.
+   *
+   * @return string
+   *   The entity identifier.
    */
-  public function id(): string;
+  public function id();
 
   /**
    * Returns the translated plugin label.
+   *
+   * @return string|\Drupal\Core\StringTranslation\TranslatableMarkup|null
    */
-  public function label(): string;
+  public function label();
+
+  /**
+   * @return string
+   */
+  public function description(): string;
+
+  /**
+   * Unprocessed raw directory string.
+   *
+   * @return string
+   */
+  public function directory(): string;
 
   /**
    * Returns the directory where the source is located.
@@ -28,7 +44,7 @@ interface SourceInterface extends PluginInspectionInterface, DerivativeInspectio
    * @param bool $absolute
    *   Whether to return an absolute path.
    */
-  public function directory(bool $absolute = TRUE): string;
+  public function directoryProcessed(bool $absolute = TRUE): string;
 
   /**
    * Returns the provider of the source plugin.

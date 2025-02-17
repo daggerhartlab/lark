@@ -7,7 +7,11 @@ use Drupal\Core\Extension\Exception\UnknownExtensionException;
 use Drupal\Core\Extension\ExtensionPathResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class SourceBase extends PluginBase implements SourceInterface {
+/**
+ * @deprecated
+ *   Replaced by lark_source config entity.
+ */
+class SourceBase extends PluginBase implements LarkSourceInterface {
 
   public function __construct(
     array $configuration,
@@ -48,7 +52,14 @@ class SourceBase extends PluginBase implements SourceInterface {
   /**
    * {@inheritdoc}
    */
-  public function directory(bool $absolute = TRUE): string {
+  public function directory(): string {
+    return $this->pluginDefinition['directory'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function directoryProcessed(bool $absolute = TRUE): string {
     $directory = $this->pluginDefinition['directory'];
     $directory = preg_replace_callback('/\[\w+]/', function(array $matches) {
       $name = str_replace(['[', ']'], '', $matches[0]);
@@ -86,7 +97,7 @@ class SourceBase extends PluginBase implements SourceInterface {
    */
   public function getDestinationDirectory(string $entity_type_id, string $bundle, bool $absolute_path = FALSE): string {
     return implode(DIRECTORY_SEPARATOR, [
-      $this->directory($absolute_path),
+      $this->directoryProcessed($absolute_path),
       $entity_type_id,
       $bundle,
     ]);

@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * Migrate old lark_source plugins to new lark_source config entities.
+ */
+function lark_update_10001() {
+  /** @var \Drupal\lark\Service\SourceManagerInterface $old_source_manager */
+  $old_source_manager = \Drupal::service(\Drupal\lark\Service\SourceManagerInterface::class);
+  $new_storage = \Drupal::entityTypeManager()->getStorage('lark_source');
+
+  foreach ($old_source_manager->getInstances() as $old_source) {
+    $existing_new = $new_storage->load($old_source->id());
+    if ($existing_new) {
+      continue;
+    }
+
+    $source = $new_storage->create([
+      'id' => $old_source->id(),
+      'label' => $old_source->label(),
+      'directory' => $old_source->directory(),
+      'description' => '',
+      'status' => 1,
+    ]);
+    $source->save();
+    \Drupal::logger('lark')->notice("Copied old lark_source to new config entity: {$source->id()}");
+  }
+}

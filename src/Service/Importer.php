@@ -17,7 +17,7 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Exception\LarkImportException;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
 
@@ -38,8 +38,6 @@ class Importer implements ImporterInterface {
    *
    * @param \Drupal\lark\Model\LarkSettings $settings
    *   Lark settings.
-   * @param \Drupal\lark\Service\SourceManagerInterface $sourceManager
-   *   The lark source plugin manager.
    * @param \Drupal\lark\Service\EntityUpdaterInterface $upserter
    *   Service for upserting entities.
    * @param \Drupal\lark\Service\AssetFileManager $assetFileManager,
@@ -59,7 +57,6 @@ class Importer implements ImporterInterface {
    */
   public function __construct(
     protected LarkSettings $settings,
-    protected SourceManagerInterface $sourceManager,
     protected EntityUpdaterInterface $upserter,
     protected AssetFileManager $assetFileManager,
     protected MetaOptionManager $metaOptionManager,
@@ -74,18 +71,23 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function importFromAllSources(bool $show_messages = TRUE): void {
-    $sources = $this->sourceManager->getDefinitions();
+  public function importSourcesAll(bool $show_messages = TRUE): void {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
+    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+      'status' => 1,
+    ]);
+
     foreach ($sources as $source_plugin_id => $source) {
-      $this->importFromSingleSource($source_plugin_id, $show_messages);
+      $this->importSource($source_plugin_id, $show_messages);
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function importFromSingleSource(string $source_plugin_id, bool $show_messages = TRUE): void {
-    $source = $this->sourceManager->getSourceInstance($source_plugin_id);
+  public function importSource(string $source_plugin_id, bool $show_messages = TRUE): void {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
     $exports = $this->discoverSourceExports($source);
 
     try {
@@ -103,8 +105,9 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function importSingleEntityFromSource(string $source_plugin_id, string $uuid, bool $show_messages = TRUE): void {
-    $source = $this->sourceManager->getSourceInstance($source_plugin_id);
+  public function importSourceEntity(string $source_plugin_id, string $uuid, bool $show_messages = TRUE): void {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
     $exports = $this->discoverSourceExport($source, $uuid);
     if (!isset($exports[$uuid])) {
       $message = $this->t('No export found with UUID @uuid in source @source.', [
@@ -134,7 +137,7 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function discoverSourceExports(SourceInterface $source): array {
+  public function discoverSourceExports(LarkSourceInterface $source): array {
     if (array_key_exists($source->id(), $this->discoveryCache)) {
       return $this->discoveryCache[$source->id()];
     }
@@ -146,7 +149,7 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function discoverSourceExport(SourceInterface $source, string $uuid): array {
+  public function discoverSourceExport(LarkSourceInterface $source, string $uuid): array {
     return $this->filterSingleExportWithDependencies($uuid, $this->discoverSourceExports($source));
   }
 
@@ -158,11 +161,11 @@ class Importer implements ImporterInterface {
    *
    * @see \Drupal\Core\DefaultContent\Finder
    */
-  protected function getExportsWithDependencies(SourceInterface $source): array {
+  protected function getExportsWithDependencies(LarkSourceInterface $source): array {
     try {
       // Scan for all YAML files in the content directory.
       $finder = SymfonyFinder::create()
-        ->in($source->directory())
+        ->in($source->directoryProcessed())
         ->files()
         ->name('*.yml');
     }

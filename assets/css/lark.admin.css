@@ -74,9 +74,6 @@ table.lark-status-summary-table td {
   height: 2em;
   font-weight: normal;
 }
-table.lark-status-summary-table thead th {
-  background: transparent;
-}
 table.lark-status-summary-table .summary-heading {
   font-style: italic;
   padding: 2px 12px;
@@ -99,4 +96,26 @@ table.lark-status-summary-table .summary-container-empty,
 table.lark-status-summary-table .summary-count-empty {
   font-style: italic;
   font-size: 0.9rem;
+}
+
+/*
+ * Source view
+ */
+table.lark-source-view-summary {
+  width: auto;
+  max-width: 900px;
+}
+table.lark-source-view-summary th,
+table.lark-source-view-summary td {
+  padding: 2px 12px;
+  height: 2em;
+  font-weight: normal;
+}
+
+td.directory {
+  font-family: monospace;
+  white-space: pre;
+}
+th.summary-heading {
+  background: #eeeeee;
 }

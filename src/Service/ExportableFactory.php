@@ -15,7 +15,8 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Plugin\Lark\SourceInterface;
+use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\Utility\ExportableStatusResolver;
 use Drupal\user\UserInterface;
 
@@ -30,8 +31,8 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected ConfigFactoryInterface $configFactory,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
+    protected LarkSettings $larkSettings,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
-    protected SourceManagerInterface $sourceManager,
     protected ImporterInterface $importer,
     protected ExportableStatusResolver $statusResolver,
     protected ModuleHandlerInterface $moduleHandler,
@@ -72,7 +73,11 @@ class ExportableFactory implements ExportableFactoryInterface {
       return $this->createFromEntity($found);
     }
 
-    foreach ($this->sourceManager->getInstances() as $source) {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
+    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+      'status' => 1,
+    ]);
+    foreach ($sources as $source) {
       $exportable = $this->createFromSource($source->id(), $uuid);
       if ($exportable) {
         return $exportable;
@@ -98,7 +103,8 @@ class ExportableFactory implements ExportableFactoryInterface {
       return $this->exportablesCache[$root_uuid];
     }
 
-    $source = $this->sourceManager->createInstance($source_plugin_id);
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_plugin_id);
     $exports = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
     foreach ($exports as $uuid => $export) {
@@ -127,9 +133,9 @@ class ExportableFactory implements ExportableFactoryInterface {
   /**
    * {@inheritdoc}
    * @param array $exports_meta_option_overrides
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface|null $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
    */
-  public function getEntityExportables(string $entity_type_id, int $entity_id, ?SourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
+  public function getEntityExportables(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
     if (!$entity) {
@@ -159,7 +165,7 @@ class ExportableFactory implements ExportableFactoryInterface {
    *   The entity to get exportables for.
    * @param array $exportables
    *   The exportables array to populate.
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface|null $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
    *   Override the source for the exportables being gathered.
    * @param array $exports_meta_option_overrides
    *   Override meta option values for the exportables being gathered.
@@ -171,7 +177,7 @@ class ExportableFactory implements ExportableFactoryInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function getEntityExportablesRecursive(ContentEntityInterface $entity, array &$exportables = [], ?SourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
+  protected function getEntityExportablesRecursive(ContentEntityInterface $entity, array &$exportables = [], ?LarkSourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
     // Allow modules to prevent the entity from being exported.
     $should_export = $this->moduleHandler->invokeAll('lark_should_export_entity', [$entity]);
     if (!empty($should_export)) {
@@ -240,12 +246,12 @@ class ExportableFactory implements ExportableFactoryInterface {
    * Perform file actions and adjustments on exportable.
    *
    * @param \Drupal\lark\Model\ExportableInterface[] $exportables
-   * @param \Drupal\lark\Plugin\Lark\SourceInterface|null $source
+   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
    * @param array $exports_meta_option_overrides
    *
    * @return \Drupal\lark\Model\ExportableInterface[]
    */
-  protected function prepareExportables(array $exportables, ?SourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
+  protected function prepareExportables(array $exportables, ?LarkSourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
     foreach ($exportables as $exportable) {
       $entity = $exportable->entity();
 
@@ -254,7 +260,7 @@ class ExportableFactory implements ExportableFactoryInterface {
       }
 
       if (!$source) {
-        $source = $this->sourceManager->getDefaultSource();
+        $source = $this->entityTypeManager->getStorage('lark_source')->load($this->larkSettings->defaultSource());
       }
 
       if ($source) {

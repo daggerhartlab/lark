@@ -4,16 +4,13 @@ namespace Drupal\lark\Form;
 
 use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Extension\ExtensionPathResolver;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Serialization\Yaml;
-use Drupal\lark\Plugin\Lark\SourceBase;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\MetaOptionManager;
-use Drupal\lark\Service\SourceManagerInterface;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
 use Drupal\lark\Service\Utility\TableFormHandler;
 use Drupal\system\FileDownloadController;
@@ -26,7 +23,6 @@ class EntityDownloadForm extends FormBase {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected FileSystemInterface $fileSystem,
     protected ExportableFactoryInterface $exportableFactory,
-    protected SourceManagerInterface $sourceManager,
     protected MetaOptionManager $metaOptionManager,
     protected FileDownloadController $fileDownloadController,
     protected ExportableStatusBuilder $statusBuilder,
@@ -41,7 +37,6 @@ class EntityDownloadForm extends FormBase {
       $container->get(EntityTypeManagerInterface::class),
       $container->get(FileSystemInterface::class),
       $container->get(ExportableFactoryInterface::class),
-      $container->get(SourceManagerInterface::class),
       $container->get(MetaOptionManager::class),
       FileDownloadController::create($container),
       $container->get(ExportableStatusBuilder::class),
@@ -104,10 +99,13 @@ class EntityDownloadForm extends FormBase {
     $meta_options_overrides = $this->tableFormHandler->getSubmittedMetaOptionOverrides('export_form_values', $form_state);
 
     // Make a source that acts in place of a filesystem source.
-    $source = SourceBase::create(\Drupal::getContainer(),  [], 'download', [
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entityTypeManager->getStorage('lark_source')->create([
+      'id' => 'download',
       'label' => 'Download',
       // Write to the /tmp directory as needed during export.
       'directory' => $this->fileSystem->getTempDirectory(),
+      'status' => 1,
     ]);
 
     $exportables = $this->exportableFactory->getEntityExportables(
@@ -118,17 +116,17 @@ class EntityDownloadForm extends FormBase {
     );
 
     try {
-      $this->fileSystem->delete($source->directory() . '/lark-export.tar.gz');
+      $this->fileSystem->delete($source->directoryProcessed() . '/lark-export.tar.gz');
     }
     catch (FileException $e) {
       // Ignore failed deletes.
     }
 
-    $archiver = new ArchiveTar($source->directory() . '/lark-export.tar.gz', 'gz');
+    $archiver = new ArchiveTar($source->directoryProcessed() . '/lark-export.tar.gz', 'gz');
 
     // Add all contents of the export storage to the archive.
     foreach ($exportables as $exportable) {
-      $filename = str_replace($source->directory(), '', $exportable->getExportFilepath());
+      $filename = str_replace($source->directoryProcessed(), '', $exportable->getExportFilepath());
       $archiver->addString($filename, Yaml::encode($exportable->toArray()));
 
       foreach ($this->metaOptionManager->getInstances() as $meta_option) {
