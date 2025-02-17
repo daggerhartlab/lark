@@ -3,15 +3,12 @@ lark administer configuration:
   description: 'Perform exports and imports of Lark entities.'
   restrict access: true
 
-lark view diffs:
-  title: 'View Lark Diffs'
-  description: 'View differences between entities in and Lark exports.'
+lark export entity:
+  title: 'Export Entity'
+  description: 'Export, download, or view entities using Lark. Since all fields for entities are exported, this could expose private information stored on those entities depending on your content setup.'
   restrict access: true
 
-lark import export entities:
-  title: 'Import and Export Entities'
-  description: 'Export entities to YAML using Lark.'
+lark import entity:
+  title: 'Import Entity'
+  description: 'Import entities using Lark.'
   restrict access: true
-
-administer lark_source:
-  title: 'Administer source'

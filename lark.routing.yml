@@ -25,7 +25,7 @@ lark.action_import_source:
       lark_source:
         type: entity:lark_source
   requirements:
-    _permission: 'lark import export entities'
+    _permission: 'lark import entity'
 
 lark.action_import_source_entity:
   path: '/admin/lark/action/import-source-entity/{lark_source}/{uuid}'
@@ -40,7 +40,7 @@ lark.action_import_source_entity:
       uuid:
         type: string
   requirements:
-    _permission: 'lark import export entities'
+    _permission: 'lark import entity'
 
 lark.action_download_source:
   path: '/admin/lark/action/download-source/{lark_source}'
@@ -53,7 +53,7 @@ lark.action_download_source:
       lark_source:
         type: entity:lark_source
   requirements:
-    _permission: 'lark import export entities'
+    _permission: 'lark export entity'
 
 # Lark source entities.
 entity.lark_source.collection:
@@ -62,7 +62,7 @@ entity.lark_source.collection:
     _entity_list: 'lark_source'
     _title: 'Sources'
   requirements:
-    _permission: 'administer lark_source'
+    _permission: 'lark administer configuration'
 
 # Provide a canonical route so we can easily view the source.
 entity.lark_source.canonical:
@@ -72,7 +72,7 @@ entity.lark_source.canonical:
     _title: 'View Source'
     _title_callback: '\Drupal\lark\Controller\ExportsManager::viewSourceTitle'
   requirements:
-    _permission: 'administer lark_source'
+    _permission: 'lark administer configuration'
   options:
     parameters:
       lark_source:
@@ -84,7 +84,7 @@ entity.lark_source.add_form:
     _entity_form: 'lark_source.add'
     _title: 'Add a source'
   requirements:
-    _permission: 'administer lark_source'
+    _permission: 'lark administer configuration'
 
 entity.lark_source.edit_form:
   path: '/admin/lark/source/{lark_source}/edit'
@@ -92,7 +92,7 @@ entity.lark_source.edit_form:
     _entity_form: 'lark_source.edit'
     _title: 'Edit a source'
   requirements:
-    _permission: 'administer lark_source'
+    _permission: 'lark administer configuration'
 
 entity.lark_source.delete_form:
   path: '/admin/lark/source/{lark_source}/delete'
@@ -100,4 +100,4 @@ entity.lark_source.delete_form:
     _entity_form: 'lark_source.delete'
     _title: 'Delete a source'
   requirements:
-    _permission: 'administer lark_source'
+    _permission: 'lark administer configuration'
