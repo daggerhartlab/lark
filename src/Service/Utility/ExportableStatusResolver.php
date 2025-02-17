@@ -89,8 +89,8 @@ class ExportableStatusResolver {
 
       // The database doesn't store our meta options, and during a diff they
       // wouldn't have changed.
-      if ($export->metaOptions()) {
-        $exportable->setMetaOptions($export['_meta']['options']);
+      if ($export->options()) {
+        $exportable->setMetaOptions($export->options());
       }
     }
 
@@ -118,7 +118,7 @@ class ExportableStatusResolver {
     $left_array = $exportable->getExportArray();
 
     // Process for comparison.
-    $left_array = $this->processExportArrayForComparison($left_array);
+    $left_array = $this->processExportArrayForComparison((array) $left_array);
     $right_array = $this->processExportArrayForComparison($exportable->toArray());
 
     return new Diff(

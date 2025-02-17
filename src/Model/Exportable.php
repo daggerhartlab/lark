@@ -37,9 +37,9 @@ class Exportable implements ExportableInterface {
   /**
    * If the export exists, this is the array of values that was exported.
    *
-   * @var \Drupal\lark\Model\ExportArray|null
+   * @var \Drupal\lark\Model\ExportArray
    */
-  protected ?ExportArray $exportArray = NULL;
+  protected ExportArray $exportArray;
 
   /**
    * Dependencies array keys are entity UUIDs, values are entity type IDs.
@@ -66,7 +66,9 @@ class Exportable implements ExportableInterface {
    * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
    *   Entity.
    */
-  public function __construct(protected ContentEntityInterface $entity) {}
+  public function __construct(protected ContentEntityInterface $entity) {
+    $this->exportArray = new ExportArray();
+  }
 
   /**
    * {@inheritdoc}
@@ -94,14 +96,14 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function getMetaOptions(): array {
-    return $this->exportArray->metaOptions();
+    return $this->exportArray->options();
   }
 
   /**
    * {@inheritdoc}
    */
   public function setMetaOptions(array $options): self {
-    $this->exportArray->setMeta('options', $options);
+    $this->exportArray->setOptions($options);
     return $this;
   }
 
@@ -109,21 +111,21 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function getMetaOption(string $name): mixed {
-    return $this->exportArray->getMetaOption($name);
+    return $this->exportArray->getOption($name);
   }
 
   /**
    * {@inheritdoc}
    */
   public function hasMetaOption(string $name): bool {
-    return $this->exportArray->hasMetaOption($name);
+    return $this->exportArray->hasOption($name);
   }
 
   /**
    * {@inheritdoc}
    */
   public function setMetaOption(string $name, $value): self {
-    $this->exportArray->setMetaOption($name, $value);
+    $this->exportArray->setOption($name, $value);
     return $this;
   }
 
@@ -231,32 +233,34 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function toArray(): array {
-    $array = [
-      '_meta' => [
-        'entity_type' => $this->entity()->getEntityTypeId(),
-        'bundle' => $this->entity()->bundle(),
-        'entity_id' => $this->entity()->id(),
-        'label' => (string) $this->entity()->label(),
-        'path' => $this->getExportFilepath(),
-        'uuid' => $this->entity()->uuid(),
-        'default_langcode' => $this->entity()->language()->getId(),
-        'depends' => $this->getDependencies(),
-      ],
-      'default' => Exporter::getEntityExportArray($this->entity()),
-    ];
-
-    if ($this->getMetaOptions()) {
-      $array['_meta']['options'] = $this->getMetaOptions();
-    }
+    $export = new ExportArray();
+    $export->setEntityTypeId($this->entity()->getEntityTypeId());
+    $export->setBundle($this->entity()->bundle());
+    $export->setMeta('entity_id', $this->entity()->id());
+    $export->setLabel($this->entity()->label());
+    $export->setPath($this->getExportFilepath());
+    $export->setUuid($this->entity()->uuid());
+    $export->setDefaultLangcode($this->entity->language()->getId());
+    $export->setDependencies($this->dependencies);
+    $export->setContent(Exporter::getEntityExportArray($this->entity()));
+    $export->setOptions($this->getMetaOptions());
 
     foreach ($this->entity()->getTranslationLanguages() as $langcode => $language) {
       if ($langcode === $this->entity()->language()->getId()) {
         continue;
       }
-      $array['translations'][$langcode] = Exporter::getEntityExportArray($this->entity()->getTranslation($langcode));
+      $export->setTranslation($langcode, Exporter::getEntityExportArray($this->entity()->getTranslation($langcode)));
     }
 
-    return $array;
+    if (!$export->options()) {
+      unset($export['_meta']['options']);
+    }
+
+    if (!$export->translations()) {
+      unset($export['translations']);
+    }
+
+    return (array) $export;
   }
 
 }
