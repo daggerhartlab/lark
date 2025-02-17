@@ -282,6 +282,7 @@ class SourceViewBuilder {
         'colspan' => count($this->toggleHeaders()),
         'class' => ['lark-toggle-details-row', 'lark-toggle-details-row--' . $root_uuid],
         'data' => [
+          'summary' => $this->statusBuilder->getExportablesSummary($dependency_exportables),
           'dependencies_heading' => [
             '#type' => 'html_tag',
             '#tag' => 'h4',
