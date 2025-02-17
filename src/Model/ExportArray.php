@@ -36,6 +36,30 @@ class ExportArray extends \ArrayObject {
     parent::__construct($array, $flags, $iteratorClass);
   }
 
+  public function entityTypeId(): string {
+    return $this->getMeta('entity_type');
+  }
+
+  public function setEntityTypeId(string $entity_type_id): void {
+    $this->setMeta('entity_type', $entity_type_id);
+  }
+
+  public function bundle(): string {
+    return $this->getMeta('bundle');
+  }
+
+  public function setBundle(string $bundle): void {
+    $this->setMeta('bundle', $bundle);
+  }
+
+  public function entityId(): string|int {
+    return $this->getMeta('entity_id', '0');
+  }
+
+  public function setEntityId(string|int $entity_id): void {
+    $this->setMeta('entity_id', (string) $entity_id);
+  }
+
   /**
    * @return string|null
    */
@@ -53,22 +77,6 @@ class ExportArray extends \ArrayObject {
 
   public function setUuid(string $uuid): void {
     $this->setMeta('uuid', $uuid);
-  }
-
-  public function entityTypeId(): string {
-    return $this->getMeta('entity_type');
-  }
-
-  public function setEntityTypeId(string $entity_type_id): void {
-    $this->setMeta('entity_type', $entity_type_id);
-  }
-
-  public function bundle(): string {
-    return $this->getMeta('bundle');
-  }
-
-  public function setBundle(string $bundle): void {
-    $this->setMeta('bundle', $bundle);
   }
 
   public function path(): string {
@@ -145,6 +153,23 @@ class ExportArray extends \ArrayObject {
 
   public function setOption(string $name, $value): void {
     $this['_meta']['options'][$name] = $value;
+  }
+
+  /**
+   * Provide a clean array for this object.
+   *
+   * @return array
+   */
+  public function cleanArray(): array {
+    if (!$this->options()) {
+      unset($this['_meta']['options']);
+    }
+
+    if (!$this->translations()) {
+      unset($this['translations']);
+    }
+
+    return (array) $this;
   }
 
 }

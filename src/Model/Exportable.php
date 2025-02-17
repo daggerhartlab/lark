@@ -233,10 +233,12 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function toArray(): array {
+    // Use a new ExportArray instead of ::exportArray because this method is
+    // called when generating a Diff.
     $export = new ExportArray();
     $export->setEntityTypeId($this->entity()->getEntityTypeId());
     $export->setBundle($this->entity()->bundle());
-    $export->setMeta('entity_id', $this->entity()->id());
+    $export->setEntityId($this->entity()->id());
     $export->setLabel($this->entity()->label());
     $export->setPath($this->getExportFilepath());
     $export->setUuid($this->entity()->uuid());
@@ -252,15 +254,7 @@ class Exportable implements ExportableInterface {
       $export->setTranslation($langcode, Exporter::getEntityExportArray($this->entity()->getTranslation($langcode)));
     }
 
-    if (!$export->options()) {
-      unset($export['_meta']['options']);
-    }
-
-    if (!$export->translations()) {
-      unset($export['translations']);
-    }
-
-    return (array) $export;
+    return $export->cleanArray();
   }
 
 }
