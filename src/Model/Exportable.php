@@ -37,9 +37,9 @@ class Exportable implements ExportableInterface {
   /**
    * If the export exists, this is the array of values that was exported.
    *
-   * @var array
+   * @var \Drupal\lark\Model\ExportArray|null
    */
-  protected array $exportedValues = [];
+  protected ?ExportArray $exportArray = NULL;
 
   /**
    * Dependencies array keys are entity UUIDs, values are entity type IDs.
@@ -79,14 +79,14 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function getDependencies(): array {
-    return $this->dependencies;
+    return $this->exportArray->dependencies();
   }
 
   /**
    * {@inheritdoc}
    */
   public function setDependencies(array $dependencies): self {
-    $this->dependencies = $dependencies;
+    $this->exportArray->setDependencies($dependencies);
     return $this;
   }
 
@@ -94,44 +94,44 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function getMetaOptions(): array {
-    return $this->metaOptions;
+    return $this->exportArray->metaOptions();
   }
 
   /**
    * {@inheritdoc}
    */
   public function setMetaOptions(array $options): self {
-    $this->metaOptions = $options;
+    $this->exportArray->setMeta('options', $options);
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMetaOption(string $key): mixed {
-    return $this->metaOptions[$key] ?? NULL;
+  public function getMetaOption(string $name): mixed {
+    return $this->exportArray->getMetaOption($name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasMetaOption(string $key): bool {
-    return isset($this->metaOptions[$key]);
+  public function hasMetaOption(string $name): bool {
+    return $this->exportArray->hasMetaOption($name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMetaOption(string $key, $value): self {
-    $this->metaOptions[$key] = $value;
+  public function setMetaOption(string $name, $value): self {
+    $this->exportArray->setMetaOption($name, $value);
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getExportedValues(): array {
-    return $this->exportedValues;
+  public function getExportArray(): ExportArray {
+    return $this->exportArray;
   }
 
   /**
@@ -207,7 +207,7 @@ class Exportable implements ExportableInterface {
     $this->exportFilepath = $filepath;
     $this->setExportExists(\file_exists($filepath));
     if ($this->getExportExists()) {
-      $this->exportedValues = Yaml::decode(\file_get_contents($filepath));
+      $this->exportArray = new ExportArray(Yaml::decode(\file_get_contents($filepath)));
     }
 
     return $this;

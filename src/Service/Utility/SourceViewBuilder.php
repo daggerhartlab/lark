@@ -117,7 +117,6 @@ class SourceViewBuilder {
   public function tablePopulated(LarkSourceInterface $source): array {
     $exports = $this->importer->discoverSourceExports($source);
     $source_root_exports = $this->getRootLevelExports($exports);
-
     $table = $this->table();
 
     // The root export is a top-level table row

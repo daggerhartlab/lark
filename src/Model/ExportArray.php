@@ -38,6 +38,10 @@ class ExportArray extends \ArrayObject {
     return $this->getMeta('depends', []);
   }
 
+  public function setDependencies(array $dependencies): void {
+    $this->setMeta('depends', $dependencies);
+  }
+
   public function content(string $langcode = NULL): array {
     if (!\is_string($langcode)) {
       $langcode = 'default';

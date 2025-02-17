@@ -115,7 +115,7 @@ class ExportableStatusResolver {
    *   The diff object.
    */
   public function exportableToDiff(ExportableInterface $exportable): Diff {
-    $left_array = $exportable->getExportedValues();
+    $left_array = $exportable->getExportArray();
 
     // Process for comparison.
     $left_array = $this->processExportArrayForComparison($left_array);

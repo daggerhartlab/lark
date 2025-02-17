@@ -60,43 +60,43 @@ interface ExportableInterface {
   /**
    * Get meta option by key.
    *
-   * @param string $key
+   * @param string $name
    *   Name of the metdata item.
    *
    * @return mixed
    *   The metadata stored, or null.
    */
-  public function getMetaOption(string $key): mixed;
+  public function getMetaOption(string $name): mixed;
 
   /**
    * Whether a meta option exists.
    *
-   * @param string $key
+   * @param string $name
    *   Name of the metdata item.
    *
    * @return bool
    *   True if the meta option exists.
    */
-  public function hasMetaOption(string $key): bool;
+  public function hasMetaOption(string $name): bool;
 
   /**
    * Set some meta option for the export.
    *
-   * @param string $key
+   * @param string $name
    *   Name of data.
    * @param $value
    *   Value.
    *
    * @return $this
    */
-  public function setMetaOption(string $key, $value): self;
+  public function setMetaOption(string $name, $value): self;
 
   /**
    * Get the exported values if we have them.
    *
-   * @return array
+   * @return \Drupal\lark\Model\ExportArray
    */
-  public function getExportedValues(): array;
+  public function getExportArray(): ExportArray;
 
   /**
    * Get status code.
