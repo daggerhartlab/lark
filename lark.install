@@ -1,6 +1,24 @@
 <?php
 
 /**
+ * Implements hook_install().
+ */
+function lark_install($is_syncing) {
+  // Create the default lark source if it doesn't exist.
+  $storage = \Drupal::entityTypeManager()->getStorage('lark_source');
+  $source = $storage->load('lark.default_exports');
+  if (!$source) {
+    $source = $storage->create([
+      'id' => 'lark.default_exports',
+      'label' => 'Lark Default Exports',
+      'directory' => '../content/lark-exports',
+      'status' => 1,
+    ]);
+    $source->save();
+  }
+}
+
+/**
  * Migrate old lark_source plugins to new lark_source config entities.
  */
 function lark_update_10001() {
