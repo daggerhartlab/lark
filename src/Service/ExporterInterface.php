@@ -13,7 +13,7 @@ interface ExporterInterface {
    * Export a single entity and its dependencies.
    *
    * @param string $source_id
-   *   Source plugin id.
+   *   Source id.
    * @param string $entity_type_id
    *   Entity type id.
    * @param int $entity_id

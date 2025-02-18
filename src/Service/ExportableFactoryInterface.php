@@ -43,7 +43,7 @@ interface ExportableFactoryInterface {
    * Factory for creating from yaml export file.
    *
    * @param string $source_id
-   *   Source plugin id.
+   *   Source id.
    * @param string $uuid
    *   Export entity uuid.
    *
@@ -59,7 +59,7 @@ interface ExportableFactoryInterface {
    * Factory for creating exportables with dependencies.
    *
    * @param string $source_id
-   *   Source plugin id.
+   *   Source id.
    * @param string $root_uuid
    *   Root entity uuid.
    *

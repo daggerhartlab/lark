@@ -215,7 +215,7 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    * Get the source plugin instance.
    *
    * @param string $source_id
-   *   Source plugin id.
+   *   Source id.
    *
    * @return \Drupal\lark\Entity\LarkSourceInterface
    *   Source plugin instance.
@@ -230,7 +230,7 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    * Get the source content directory.
    *
    * @param string $source_plugin_id
-   *   Source plugin id.
+   *   Source id.
    *
    * @return string
    *   The source content directory.

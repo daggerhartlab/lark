@@ -14,7 +14,7 @@ interface ImporterInterface {
    * Import a single entity by its uuid.
    *
    * @param string $source_id
-   *   The source plugin id.
+   *   The Source id.
    * @param string $uuid
    *   The UUID of the entity to import.
    * @param bool $show_messages
@@ -46,7 +46,7 @@ interface ImporterInterface {
    * Import all content from a single source.
    *
    * @param string $source_id
-   *   The source plugin id.
+   *   The Source id.
    * @param bool $show_messages
    *   Whether to show messages.
    *
