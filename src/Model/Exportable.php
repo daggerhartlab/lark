@@ -156,7 +156,9 @@ class Exportable implements ExportableInterface {
    */
   public function setSource(?LarkSourceInterface $source): self {
     $this->source = $source;
-    if ($source && !$this->getFilepath()) {
+
+    // If we're setting the source, then we have a knowable filepath.
+    if ($source) {
       // Set the export filepath and attempt to load the source's ExportArray.
       $this->setFilepath($source->getDestinationFilepath(
         $this->entity()->getEntityTypeId(),

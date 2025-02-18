@@ -4,6 +4,7 @@ namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\lark\Service\Exporter;
+use Drupal\lark\Service\Utility\EntityUtility;
 
 /**
  * Object for array of data exported to yaml.
@@ -56,7 +57,7 @@ class ExportArray extends \ArrayObject {
   public static function createFromEntity(ContentEntityInterface $entity): static {
     $default_translation = $entity->getTranslation(\Drupal::languageManager()->getDefaultLanguage()->getId());
     $export = new static();
-    $dependencies = Exporter::getEntityExportDependencies($entity);
+    $dependencies = EntityUtility::getEntityExportDependencies($entity);
 
     $export
       ->setEntityTypeId($entity->getEntityTypeId())
@@ -68,10 +69,10 @@ class ExportArray extends \ArrayObject {
       ->setDefaultLangcode($default_translation->language()->getId())
       ->setDependencies($dependencies)
       // ->setOptions([]) // Can't know about meta options yet.
-      ->setFields(Exporter::getEntityArray($default_translation));
+      ->setFields(EntityUtility::getEntityArray($default_translation));
 
     foreach ($entity->getTranslationLanguages(FALSE) as $langcode => $language) {
-      $export->setFields(Exporter::getEntityArray($entity->getTranslation($langcode)), $langcode);
+      $export->setFields(EntityUtility::getEntityArray($entity->getTranslation($langcode)), $langcode);
     }
 
     return $export;

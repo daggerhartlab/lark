@@ -57,7 +57,7 @@ class EntityDownloadForm extends FormBase {
       $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity);
     }
 
-    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id());
+    $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity->id());
 
     $form['entity_type_id'] = [
       '#type' => 'value',

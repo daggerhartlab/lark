@@ -68,7 +68,7 @@ class DownloadController extends ControllerBase {
       'status' => 1,
     ]);
 
-    $exportables = $this->exportableFactory->getEntityExportables(
+    $exportables = $this->exportableFactory->createFromEntityWithDependencies(
       $entity_type_id,
       (int) $entity_id,
       NULL,
@@ -140,7 +140,7 @@ class DownloadController extends ControllerBase {
       }
 
       // Export entities from the database.
-      $exportables = $this->exportableFactory->getEntityExportables(
+      $exportables = $this->exportableFactory->createFromEntityWithDependencies(
         $entity_type_id,
         (int) $entity->id(),
         NULL,

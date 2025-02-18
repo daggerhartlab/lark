@@ -56,9 +56,9 @@ class Exporter implements ExporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function exportEntity(string $source_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_meta_options_overrides = []): void {
+  public function exportEntity(string $source_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $meta_options_overrides = []): void {
     $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
-    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id, $source, $exports_meta_options_overrides);
+    $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity_id, $source, $meta_options_overrides);
 
     foreach ($exportables as $exportable) {
       // Allow meta option plugins to perform last minute changes or actions.
@@ -108,105 +108,6 @@ class Exporter implements ExporterInterface {
       $exportable->getFilepath(),
       $exportable->toYaml(),
     );
-  }
-
-  /**
-   * Get entity export array.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
-   *   Entity.
-   *
-   * @return array
-   *   Entity export array.
-   */
-  public static function getEntityArray(ContentEntityInterface $entity): array {
-    $array = $entity->toArray();
-    $handler_manager = \Drupal::service(FieldTypeHandlerManagerInterface::class);
-
-    // Remove keys that may not be unique across environments.
-    $id_keys = array_filter([
-      $entity->getEntityType()->getKey('id'),
-      $entity->getEntityType()->getKey('revision'),
-    ]);
-    foreach ($id_keys as $id_key) {
-      unset($array[$id_key]);
-    }
-
-    // Process the field values through the field type handlers.
-    foreach ($array as $field_name => $default_values) {
-      if (is_array($default_values)) {
-        $array[$field_name] = $handler_manager->alterExportValues($default_values, $entity, $entity->get($field_name));
-      }
-    }
-
-    return $array;
-  }
-
-  /**
-   * Get dependencies as array of uuid -> entity type id pairs for the entity.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
-   *   Entity.
-   * @param array $dependencies
-   *   Array that is modified during recursion.
-   *
-   * @return array
-   *   Uuid and entity_type_id pairs.
-   */
-  public static function getEntityExportDependencies(ContentEntityInterface $entity): array {
-    $dependencies = [];
-    $dependencies = static::getEntityUuidEntityTypePairs($entity, $dependencies);
-    // We only want dependencies. Remove this entity if found.
-    if (array_key_last($dependencies) === $entity->uuid()) {
-      unset($dependencies[$entity->uuid()]);
-    }
-
-    return $dependencies;
-  }
-
-  /**
-   * Recursively find uuid -> entity type id pairs for the given entity.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
-   *   Entity.
-   * @param array $found
-   *   Array that is built on during the recursive process.
-   *
-   * @return array
-   *   UUID => Entity type id pairs, including the given entity.
-   */
-  public static function getEntityUuidEntityTypePairs(ContentEntityInterface $entity, array &$found): array {
-    // Don't export users.
-    if ($entity instanceof UserInterface) {
-      return [];
-    }
-
-    $entity->getFieldDefinitions();
-
-    foreach ($entity->getFields() as $field) {
-      if ($field instanceof EntityReferenceFieldItemListInterface) {
-        foreach ($field->referencedEntities() as $referenced_entity) {
-          // Don't export config entities.
-          if ($referenced_entity instanceof ConfigEntityInterface) {
-            continue;
-          }
-          // Don't export users.
-          if ($referenced_entity instanceof UserInterface) {
-            continue;
-          }
-
-          // If the referenced entity is already processing, do nothing.
-          if (array_key_exists($referenced_entity->uuid(), $found)) {
-            continue;
-          }
-
-          $found += static::getEntityUuidEntityTypePairs($referenced_entity, $found);
-        }
-      }
-    }
-
-    $found[$entity->uuid()] = $entity->getEntityTypeId();
-    return $found;
   }
 
 }

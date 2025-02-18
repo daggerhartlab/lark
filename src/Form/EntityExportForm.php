@@ -71,7 +71,7 @@ class EntityExportForm extends FormBase {
       $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity);
     }
 
-    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id());
+    $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
     $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
@@ -124,14 +124,14 @@ class EntityExportForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $exports_meta_options_overrides = $this->tableFormHandler->getSubmittedMetaOptionOverrides('export_form_values', $form_state);
+    $meta_option_overrides = $this->tableFormHandler->getSubmittedMetaOptionOverrides('export_form_values', $form_state);
 
     $this->entityExporter->exportEntity(
       $form_state->getValue('source'),
       $form_state->getValue('entity_type_id'),
       (int) $form_state->getValue('entity_id'),
       TRUE,
-      $exports_meta_options_overrides,
+      $meta_option_overrides,
     );
   }
 

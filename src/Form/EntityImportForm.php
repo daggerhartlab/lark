@@ -71,7 +71,7 @@ class EntityImportForm extends FormBase {
       return [];
     }
 
-    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity->id());
+    $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
     $form['source_id'] = [

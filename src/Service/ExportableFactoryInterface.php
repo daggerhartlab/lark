@@ -12,23 +12,6 @@ use Drupal\lark\Entity\LarkSourceInterface;
 interface ExportableFactoryInterface {
 
   /**
-   * Create an exportable from only a uuid.
-   *
-   * Potentially expensive operation when we don't have any other data.
-   *
-   * @param string $uuid
-   *   Uuid for a content entity of an unknown type.
-   *
-   * @return \Drupal\lark\Model\ExportableInterface
-   *   Exportable created from found entity/export.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  public function createFromUuid(string $uuid): ExportableInterface;
-
-  /**
    * Create exportable from entity.
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
@@ -40,7 +23,28 @@ interface ExportableFactoryInterface {
   public function createFromEntity(ContentEntityInterface $entity): ExportableInterface;
 
   /**
-   * Factory for creating from yaml export file.
+   * Create an exportables collection for the given entity and its dependencies.
+   *
+   * @param string $entity_type_id
+   *   Entity type id.
+   * @param int $entity_id
+   *   Entity id.
+   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
+   *   Source to prepare this exportable for if known.
+   * @param array $meta_option_overrides
+   *   Override values for exportable options, keyed by UUID.
+   *
+   * @return \Drupal\lark\Model\ExportableInterface[]
+   *   Exportables collection.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function createFromEntityWithDependencies(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): array;
+
+  /**
+   * Create an exportable instance from the source export.
    *
    * @param string $source_id
    *   Source id.
@@ -56,7 +60,7 @@ interface ExportableFactoryInterface {
   public function createFromSource(string $source_id, string $uuid): ?ExportableInterface;
 
   /**
-   * Factory for creating exportables with dependencies.
+   * Create exportables collection from the UUID's yaml in the source.
    *
    * @param string $source_id
    *   Source id.
@@ -64,27 +68,25 @@ interface ExportableFactoryInterface {
    *   Root entity uuid.
    *
    * @return \Drupal\lark\Model\ExportableInterface[]
+   *   Exportables collection.
    */
   public function createFromSourceWithDependencies(string $source_id, string $root_uuid): array;
 
   /**
-   * Get the entity and prepare it for export.
+   * Create an exportable from only a uuid.
    *
-   * @param string $entity_type_id
-   *   Entity type id.
-   * @param int $entity_id
-   *   Entity id.
-   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
-   * @param array $meta_option_overrides
-   *   Exportable entity models.
+   * Potentially expensive operation when we don't have any other data.
    *
-   * @return \Drupal\lark\Model\ExportableInterface[]
-   *   Exportable entity models.
+   * @param string $uuid
+   *   Uuid for a content entity of an unknown type.
+   *
+   * @return \Drupal\lark\Model\ExportableInterface
+   *   Exportable created from found entity/export.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\lark\Exception\LarkEntityNotFoundException
    */
-  public function getEntityExportables(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): array;
+  public function createFromUuid(string $uuid): ExportableInterface;
 
 }
