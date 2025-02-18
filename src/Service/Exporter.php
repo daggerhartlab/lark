@@ -61,6 +61,13 @@ class Exporter implements ExporterInterface {
     $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id, $source, $exports_meta_options_overrides);
 
     foreach ($exportables as $exportable) {
+      // Allow meta option plugins to perform last minute changes or actions.
+      foreach ($this->metaOptionManager->getInstances() as $meta_option) {
+        if ($meta_option->applies($exportable->entity())) {
+          $meta_option->preExportWrite($exportable);
+        }
+      }
+
       if ($this->writeToYaml($exportable)) {
         $message = $this->t('Exported @entity_type_id : @entity_id : @label', [
           '@entity_type_id' => $exportable->entity()->getEntityTypeId(),

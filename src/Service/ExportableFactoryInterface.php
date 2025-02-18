@@ -75,7 +75,7 @@ interface ExportableFactoryInterface {
    * @param int $entity_id
    *   Entity id.
    * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
-   * @param array $exports_meta_option_overrides
+   * @param array $meta_option_overrides
    *   Exportable entity models.
    *
    * @return \Drupal\lark\Model\ExportableInterface[]
@@ -85,6 +85,6 @@ interface ExportableFactoryInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\lark\Exception\LarkEntityNotFoundException
    */
-  public function getEntityExportables(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $exports_meta_option_overrides = []): array;
+  public function getEntityExportables(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): array;
 
 }
