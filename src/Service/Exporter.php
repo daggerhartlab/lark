@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Service;
 
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileExists;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Export entities and their dependencies.
@@ -56,11 +56,18 @@ class Exporter implements ExporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function exportEntity(string $source_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $exports_meta_options_overrides = []): void {
+  public function exportEntity(string $source_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $meta_options_overrides = []): void {
     $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
-    $exportables = $this->exportableFactory->getEntityExportables($entity_type_id, $entity_id, $source, $exports_meta_options_overrides);
+    $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity_id, $source, $meta_options_overrides);
 
     foreach ($exportables as $exportable) {
+      // Allow meta option plugins to perform last minute changes or actions.
+      foreach ($this->metaOptionManager->getInstances() as $meta_option) {
+        if ($meta_option->applies($exportable->entity())) {
+          $meta_option->preExportWrite($exportable);
+        }
+      }
+
       if ($this->writeToYaml($exportable)) {
         $message = $this->t('Exported @entity_type_id : @entity_id : @label', [
           '@entity_type_id' => $exportable->entity()->getEntityTypeId(),
@@ -98,41 +105,9 @@ class Exporter implements ExporterInterface {
    */
   protected function writeToYaml(ExportableInterface $exportable): bool {
     return (bool) \file_put_contents(
-      $exportable->getExportFilepath(),
+      $exportable->getFilepath(),
       $exportable->toYaml(),
     );
-  }
-
-  /**
-   * Get entity export array.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
-   *   Entity.
-   *
-   * @return array
-   *   Entity export array.
-   */
-  public static function getEntityExportArray(ContentEntityInterface $entity): array {
-    $array = $entity->toArray();
-    $handler_manager = \Drupal::service(FieldTypeHandlerManagerInterface::class);
-
-    // Remove keys that may not be unique across environments.
-    $id_keys = array_filter([
-      $entity->getEntityType()->getKey('id'),
-      $entity->getEntityType()->getKey('revision'),
-    ]);
-    foreach ($id_keys as $id_key) {
-      unset($array[$id_key]);
-    }
-
-    // Process the field values through the field type handlers.
-    foreach ($array as $field_name => $default_values) {
-      if (is_array($default_values)) {
-        $array[$field_name] = $handler_manager->alterExportValues($default_values, $entity, $entity->get($field_name));
-      }
-    }
-
-    return $array;
   }
 
 }

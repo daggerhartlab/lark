@@ -59,7 +59,7 @@ interface SourceManagerInterface {
    * Get a source plugin instance.
    *
    * @param string $source_id
-   *   The source plugin id.
+   *   The Source id.
    *
    * @return \Drupal\lark\Entity\LarkSourceInterface
    *   The plugin instance.

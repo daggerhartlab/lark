@@ -3,12 +3,11 @@
 namespace Drupal\lark\Service\Utility;
 
 use Drupal\Component\Diff\Diff;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ImporterInterface;
 
 /**
@@ -18,44 +17,17 @@ use Drupal\lark\Service\ImporterInterface;
 class ExportableStatusResolver {
 
   public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
+    protected ExportableSourceResolver $sourceResolver,
     protected ImporterInterface $importer,
     protected LarkSettings $settings,
   ) {}
 
   /**
-   * Get the source plugin for the given exportable.
+   * Determine the status of an exportable relative to the Source's ExportArray.
    *
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   The exportable entity.
-   *
-   * @return \Drupal\lark\Entity\LarkSourceInterface|null
-   *   The source plugin or NULL if not found.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   */
-  public function getExportableSource(ExportableInterface $exportable): ?LarkSourceInterface {
-    $entity = $exportable->entity();
-    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
-      'status' => 1,
-    ]);
-
-    foreach ($sources as $source) {
-      if ($source->exportExistsInSource($entity->getEntityTypeId(), $entity->bundle(), $entity->uuid())) {
-        return $source;
-      }
-    }
-
-    return NULL;
-  }
-
-  /**
-   * Determine the status of an exportable entity.
-   *
-   * @param \Drupal\lark\Model\ExportableInterface $exportable
-   *   The exportable entity.
-   * @param array $export
+   * @param \Drupal\lark\Model\ExportArray|null $sourceExportArray
    *   The export array.
    *
    * @return \Drupal\lark\ExportableStatus
@@ -63,15 +35,16 @@ class ExportableStatusResolver {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function getExportableStatus(ExportableInterface $exportable, array $export = []): ExportableStatus {
+  public function resolveStatus(ExportableInterface $exportable, ?ExportArray $sourceExportArray = NULL): ExportableStatus {
     $entity = $exportable->entity();
-    $source = $this->getExportableSource($exportable);
+    $source = $this->sourceResolver->resolveSource($exportable);
 
     if (!$source) {
       return ExportableStatus::NotExported;
     }
 
-    // Set the source since we took the trouble of finding it.
+    // Set the source since we took the trouble of finding it. This will also
+    // set the sourceExportArray on the exportable.
     if (!$exportable->getSource()) {
       $exportable->setSource($source);
     }
@@ -82,18 +55,17 @@ class ExportableStatusResolver {
 
     // If we don't have an export array but the export has a source, then we can
     // load it for comparison.
-    if (empty($export)) {
-      $exports = $this->importer->discoverSourceExport($source, $entity->uuid());
-      $export = $exports[$entity->uuid()];
+    if (!$sourceExportArray && $exportable->getSourceExportArray()) {
+      $sourceExportArray = $exportable->getSourceExportArray();
 
       // The database doesn't store our meta options, and during a diff they
       // wouldn't have changed.
-      if (isset($export['_meta']['options'])) {
-        $exportable->setMetaOptions($export['_meta']['options']);
+      if ($sourceExportArray->options()) {
+        $exportable->setOptions($sourceExportArray->options());
       }
     }
 
-    $left = $export;
+    $left = $sourceExportArray->cleanArray();
     $left = $this->processExportArrayForComparison($left);
     $right = $this->processExportArrayForComparison($exportable->toArray());
 
@@ -114,10 +86,8 @@ class ExportableStatusResolver {
    *   The diff object.
    */
   public function exportableToDiff(ExportableInterface $exportable): Diff {
-    $left_array = $exportable->getExportedValues();
-
     // Process for comparison.
-    $left_array = $this->processExportArrayForComparison($left_array);
+    $left_array = $this->processExportArrayForComparison($exportable->getSourceExportArray()->cleanArray());
     $right_array = $this->processExportArrayForComparison($exportable->toArray());
 
     return new Diff(
@@ -130,15 +100,15 @@ class ExportableStatusResolver {
    * Process the export array for comparison by removing values that diff from
    * one environment to another.
    *
-   * @param array $export
+   * @param array $array
    *   The export array.
    *
    * @return array
    *   The processed export array.
    */
-  public function processExportArrayForComparison(array $export): array {
-    $this->deepUnsetAll($export, $this->settings->ignoredComparisonKeysArray());
-    return $export;
+  public function processExportArrayForComparison(array $array): array {
+    $this->deepUnsetAll($array, $this->settings->ignoredComparisonKeysArray());
+    return $array;
   }
 
   /**

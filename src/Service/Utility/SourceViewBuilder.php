@@ -116,8 +116,8 @@ class SourceViewBuilder {
    */
   public function tablePopulated(LarkSourceInterface $source): array {
     $exports = $this->importer->discoverSourceExports($source);
+    $exports = array_reverse($exports);
     $source_root_exports = $this->getRootLevelExports($exports);
-
     $table = $this->table();
 
     // The root export is a top-level table row
@@ -236,7 +236,7 @@ class SourceViewBuilder {
    *   Table row.
    */
   protected function tableDataRow(LarkSourceInterface $source, ExportableInterface $exportable): array {
-    $relative = str_replace($source->directoryProcessed(FALSE) . DIRECTORY_SEPARATOR, '', $exportable->getExportFilepath());
+    $relative = str_replace($source->directoryProcessed(FALSE) . DIRECTORY_SEPARATOR, '', $exportable->getFilepath());
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
     return [
       'class' => [
@@ -258,7 +258,7 @@ class SourceViewBuilder {
         ],
         'filepath' => [
           'class' => ['filepath'],
-          'data' => Markup::create("<small title='{$exportable->getExportFilepath()}'><code>{$relative}</code></small>"),
+          'data' => Markup::create("<small title='{$exportable->getFilepath()}'><code>{$relative}</code></small>"),
         ],
         'operations' => [
           'data' => $this->sourceExportableOperations($source, $exportable),

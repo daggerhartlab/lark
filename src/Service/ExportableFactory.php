@@ -17,6 +17,8 @@ use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\LarkSettings;
+use Drupal\lark\Service\Utility\EntityUtility;
+use Drupal\lark\Service\Utility\ExportableSourceResolver;
 use Drupal\lark\Service\Utility\ExportableStatusResolver;
 use Drupal\user\UserInterface;
 
@@ -25,7 +27,13 @@ use Drupal\user\UserInterface;
  */
 class ExportableFactory implements ExportableFactoryInterface {
 
-  protected array $exportablesCache = [];
+  /**
+   * Cache single exportable items.
+   *
+   * @var array
+   */
+  protected array $exportableCache = [];
+  protected array $collectionsCache = [];
 
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
@@ -34,6 +42,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected LarkSettings $larkSettings,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected ImporterInterface $importer,
+    protected ExportableSourceResolver $sourceResolver,
     protected ExportableStatusResolver $statusResolver,
     protected ModuleHandlerInterface $moduleHandler,
     protected FileSystemInterface $fileSystem,
@@ -44,16 +53,102 @@ class ExportableFactory implements ExportableFactoryInterface {
    * {@inheritdoc}
    */
   public function createFromEntity(ContentEntityInterface $entity): ExportableInterface {
-    $exportables = $this->getEntityExportables($entity->getEntityTypeId(), (int) $entity->id());
-    $exportable = $exportables[$entity->uuid()];
-    $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
+    if (array_key_exists($entity->uuid(), $this->exportableCache)) {
+      return $this->exportableCache[$entity->uuid()];
+    }
+
+    $exportable = new Exportable($entity);
+    $this->prepareExportable($exportable);
+    $this->exportableCache[$entity->uuid()] = $exportable;
     return $exportable;
   }
 
   /**
    * {@inheritdoc}
    */
+  public function createFromEntityWithDependencies(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): array {
+    $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
+    if (!$entity) {
+      throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} not found.");
+    }
+
+    if (!($entity instanceof ContentEntityInterface)) {
+      throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} is not a content entity.");
+    }
+
+    // Don't return cache if we're overriding meta_options.
+    if (array_key_exists($entity->uuid(), $this->collectionsCache) && (empty($source) || empty($meta_option_overrides))) {
+      return $this->collectionsCache[$entity->uuid()];
+    }
+
+    $items = [];
+    $items = EntityUtility::getEntityUuidEntityTypePairs($entity, $items);
+    foreach ($items as $item_uuid => $item_entity_type_id) {
+      /** @var \Drupal\Core\Entity\ContentEntityInterface $item_entity */
+      $item_entity = $this->entityRepository->loadEntityByUuid($item_entity_type_id, $item_uuid);
+      $exportable = $this->createFromEntity($item_entity);
+      if ($source || $meta_option_overrides) {
+        $this->prepareExportable($exportable, $source, $meta_option_overrides);
+      }
+      $items[$item_uuid] = $exportable;
+    }
+
+    $this->collectionsCache[$entity->uuid()] = $items;
+    return $items;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createFromSource(string $source_id, string $uuid): ?ExportableInterface {
+    $exportables = $this->createFromSourceWithDependencies($source_id, $uuid);
+    return $exportables[$uuid] ?? NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createFromSourceWithDependencies(string $source_id, string $root_uuid): array {
+    if (array_key_exists($root_uuid, $this->collectionsCache)) {
+      return $this->collectionsCache[$root_uuid];
+    }
+
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
+    $exports = $this->importer->discoverSourceExport($source, $root_uuid);
+    $exportables = [];
+    foreach ($exports as $uuid => $export) {
+      $entity = $this->entityRepository->loadEntityByUuid($export->entityTypeId(), $export->uuid());
+
+      if (!$entity) {
+        $entity = $this->entityTypeManager->getStorage($export->entityTypeId())->create($export->fields('default'));
+      }
+
+      $exportable = new Exportable($entity);
+      $this->prepareExportable($exportable, $source);
+
+      // Override entity export values with source export values.
+      $exportable
+        ->setDependencies($export->dependencies())
+        ->setOptions($export->options());
+
+      // Set status in comparison to the sourceExportArray.
+      $exportable->setStatus($this->statusResolver->resolveStatus($exportable, $export));
+      $exportables[$uuid] = $exportable;
+    };
+
+    $this->collectionsCache[$root_uuid] = $exportables;
+    return $this->collectionsCache[$root_uuid];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function createFromUuid(string $uuid): ExportableInterface {
+    if (array_key_exists($uuid, $this->exportableCache)) {
+      return $this->exportableCache[$uuid];
+    }
+
     $content_entity_types = array_filter($this->entityTypeManager->getDefinitions(), function($def) {
       return $def instanceof ContentEntityTypeInterface;
     });
@@ -70,7 +165,8 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     if ($found) {
-      return $this->createFromEntity($found);
+      $this->exportableCache[$uuid] = $this->createFromEntity($found);
+      return $this->exportableCache[$uuid];
     }
 
     /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
@@ -80,6 +176,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     foreach ($sources as $source) {
       $exportable = $this->createFromSource($source->id(), $uuid);
       if ($exportable) {
+        $this->exportableCache[$uuid] = $exportable;
         return $exportable;
       }
     }
@@ -88,229 +185,72 @@ class ExportableFactory implements ExportableFactoryInterface {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function createFromSource(string $source_id, string $uuid): ?ExportableInterface {
-    $exportables = $this->createFromSourceWithDependencies($source_id, $uuid);
-    return $exportables[$uuid] ?? NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function createFromSourceWithDependencies(string $source_id, string $root_uuid): array {
-    if (array_key_exists($root_uuid, $this->exportablesCache)) {
-      return $this->exportablesCache[$root_uuid];
-    }
-
-    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
-    $exports = $this->importer->discoverSourceExport($source, $root_uuid);
-    $exportables = [];
-    foreach ($exports as $uuid => $export) {
-      $entity = $this->entityRepository->loadEntityByUuid($export['_meta']['entity_type'], $export['_meta']['uuid']);
-
-      if (!$entity) {
-        $entity = $this->entityTypeManager->getStorage($export['_meta']['entity_type'])->create($export['default']);
-      }
-
-      $exportable = new Exportable($entity);
-      $exportable
-        ->setDependencies($export['_meta']['depends'] ?? [])
-        ->setMetaOptions($export['_meta']['options'] ?? [])
-        ->setSource($source)
-        ->setExportFilepath($export['_meta']['path'])
-        ->setStatus($this->statusResolver->getExportableStatus($exportable, $export));
-
-      $exportables[$uuid] = $exportable;
-    };
-
-    $this->prepareExportables($exportables, $source);
-    $this->exportablesCache[$root_uuid] = $exportables;
-    return $this->exportablesCache[$root_uuid];
-  }
-
-  /**
-   * {@inheritdoc}
-   * @param array $exports_meta_option_overrides
-   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
-   */
-  public function getEntityExportables(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-    $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
-    if (!$entity) {
-      throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} not found.");
-    }
-
-    // Don't return cache if we're overriding meta_options.
-    if (array_key_exists($entity->uuid(), $this->exportablesCache) && (empty($source) || empty($exports_meta_option_overrides))) {
-      return $this->exportablesCache[$entity->uuid()];
-    }
-
-    $exportables = [];
-    $exportables = $this->getEntityExportablesRecursive($entity, $exportables, $source, $exports_meta_option_overrides);
-    // Because we're registering the entities in hierarchical order, reverse the
-    // array to ensure that dependent entities are after their dependencies.
-    $exportables = array_reverse($exportables);
-    $this->prepareExportables($exportables, $source, $exports_meta_option_overrides);
-    $this->exportablesCache[$entity->uuid()] = $exportables;
-
-    return $exportables;
-  }
-
-  /**
-   * Get the entity and prepare it for export.
+   * Prepares the exportable for use.
    *
-   * @param ContentEntityInterface $entity
-   *   The entity to get exportables for.
-   * @param array $exportables
-   *   The exportables array to populate.
-   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
-   *   Override the source for the exportables being gathered.
-   * @param array $exports_meta_option_overrides
-   *   Override meta option values for the exportables being gathered.
-   *
-   * @return array
-   *   The exportables array.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function getEntityExportablesRecursive(ContentEntityInterface $entity, array &$exportables = [], ?LarkSourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
-    // Allow modules to prevent the entity from being exported.
-    $should_export = $this->moduleHandler->invokeAll('lark_should_export_entity', [$entity]);
-    if (!empty($should_export)) {
-      $should_export = array_pop($should_export);
-      if ($should_export === FALSE) {
-        return $exportables;
-      }
-    }
-
-    // If the entity is already registered/processing, nothing to do.
-    if (isset($exportables[$entity->uuid()])) {
-      return $exportables;
-    }
-    // Register the entity to prevent circular recursion.
-    $exportables[$entity->uuid()] = NULL;
-
-    // Field definitions are lazy loaded and are populated only when needed.
-    // By calling ::getFieldDefinitions() we are sure that field definitions
-    // are populated and available in the dump output.
-    // @see https://www.drupal.org/node/2311557
-    if ($entity instanceof FieldableEntityInterface) {
-      $entity->getFieldDefinitions();
-    }
-
-    // Track referenced entities as dependencies of this entity.
-    $dependencies = [];
-    foreach ($entity->getFields() as $field) {
-      if ($field instanceof EntityReferenceFieldItemListInterface) {
-        foreach ($field->referencedEntities() as $referenced_entity) {
-          // Don't export config entities.
-          if ($referenced_entity instanceof ConfigEntityInterface) {
-            continue;
-          }
-          // Don't export users.
-          if ($referenced_entity instanceof UserInterface) {
-            continue;
-          }
-
-          // If the referenced entity is already processing, do nothing.
-          if (array_key_exists($referenced_entity->uuid(), $exportables)) {
-            continue;
-          }
-
-          $dependencies[$referenced_entity->uuid()] = $referenced_entity->getEntityTypeId();
-          $exportables += $this->getEntityExportablesRecursive($referenced_entity, $exportables, $source, $exports_meta_option_overrides);
-        }
-      }
-    }
-
-    // Exportable for the current entity.
-    $exportable = new Exportable($entity);
-    $exportable->setDependencies($dependencies);
-    $exportable->setSource($source ?? $this->statusResolver->getExportableSource($exportable));
-    $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
-
-    if ($exportable->getExportExists() && isset($exportable->getExportedValues()['_meta']['options'])) {
-      $exportable->setMetaOptions($exportable->getExportedValues()['_meta']['options']);
-    }
-    $this->overrideMetaValues($exportable, $exports_meta_option_overrides);
-
-    $exportables[$exportable->entity()->uuid()] = $exportable;
-    return $exportables;
-  }
-
-  /**
-   * Perform file actions and adjustments on exportable.
-   *
-   * @param \Drupal\lark\Model\ExportableInterface[] $exportables
-   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
-   * @param array $exports_meta_option_overrides
-   *
-   * @return \Drupal\lark\Model\ExportableInterface[]
-   */
-  protected function prepareExportables(array $exportables, ?LarkSourceInterface $source = NULL, array $exports_meta_option_overrides = []): array {
-    foreach ($exportables as $exportable) {
-      $entity = $exportable->entity();
-
-      if (!$source && $exportable->getSource()) {
-        $source = $exportable->getSource();
-      }
-
-      if (!$source) {
-        $source = $this->entityTypeManager->getStorage('lark_source')->load($this->larkSettings->defaultSource());
-      }
-
-      if ($source) {
-        // Prepare the export destination.
-        $destination_directory = $source->getDestinationDirectory(
-          $entity->getEntityTypeId(),
-          $entity->bundle(),
-        );
-        $this->fileSystem->prepareDirectory($destination_directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-
-        $destination_filepath = $source->getDestinationFilepath(
-          $entity->getEntityTypeId(),
-          $entity->bundle(),
-          $exportable->getExportFilename(),
-        );
-        $exportable->setExportFilepath($destination_filepath);
-      }
-
-      $this->overrideMetaValues($exportable, $exports_meta_option_overrides);
-    }
-
-    return $exportables;
-  }
-
-  /**
    * @param \Drupal\lark\Model\ExportableInterface $exportable
-   * @param array $exports_meta_option_overrides
+   *   Exportable to prepare.
+   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
+   *   Pass in a Source to prepare the exportable specifically for that source.
+   * @param array $meta_option_overrides
+   *   Keyed by uuid.
    *
-   * @return void
+   * @return \Drupal\lark\Model\ExportableInterface
    */
-  protected function overrideMetaValues(ExportableInterface $exportable, array $exports_meta_option_overrides): void {
+  protected function prepareExportable(ExportableInterface $exportable, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): ExportableInterface {
     $entity = $exportable->entity();
+
+    // If no source was passed in, use the exportable's source.
+    if (!$source && $exportable->getSource()) {
+      $source = $exportable->getSource();
+    }
+
+    // If no source is set, attempt to find it amongst all sources.
+    if (!$source) {
+      $source = $this->sourceResolver->resolveSource($exportable);
+    }
+
+    // If no source found, use the default source.
+    if (!$source) {
+      $source = $this->sourceResolver->defaultSource();
+    }
+
+    // Set status once we have a source.
+    $exportable->setSource($source);
+    $exportable->setStatus($this->statusResolver->resolveStatus($exportable));
+
+    // Prepare the export destination.
+    $destination_directory = $source->getDestinationDirectory(
+      $entity->getEntityTypeId(),
+      $entity->bundle(),
+    );
+    $this->fileSystem->prepareDirectory($destination_directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+    $destination_filepath = $source->getDestinationFilepath(
+      $entity->getEntityTypeId(),
+      $entity->bundle(),
+      $exportable->getFilename(),
+    );
+
+    $exportable->setFilepath($destination_filepath);
+
+    // Override exportable options.
     $uuid = $entity->uuid();
     foreach ($this->metaOptionManager->getInstances() as $meta_option) {
       if (!$meta_option->applies($entity)) {
         continue;
       }
 
-      // Set and meta option overrides passed in from the caller.
+      // Override meta options for the exportable.
       if (
-        array_key_exists($uuid, $exports_meta_option_overrides) &&
-        array_key_exists($meta_option->id(), $exports_meta_option_overrides[$uuid]) &&
-        !empty($exports_meta_option_overrides[$uuid][$meta_option->id()])
+        array_key_exists($uuid, $meta_option_overrides) &&
+        array_key_exists($meta_option->id(), $meta_option_overrides[$uuid]) &&
+        !empty($meta_option_overrides[$uuid][$meta_option->id()])
       ) {
-        $exportable->setMetaOption($meta_option->id(), $exports_meta_option_overrides[$uuid][$meta_option->id()]);
+        $exportable->setOption($meta_option->id(), $meta_option_overrides[$uuid][$meta_option->id()]);
       }
-
-      // Allow meta option plugins to perform last minute changes or actions.
-      $meta_option->preExportWrite($exportable);
     }
+
+    return $exportable;
   }
 
 }

@@ -38,7 +38,7 @@ class AssetFileManager {
   /**
    * Export the asset attached to the given File entity.
    *
-   * @param \Drupal\file\FileInterface $entity
+   * @param \Drupal\file\FileInterface $file
    *   File entity.
    * @param string $destination
    *   Destination directory.
@@ -46,12 +46,14 @@ class AssetFileManager {
    * @return string
    *   Path to new file.
    */
-  public function exportAsset(FileInterface $entity, string $destination): string {
+  public function exportAsset(FileInterface $file, string $destination): string {
     $destination = \rtrim($destination, DIRECTORY_SEPARATOR);
-    $asset_file = $entity->getFileUri();
+    $this->fileSystem->prepareDirectory($destination);
+
+    $asset_file = $file->getFileUri();
     $result = $this->fileSystem->copy(
       $asset_file,
-      $destination . DIRECTORY_SEPARATOR . $this->assetExportFilename($entity),
+      $destination . DIRECTORY_SEPARATOR . $this->assetExportFilename($file),
       $this->settings->assetExportFileExists()
     );
 

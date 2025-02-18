@@ -12,6 +12,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\file\FileInterface;
 use Drupal\lark\Attribute\LarkMetaOption;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Plugin\Lark\MetaOptionBase;
 
 /**
@@ -41,8 +42,8 @@ final class FileAssets extends MetaOptionBase {
 
     // Whether asset is exported.
     $is_exported_msg = $this->t('Asset not exported.');
-    if ($exportable->getExportFilepath()) {
-      $destination = dirname($exportable->getExportFilepath());
+    if ($exportable->getFilepath()) {
+      $destination = dirname($exportable->getFilepath());
       if ($this->assetFileManager->assetIsExported($file, $destination)) {
         $path = $destination . DIRECTORY_SEPARATOR . $this->assetFileManager->assetExportFilename($file);
         $is_exported_msg = $this->t('Asset exported: @path', ['@path' => $path]);
@@ -62,7 +63,7 @@ final class FileAssets extends MetaOptionBase {
       ],
     ];
 
-    $meta_option = $exportable->hasMetaOption($this->id()) ? $exportable->getMetaOption($this->id()) : [];
+    $meta_option = $exportable->hasOption($this->id()) ? $exportable->getOption($this->id()) : [];
 
     // Should export.
     $should_export_value = $this->larkSettings->shouldExportAssets();
@@ -105,10 +106,14 @@ final class FileAssets extends MetaOptionBase {
       '#disabled' => $disabled,
       '#options' => [
         '0' => $this->t('(@default_desc) Do not import', [
-          '@default_desc' => $this->larkSettings->shouldImportAssets() === FALSE ? $this->t('Default') : $this->t('Override')
+          '@default_desc' => $this->larkSettings->shouldImportAssets() === FALSE ?
+            $this->t('Default') :
+            $this->t('Override')
         ]),
         '1' => $this->t('(@default_desc) Import this asset along with the File entity', [
-          '@default_desc' => $this->larkSettings->shouldImportAssets() === TRUE ? $this->t('Default') : $this->t('Override')
+          '@default_desc' => $this->larkSettings->shouldImportAssets() === TRUE ?
+            $this->t('Default') :
+            $this->t('Override')
         ]),
       ],
     ]);
@@ -132,10 +137,10 @@ final class FileAssets extends MetaOptionBase {
   public function processFormValues(array $submitted_values, ExportableInterface $exportable, FormStateInterface $form_state): array {
     $values = [];
 
-    if ((bool) $submitted_values['should_export'] !== $this->larkSettings->shouldExportAssets()) {
+    if (((bool) $submitted_values['should_export']) !== $this->larkSettings->shouldExportAssets()) {
       $values['should_export'] = (bool) $submitted_values['should_export'];
     }
-    if ((bool) $submitted_values['should_import'] !== $this->larkSettings->shouldImportAssets()) {
+    if (((bool) $submitted_values['should_import']) !== $this->larkSettings->shouldImportAssets()) {
       $values['should_import'] = (bool) $submitted_values['should_import'];
     }
 
@@ -147,19 +152,19 @@ final class FileAssets extends MetaOptionBase {
    */
   public function preExportDownload(ArchiveTar $archive, ExportableInterface $exportable): void {
     // If it's a file, export the file alongside the yaml.
-    /** @var FileInterface $entity */
-    $entity = $exportable->entity();
+    /** @var FileInterface $file */
+    $file = $exportable->entity();
     // Default to settings. Then, if an export override exists let it make the
     // decision about exporting.
     $should_export = $this->larkSettings->shouldExportAssets();
-    $export_override = $exportable->getMetaOption($this->id())['should_export'] ?? NULL;
-    $export_override_exists = !is_null($exportable);
-    if ($export_override_exists) {
+    $export_override = $exportable->getOption($this->id())['should_export'] ?? NULL;
+    if (!is_null($exportable)) {
       $should_export = (bool) $export_override;
     }
 
     if ($should_export) {
-      $asset_archive_path = $this->assetFileManager->exportAsset($entity, \dirname($exportable->getExportFilepath()));
+      // Export to the tmp directory, then add it to the archive.
+      $asset_archive_path = $this->assetFileManager->exportAsset($file, \dirname($exportable->getFilepath()));
       $archive->addModify([$asset_archive_path], '', $exportable->getSource()->directoryProcessed());
     }
   }
@@ -175,36 +180,37 @@ final class FileAssets extends MetaOptionBase {
     // Default to settings. Then, if an export override exists let it make the
     // decision about exporting.
     $should_export = $this->larkSettings->shouldExportAssets();
-    $export_override = $exportable->getMetaOption($this->id())['should_export'] ?? NULL;
+    $export_override = $exportable->getOption($this->id())['should_export'] ?? NULL;
     $export_override_exists = !is_null($exportable);
     if ($export_override_exists) {
       $should_export = (bool) $export_override;
     }
 
     if ($should_export) {
-      $this->assetFileManager->exportAsset($entity, \dirname($exportable->getExportFilepath()));
+      $this->assetFileManager->exportAsset($entity, \dirname($exportable->getFilepath()));
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function preImportSave(ContentEntityInterface $entity, array $export): void {
+  public function preImportSave(ContentEntityInterface $entity, ExportArray $export): void {
     /** @var \Drupal\file\FileInterface $entity */
 
     // Default to settings. Then, if an import override exists let it make
     // the decision about importing.
+    $file_assets = $export->getOption($this->id());
     $should_import = $this->larkSettings->shouldImportAssets();
-    $import_override_exists = isset($export['_meta']['options']['file_asset']['should_import']);
+    $import_override_exists = isset($file_assets['should_import']);
     if ($import_override_exists) {
-      $should_import = (bool) $export['_meta']['options']['file_asset']['should_import'];
+      $should_import = (bool) $file_assets['should_import'];
     }
 
     if ($should_import) {
       $this->assetFileManager->importAsset(
         $entity,
-        dirname($export['_meta']['path']),
-        $export['default']['uri'][0]['value']
+        dirname($export->path()),
+        $export->getField('uri')[0]['value'],
       );
     }
   }

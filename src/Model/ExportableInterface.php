@@ -21,7 +21,7 @@ interface ExportableInterface {
   public function entity(): ?EntityInterface;
 
   /**
-   * Get dependencies.
+   * Get export array dependencies.
    *
    * @return array
    *   Dependencies array.
@@ -29,7 +29,7 @@ interface ExportableInterface {
   public function getDependencies(): array;
 
   /**
-   * Set exportable dependencies.
+   * Set export array dependencies.
    *
    * @param array $dependencies
    *   Array of dependencies where the key is an entity uuid and the value is
@@ -40,66 +40,66 @@ interface ExportableInterface {
   public function setDependencies(array $dependencies): self;
 
   /**
-   * Set of arbitrary options for the export.
+   * Get of export array 'options'.
    *
    * @return array
    *   Stored options.
    */
-  public function getMetaOptions(): array;
+  public function getOptions(): array;
 
   /**
-   * Set meta options for export.
+   * Set export array options.
    *
    * @param array $options
    *   New options.
    *
    * @return $this
    */
-  public function setMetaOptions(array $options): self;
+  public function setOptions(array $options): self;
 
   /**
-   * Get meta option by key.
+   * Get export array option by name.
    *
-   * @param string $key
-   *   Name of the metdata item.
+   * @param string $name
+   *   Name of the option item.
    *
    * @return mixed
    *   The metadata stored, or null.
    */
-  public function getMetaOption(string $key): mixed;
+  public function getOption(string $name): mixed;
 
   /**
-   * Whether a meta option exists.
+   * Whether an export array option exists with the given name.
    *
-   * @param string $key
-   *   Name of the metdata item.
+   * @param string $name
+   *   Name of the metadata item.
    *
    * @return bool
    *   True if the meta option exists.
    */
-  public function hasMetaOption(string $key): bool;
+  public function hasOption(string $name): bool;
 
   /**
-   * Set some meta option for the export.
+   * Set export array option by name.
    *
-   * @param string $key
+   * @param string $name
    *   Name of data.
    * @param $value
    *   Value.
    *
    * @return $this
    */
-  public function setMetaOption(string $key, $value): self;
+  public function setOption(string $name, $value): self;
 
   /**
-   * Get the exported values if we have them.
+   * Get the values already exported to this Exportable's Source's.
    *
-   * @return array
+   * @return \Drupal\lark\Model\ExportArray
    */
-  public function getExportedValues(): array;
+  public function getSourceExportArray(): ExportArray;
 
   /**
-   * Get status code.
+   * Get status code that indicates how the entity and export arrays compare.
    *
    * @return \Drupal\lark\ExportableStatus
    *   Status code.
@@ -107,7 +107,7 @@ interface ExportableInterface {
   public function getStatus(): ExportableStatus;
 
   /**
-   * Get status name.
+   * Get the name of the status code.
    *
    * @return string
    *   Status name.
@@ -115,7 +115,7 @@ interface ExportableInterface {
   public function getStatusName(): string;
 
   /**
-   * Set status code.
+   * Set a status code that indicates how the entity and export arrays compare.
    *
    * @param \Drupal\lark\ExportableStatus $status
    *   Status code.
@@ -126,23 +126,12 @@ interface ExportableInterface {
   public function setStatus(ExportableStatus $status): ExportableInterface;
 
   /**
-   * True if the export file for this entity exists.
+   * True if this Exportable has already been exported to a Source.
    *
    * @return bool
    *   Export exists.
    */
   public function getExportExists(): bool;
-
-  /**
-   * Set export exists.
-   *
-   * @param bool $exportExists
-   *   Export exists.
-   *
-   * @return $this
-   *   Return self.
-   */
-  public function setExportExists(bool $exportExists): ExportableInterface;
 
   /**
    * Get source plugin.
@@ -164,15 +153,15 @@ interface ExportableInterface {
   public function setSource(?LarkSourceInterface $source): self;
 
   /**
-   * Get actual export filepath.
+   * Get export array filepath.
    *
-   * @return string|null
+   * @return string
    *   Actual export filepath.
    */
-  public function getExportFilepath(): ?string;
+  public function getFilepath(): string;
 
   /**
-   * Set actual export filepath.
+   * Set export array filepath.
    *
    * @param string $filepath
    *   Actual export filepath.
@@ -180,15 +169,15 @@ interface ExportableInterface {
    * @return $this
    *   Return self.
    */
-  public function setExportFilepath(string $filepath): ExportableInterface;
+  public function setFilepath(string $filepath): ExportableInterface;
 
   /**
-   * Get export filename.
+   * Get the expected filename for this Exportable.
    *
    * @return string
-   *   Export target filename.
+   *   Exportable target filename.
    */
-  public function getExportFilename(): string;
+  public function getFilename(): string;
 
   /**
    * Get exportable as YAML.

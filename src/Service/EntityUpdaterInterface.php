@@ -5,6 +5,7 @@ namespace Drupal\lark\Service;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\file\FileInterface;
+use Drupal\lark\Model\ExportArray;
 
 interface EntityUpdaterInterface {
 
@@ -44,14 +45,14 @@ interface EntityUpdaterInterface {
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   Entity.
-   * @param array $data
+   * @param \Drupal\lark\Model\ExportArray $export
    *   Decoded export data.
    *
    * @return void
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
    */
-  public function setEntityValues(ContentEntityInterface $entity, array $data): void;
+  public function setEntityValues(ContentEntityInterface $entity, ExportArray $export): void;
 
   /**
    * Sets field values based on the normalized data.

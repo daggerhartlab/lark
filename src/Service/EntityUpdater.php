@@ -11,6 +11,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\file\FileInterface;
+use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\user\EntityOwnerInterface;
 
@@ -85,8 +86,8 @@ class EntityUpdater implements EntityUpdaterInterface {
   /**
    * {@inheritdoc}
    */
-  public function setEntityValues(ContentEntityInterface $entity, array $data): void {
-    foreach ($data['default'] as $field_name => $values) {
+  public function setEntityValues(ContentEntityInterface $entity, ExportArray $export): void {
+    foreach ($export->fields() as $field_name => $values) {
       if (!$entity->hasField($field_name)) {
         $this->logger->warning("Field $field_name does not exist on entity {$entity->getEntityTypeId()}, {$entity->uuid()}.");
         continue;
@@ -95,7 +96,7 @@ class EntityUpdater implements EntityUpdaterInterface {
       $this->setFieldValues($entity, $field_name, $values);
     }
 
-    foreach ($data['translations'] ?? [] as $langcode => $translation_data) {
+    foreach ($export->translations() as $langcode => $translation_data) {
       if ($this->languageManager->getLanguage($langcode)) {
         $translation = $entity->hasTranslation($langcode) ? $entity->getTranslation($langcode) : $entity->addTranslation($langcode);
         foreach ($translation_data as $field_name => $values) {

@@ -9,6 +9,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Model\ExportArray;
 
 /**
  * Interface for lark_entity_export_form plugins. These plugins are used when
@@ -106,11 +107,11 @@ interface MetaOptionInterface {
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   Entity being imported.
-   * @param array $export
+   * @param \Drupal\lark\Model\ExportArray $export
    *   Export array for the entity being imported.
    *
    * @return void
    */
-  public function preImportSave(ContentEntityInterface $entity, array $export): void;
+  public function preImportSave(ContentEntityInterface $entity, ExportArray $export): void;
 
 }

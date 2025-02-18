@@ -6,10 +6,10 @@
 function lark_install($is_syncing) {
   // Create the default lark source if it doesn't exist.
   $storage = \Drupal::entityTypeManager()->getStorage('lark_source');
-  $source = $storage->load('lark.default_exports');
+  $source = $storage->load('lark_default_exports');
   if (!$source) {
     $source = $storage->create([
-      'id' => 'lark.default_exports',
+      'id' => 'lark_default_exports',
       'label' => 'Lark Default Exports',
       'directory' => '../content/lark-exports',
       'status' => 1,
@@ -27,13 +27,17 @@ function lark_update_10001() {
   $new_storage = \Drupal::entityTypeManager()->getStorage('lark_source');
 
   foreach ($old_source_manager->getInstances() as $old_source) {
-    $existing_new = $new_storage->load($old_source->id());
+    $new_id = strtolower($old_source->id());
+    $new_id = str_replace('.', '_', $new_id);
+    $new_id = preg_replace('/[^a-z0-9_]+/', '', $new_id);
+
+    $existing_new = $new_storage->load($new_id);
     if ($existing_new) {
       continue;
     }
 
     $source = $new_storage->create([
-      'id' => $old_source->id(),
+      'id' => $new_id,
       'label' => $old_source->label(),
       'directory' => $old_source->directory(),
       'description' => '',

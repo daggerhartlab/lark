@@ -14,7 +14,7 @@ interface ImporterInterface {
    * Import a single entity by its uuid.
    *
    * @param string $source_id
-   *   The source plugin id.
+   *   The Source id.
    * @param string $uuid
    *   The UUID of the entity to import.
    * @param bool $show_messages
@@ -46,7 +46,7 @@ interface ImporterInterface {
    * Import all content from a single source.
    *
    * @param string $source_id
-   *   The source plugin id.
+   *   The Source id.
    * @param bool $show_messages
    *   Whether to show messages.
    *
@@ -64,7 +64,7 @@ interface ImporterInterface {
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   The source plugin.
    *
-   * @return array
+   * @return \Drupal\lark\Model\ExportArray[]
    *   Array of exports and dependencies found in this source directory.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -81,7 +81,7 @@ interface ImporterInterface {
    * @param string $uuid
    *   The UUID of the exportable to discover.
    *
-   * @return array
+   * @return \Drupal\lark\Model\ExportArray[]
    *   Array of export and dependencies found in this source directory.
    */
   public function discoverSourceExport(LarkSourceInterface $source, string $uuid): array;
