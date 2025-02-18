@@ -1,4 +1,4 @@
-default_source: lark.default_exports
+default_source: lark_default_exports
 ignored_comparison_keys: "changed\r\nrevision_timestamp\r\ncontent_translation_changed"
 should_export_assets: 1
 asset_export_file_exists: 'Replace'

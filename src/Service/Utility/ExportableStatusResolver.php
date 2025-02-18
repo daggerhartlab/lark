@@ -56,7 +56,7 @@ class ExportableStatusResolver {
    *
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   The exportable entity.
-   * @param \Drupal\lark\Model\ExportArray|null $export
+   * @param \Drupal\lark\Model\ExportArray|null $sourceExportArray
    *   The export array.
    *
    * @return \Drupal\lark\ExportableStatus
@@ -64,7 +64,7 @@ class ExportableStatusResolver {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function getExportableStatus(ExportableInterface $exportable, ?ExportArray $export = NULL): ExportableStatus {
+  public function getExportableStatus(ExportableInterface $exportable, ?ExportArray $sourceExportArray = NULL): ExportableStatus {
     $entity = $exportable->entity();
     $source = $this->getExportableSource($exportable);
 
@@ -72,7 +72,8 @@ class ExportableStatusResolver {
       return ExportableStatus::NotExported;
     }
 
-    // Set the source since we took the trouble of finding it.
+    // Set the source since we took the trouble of finding it. This will also
+    // set the sourceExportArray on the exportable.
     if (!$exportable->getSource()) {
       $exportable->setSource($source);
     }
@@ -83,19 +84,18 @@ class ExportableStatusResolver {
 
     // If we don't have an export array but the export has a source, then we can
     // load it for comparison.
-    if (empty($export)) {
-      $exports = $this->importer->discoverSourceExport($source, $entity->uuid());
-      $export = $exports[$entity->uuid()];
+    if (!$sourceExportArray && $exportable->getSourceExportArray()) {
+      $sourceExportArray = $exportable->getSourceExportArray();
 
       // The database doesn't store our meta options, and during a diff they
       // wouldn't have changed.
-      if ($export->options()) {
-        $exportable->setOptions($export->options());
+      if ($sourceExportArray->options()) {
+        $exportable->setOptions($sourceExportArray->options());
       }
     }
 
-    $left = $export;
-    $left = $this->processExportArrayForComparison((array) $left);
+    $left = $sourceExportArray->cleanArray();
+    $left = $this->processExportArrayForComparison($left);
     $right = $this->processExportArrayForComparison($exportable->toArray());
 
     if ($left === $right) {
@@ -115,10 +115,8 @@ class ExportableStatusResolver {
    *   The diff object.
    */
   public function exportableToDiff(ExportableInterface $exportable): Diff {
-    $left_array = $exportable->getSourceExportArray();
-
     // Process for comparison.
-    $left_array = $this->processExportArrayForComparison((array) $left_array);
+    $left_array = $this->processExportArrayForComparison($exportable->getSourceExportArray()->cleanArray());
     $right_array = $this->processExportArrayForComparison($exportable->toArray());
 
     return new Diff(

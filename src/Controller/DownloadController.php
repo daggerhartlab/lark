@@ -127,7 +127,7 @@ class DownloadController extends ControllerBase {
     // Loop through each root-level export and add its entity to the archive.
     foreach ($root_level_exports as $uuid => $export) {
       // Get the entity's id by its uuid.
-      $entity_type_id = $export;
+      $entity_type_id = $export->entityTypeId();
       $entity = $this->entityTypeManager->getStorage($entity_type_id)->loadByProperties([
         'uuid' => $uuid,
       ]);

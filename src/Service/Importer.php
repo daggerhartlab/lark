@@ -143,7 +143,7 @@ class Importer implements ImporterInterface {
       return $this->discoveryCache[$source->id()];
     }
 
-    $this->discoveryCache[$source->id()] = $this->getExportsWithDependencies($source);
+    $this->discoveryCache[$source->id()] = $this->getSourceExports($source);
     return $this->discoveryCache[$source->id()];
   }
 
@@ -162,7 +162,7 @@ class Importer implements ImporterInterface {
    *
    * @see \Drupal\Core\DefaultContent\Finder
    */
-  protected function getExportsWithDependencies(LarkSourceInterface $source): array {
+  protected function getSourceExports(LarkSourceInterface $source): array {
     try {
       // Scan for all YAML files in the content directory.
       $finder = SymfonyFinder::create()
@@ -220,13 +220,13 @@ class Importer implements ImporterInterface {
    *   UUID of the export.
    * @param \Drupal\lark\Model\ExportArray[] $exports
    *   Found files array.
-   * @param array $dependency_registry
+   * @param array $found
    *   Reference array to track all dependencies to prevent duplicates.
    *
    * @return array
    *   Array of export with dependencies.
    */
-  protected function filterSingleExportWithDependencies(string $uuid, array $exports, array &$dependency_registry = []): array {
+  protected function filterSingleExportWithDependencies(string $uuid, array $exports, array &$found = []): array {
     if (!isset($exports[$uuid])) {
       throw new LarkImportException('Export with UUID ' . $uuid . ' not found.');
     }
@@ -239,19 +239,19 @@ class Importer implements ImporterInterface {
       if (
         isset($exports[$dependency_uuid])
         // Don't recurse into dependency if it's already been registered.
-        && !array_key_exists($dependency_uuid, $dependency_registry)
+        && !array_key_exists($dependency_uuid, $found)
       ) {
         // Recurse and get dependencies of this dependency.
         if (!empty($exports[$dependency_uuid]->dependencies())) {
 
           // Register the dependency to prevent redundant calls.
-          $dependency_registry[$dependency_uuid] = NULL;
-          $dependencies += $this->filterSingleExportWithDependencies($dependency_uuid, $exports, $dependency_registry);
+          $found[$dependency_uuid] = NULL;
+          $dependencies += $this->filterSingleExportWithDependencies($dependency_uuid, $exports, $found);
         }
 
         // Add the dependency itself.
         $dependencies[$dependency_uuid] = $exports[$dependency_uuid];
-        $dependency_registry[$dependency_uuid] = $exports[$dependency_uuid];
+        $found[$dependency_uuid] = $exports[$dependency_uuid];
       }
     }
 
@@ -277,20 +277,6 @@ class Importer implements ImporterInterface {
   protected function validateImportResults(array $exports, bool $show_messages): void {
     foreach ($exports as $uuid => $export) {
       $entity_type = $export->entityTypeId();
-      if (isset($existing[$uuid])) {
-        $message = $this->t('Skipped import of @entity_type "@label" with UUID @uuid because it already exists with ID "@entity_id".', [
-          '@entity_type' => $entity_type,
-          '@label' => $existing[$uuid]->label(),
-          '@uuid' => $uuid,
-          '@entity_id' => $existing[$uuid]->id(),
-        ]);
-        if ($show_messages) {
-          $this->messenger->addMessage($message);
-        }
-        $this->logger->notice($message);
-        continue;
-      }
-
       $entity = $this->entityTypeManager->getStorage($entity_type)->loadByProperties(['uuid' => $uuid]);
       if ($entity) {
         $entity = reset($entity);

@@ -56,8 +56,7 @@ class ExportArray extends \ArrayObject {
   public static function createFromEntity(ContentEntityInterface $entity): static {
     $default_translation = $entity->getTranslation(\Drupal::languageManager()->getDefaultLanguage()->getId());
     $export = new static();
-    $dependencies = [];
-    $dependencies = Exporter::getEntityExportDependencies($entity, $dependencies);
+    $dependencies = Exporter::getEntityExportDependencies($entity);
 
     $export
       ->setEntityTypeId($entity->getEntityTypeId())
@@ -65,7 +64,7 @@ class ExportArray extends \ArrayObject {
       ->setEntityId($entity->id())
       ->setLabel($entity->label())
       // ->setPath('') // Can't know the path yet.
-      ->setUuid($export->uuid())
+      ->setUuid($entity->uuid())
       ->setDefaultLangcode($default_translation->language()->getId())
       ->setDependencies($dependencies)
       // ->setOptions([]) // Can't know about meta options yet.
@@ -76,6 +75,10 @@ class ExportArray extends \ArrayObject {
     }
 
     return $export;
+  }
+
+  public function isEmpty(): bool {
+    return ((array) $this === static::SCHEMA);
   }
 
   public function entityTypeId(): string {
@@ -172,7 +175,7 @@ class ExportArray extends \ArrayObject {
   }
 
   public function fields(string $langcode = 'default'): array {
-    if ($langcode === $this->defaultLangcode()) {
+    if ($langcode === 'default' || $langcode === $this->defaultLangcode()) {
       return $this['default'] ?? [];
     }
 
@@ -180,7 +183,7 @@ class ExportArray extends \ArrayObject {
   }
 
   public function setFields(array $fields, string $langcode = 'default'): self {
-    if ($langcode === $this->defaultLangcode()) {
+    if ($langcode === 'default' || $langcode === $this->defaultLangcode()) {
       $this['default'] = $fields;
       return $this;
     }
@@ -190,7 +193,7 @@ class ExportArray extends \ArrayObject {
   }
 
   public function getField(string $field_name, string $langcode = 'default') {
-    if ($langcode === $this->defaultLangcode()) {
+    if ($langcode === 'default' || $langcode === $this->defaultLangcode()) {
       return $this['default'][$field_name];
     }
 
@@ -198,7 +201,7 @@ class ExportArray extends \ArrayObject {
   }
 
   public function setField(string $field_name, $value, string $langcode = 'default'): self {
-    if ($langcode === $this->defaultLangcode()) {
+    if ($langcode === 'default' || $langcode === $this->defaultLangcode()) {
       $this['default'][$field_name] = $value;
       return $this;
     }

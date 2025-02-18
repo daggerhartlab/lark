@@ -206,7 +206,7 @@ final class FileAssets extends MetaOptionBase {
       $this->assetFileManager->importAsset(
         $entity,
         dirname($export->path()),
-        $export->fields('default')['uri'][0]['value']
+        $export->getField('uri')[0]['value'],
       );
     }
   }

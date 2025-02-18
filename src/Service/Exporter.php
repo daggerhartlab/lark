@@ -8,15 +8,12 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
-use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -149,7 +146,34 @@ class Exporter implements ExporterInterface {
    * @return array
    *   Uuid and entity_type_id pairs.
    */
-  public static function getEntityExportDependencies(ContentEntityInterface $entity, array &$dependencies = []): array {
+  public static function getEntityExportDependencies(ContentEntityInterface $entity): array {
+    $dependencies = [];
+    $dependencies = static::getEntityUuidEntityTypePairs($entity, $dependencies);
+    // We only want dependencies. Remove this entity if found.
+    if (array_key_last($dependencies) === $entity->uuid()) {
+      unset($dependencies[$entity->uuid()]);
+    }
+
+    return $dependencies;
+  }
+
+  /**
+   * Recursively find uuid -> entity type id pairs for the given entity.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   Entity.
+   * @param array $found
+   *   Array that is built on during the recursive process.
+   *
+   * @return array
+   *   UUID => Entity type id pairs, including the given entity.
+   */
+  public static function getEntityUuidEntityTypePairs(ContentEntityInterface $entity, array &$found): array {
+    // Don't export users.
+    if ($entity instanceof UserInterface) {
+      return [];
+    }
+
     $entity->getFieldDefinitions();
 
     foreach ($entity->getFields() as $field) {
@@ -165,17 +189,17 @@ class Exporter implements ExporterInterface {
           }
 
           // If the referenced entity is already processing, do nothing.
-          if (array_key_exists($referenced_entity->uuid(), $dependencies)) {
+          if (array_key_exists($referenced_entity->uuid(), $found)) {
             continue;
           }
 
-          $dependencies += static::getEntityExportDependencies($referenced_entity, $dependencies);
+          $found += static::getEntityUuidEntityTypePairs($referenced_entity, $found);
         }
       }
     }
 
-    $dependencies[$entity->uuid()] = $entity->getEntityTypeId();
-    return $dependencies;
+    $found[$entity->uuid()] = $entity->getEntityTypeId();
+    return $found;
   }
 
 }
