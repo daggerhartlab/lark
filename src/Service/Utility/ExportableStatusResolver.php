@@ -3,13 +3,11 @@
 namespace Drupal\lark\Service\Utility;
 
 use Drupal\Component\Diff\Diff;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ImporterInterface;
 
 /**
@@ -19,40 +17,13 @@ use Drupal\lark\Service\ImporterInterface;
 class ExportableStatusResolver {
 
   public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
+    protected ExportableSourceResolver $sourceResolver,
     protected ImporterInterface $importer,
     protected LarkSettings $settings,
   ) {}
 
   /**
-   * Get the source plugin for the given exportable.
-   *
-   * @param \Drupal\lark\Model\ExportableInterface $exportable
-   *   The exportable entity.
-   *
-   * @return \Drupal\lark\Entity\LarkSourceInterface|null
-   *   The source plugin or NULL if not found.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   */
-  public function getExportableSource(ExportableInterface $exportable): ?LarkSourceInterface {
-    $entity = $exportable->entity();
-    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
-      'status' => 1,
-    ]);
-
-    foreach ($sources as $source) {
-      if ($source->exportExistsInSource($entity->getEntityTypeId(), $entity->bundle(), $entity->uuid())) {
-        return $source;
-      }
-    }
-
-    return NULL;
-  }
-
-  /**
-   * Determine the status of an exportable entity.
+   * Determine the status of an exportable relative to the Source's ExportArray.
    *
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   The exportable entity.
@@ -64,9 +35,9 @@ class ExportableStatusResolver {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function getExportableStatus(ExportableInterface $exportable, ?ExportArray $sourceExportArray = NULL): ExportableStatus {
+  public function resolveStatus(ExportableInterface $exportable, ?ExportArray $sourceExportArray = NULL): ExportableStatus {
     $entity = $exportable->entity();
-    $source = $this->getExportableSource($exportable);
+    $source = $this->sourceResolver->resolveSource($exportable);
 
     if (!$source) {
       return ExportableStatus::NotExported;

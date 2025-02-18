@@ -17,6 +17,7 @@ use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\LarkSettings;
+use Drupal\lark\Service\Utility\ExportableSourceResolver;
 use Drupal\lark\Service\Utility\ExportableStatusResolver;
 use Drupal\user\UserInterface;
 
@@ -34,6 +35,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected LarkSettings $larkSettings,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected ImporterInterface $importer,
+    protected ExportableSourceResolver $sourceResolver,
     protected ExportableStatusResolver $statusResolver,
     protected ModuleHandlerInterface $moduleHandler,
     protected FileSystemInterface $fileSystem,
@@ -44,9 +46,9 @@ class ExportableFactory implements ExportableFactoryInterface {
    * {@inheritdoc}
    */
   public function createFromEntity(ContentEntityInterface $entity): ExportableInterface {
-    $exportables = $this->getEntityExportables($entity->getEntityTypeId(), (int) $entity->id());
-    $exportable = $exportables[$entity->uuid()];
-    $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
+    $exportable = new Exportable($entity);
+    $exportable->setSource($this->sourceResolver->resolveSource($exportable));
+    $exportable->setStatus($this->statusResolver->resolveStatus($exportable));
     return $exportable;
   }
 
@@ -120,7 +122,7 @@ class ExportableFactory implements ExportableFactoryInterface {
         ->setOptions($export->options())
         ->setSource($source)
         ->setFilepath($export->path())
-        ->setStatus($this->statusResolver->getExportableStatus($exportable, $export));
+        ->setStatus($this->statusResolver->resolveStatus($exportable, $export));
 
       $exportables[$uuid] = $exportable;
     };
@@ -230,8 +232,8 @@ class ExportableFactory implements ExportableFactoryInterface {
     // Exportable for the current entity.
     $exportable = new Exportable($entity);
     $exportable->setDependencies($dependencies);
-    $exportable->setSource($source ?? $this->statusResolver->getExportableSource($exportable));
-    $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
+    $exportable->setSource($source ?? $this->sourceResolver->resolveSource($exportable));
+    $exportable->setStatus($this->statusResolver->resolveStatus($exportable));
 
     if ($exportable->getExportExists() && isset($exportable->getSourceExportArray()['_meta']['options'])) {
       $exportable->setOptions($exportable->getSourceExportArray()['_meta']['options']);
