@@ -12,6 +12,7 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\MetaOptionManager;
+use Drupal\lark\Service\Utility\ExportableSourceResolver;
 use Drupal\system\FileDownloadController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -25,6 +26,7 @@ class DownloadController extends ControllerBase {
     protected ExportableFactoryInterface $exportableFactory,
     protected MetaOptionManager $metaOptionManager,
     protected ImporterInterface $importer,
+    protected ExportableSourceResolver $sourceResolver,
     EntityTypeManagerInterface $entityTypeManager,
   ) {
     $this->entityTypeManager = $entityTypeManager;
@@ -37,6 +39,7 @@ class DownloadController extends ControllerBase {
       $container->get(ExportableFactoryInterface::class),
       $container->get(MetaOptionManager::class),
       $container->get(ImporterInterface::class),
+      $container->get(ExportableSourceResolver::class),
       $container->get(EntityTypeManagerInterface::class),
     );
   }
@@ -60,18 +63,12 @@ class DownloadController extends ControllerBase {
   public function downloadExportResponse(string $entity_type_id, int|string $entity_id, array $meta_option_overrides = []): BinaryFileResponse {
     // Make a source that acts in place of a filesystem source.
     /** @var \Drupal\lark\Entity\LarkSourceInterface $download_source */
-    $download_source = $this->entityTypeManager->getStorage('lark_source')->create([
-      'id' => 'download',
-      'label' => 'Download',
-      // Write to the /tmp directory as needed during export.
-      'directory' => $this->fileSystem->getTempDirectory(),
-      'status' => 1,
-    ]);
+    $download_source = $this->sourceResolver->getTmpSource();
 
     $exportables = $this->exportableFactory->createFromEntityWithDependencies(
       $entity_type_id,
       (int) $entity_id,
-      NULL,
+      $download_source,
       $meta_option_overrides,
     );
 
@@ -100,13 +97,7 @@ class DownloadController extends ControllerBase {
   public function downloadSourceResponse(LarkSourceInterface $source, array $meta_option_overrides = []): BinaryFileResponse {
     // Make a source that acts in place of a filesystem source.
     /** @var \Drupal\lark\Entity\LarkSourceInterface $download_source */
-    $download_source = $this->entityTypeManager->getStorage('lark_source')->create([
-      'id' => 'download',
-      'label' => 'Download',
-      // Write to the /tmp directory as needed during export.
-      'directory' => $this->fileSystem->getTempDirectory(),
-      'status' => 1,
-    ]);
+    $download_source = $this->sourceResolver->getTmpSource();
 
     $archive = $this->newArchive($download_source->directoryProcessed() . '/lark-source.tar.gz');
 
@@ -181,7 +172,7 @@ class DownloadController extends ControllerBase {
    *
    * @return void
    */
-  protected function addExportablesToArchive(ArchiveTar $archive, array $exportables) {
+  protected function addExportablesToArchive(ArchiveTar $archive, array $exportables): void {
     // Add all contents of the export storage to the archive.
     foreach ($exportables as $exportable) {
       $source = $exportable->getSource();

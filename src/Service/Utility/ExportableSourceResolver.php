@@ -44,6 +44,27 @@ class ExportableSourceResolver {
   }
 
   /**
+   * Source for temporary storage.
+   *
+   * @return \Drupal\lark\Entity\LarkSourceInterface
+   *   Source configured to the filesystem's tmp storage.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function getTmpSource(): LarkSourceInterface {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entityTypeManager->getStorage('lark_source')->create([
+      'id' => 'tmp',
+      'label' => 'Temporary Storage',
+      'directory' => $this->fileSystem->getTempDirectory(),
+      'status' => 0,
+    ]);
+
+    return $source;
+  }
+
+  /**
    * Get the default source.
    *
    * @return \Drupal\lark\Entity\LarkSourceInterface|null

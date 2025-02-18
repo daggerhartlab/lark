@@ -86,7 +86,11 @@ class ExportableFactory implements ExportableFactoryInterface {
     foreach ($items as $item_uuid => $item_entity_type_id) {
       /** @var \Drupal\Core\Entity\ContentEntityInterface $item_entity */
       $item_entity = $this->entityRepository->loadEntityByUuid($item_entity_type_id, $item_uuid);
-      $items[$item_uuid] = $this->createFromEntity($item_entity);
+      $exportable = $this->createFromEntity($item_entity);
+      if ($source || $meta_option_overrides) {
+        $this->prepareExportable($exportable, $source, $meta_option_overrides);
+      }
+      $items[$item_uuid] = $exportable;
     }
 
     $this->collectionsCache[$entity->uuid()] = $items;
