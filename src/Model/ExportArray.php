@@ -3,6 +3,7 @@
 namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\lark\Service\Exporter;
 
 /**
  * Object for array of data exported to yaml.
@@ -29,10 +30,14 @@ class ExportArray extends \ArrayObject {
   ];
 
   /**
+   * Functionally the constructor is the '::createFromArray()' method.
+   *
    * @param object|array $array
    *   Array should follow the ::SCHEMA array.
    * @param int $flags
+   *   Flags to control the behaviour of the ArrayObject object.
    * @param string $iteratorClass
+   *   Specify the class that will be used for iteration of the ArrayObject.
    */
   public function __construct(object|array $array = [], int $flags = 0, string $iteratorClass = "ArrayIterator") {
     $array = array_replace_recursive(static::SCHEMA, $array);
@@ -40,15 +45,36 @@ class ExportArray extends \ArrayObject {
     parent::__construct($array, $flags, $iteratorClass);
   }
 
+  /**
+   * Create an ExportArray from a content entity.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   Entity.
+   *
+   * @return static
+   */
   public static function createFromEntity(ContentEntityInterface $entity): static {
-    $default = $entity->getTranslation(\Drupal::languageManager()->getDefaultLanguage()->getId());
+    $default_translation = $entity->getTranslation(\Drupal::languageManager()->getDefaultLanguage()->getId());
     $export = new static();
-    $export->setEntityTypeId($entity->getEntityTypeId());
-    $export->setBundle($entity->bundle());
-    $export->setEntityId($entity->id());
-    $export->setLabel($entity->label());
-    $export->setUuid($export->uuid());
-    $export->setDefaultLangcode($default->language()->getId());
+    $dependencies = [];
+    $dependencies = Exporter::getEntityExportDependencies($entity, $dependencies);
+
+    $export
+      ->setEntityTypeId($entity->getEntityTypeId())
+      ->setBundle($entity->bundle())
+      ->setEntityId($entity->id())
+      ->setLabel($entity->label())
+      // ->setPath('') // Can't know the path yet.
+      ->setUuid($export->uuid())
+      ->setDefaultLangcode($default_translation->language()->getId())
+      ->setDependencies($dependencies)
+      // ->setOptions([]) // Can't know about meta options yet.
+      ->setFields(Exporter::getEntityArray($default_translation));
+
+    foreach ($entity->getTranslationLanguages(FALSE) as $langcode => $language) {
+      $export->setFields(Exporter::getEntityArray($entity->getTranslation($langcode)), $langcode);
+    }
+
     return $export;
   }
 
@@ -56,56 +82,63 @@ class ExportArray extends \ArrayObject {
     return $this->getMeta('entity_type');
   }
 
-  public function setEntityTypeId(string $entity_type_id): void {
+  public function setEntityTypeId(string $entity_type_id): self {
     $this->setMeta('entity_type', $entity_type_id);
+    return $this;
   }
 
   public function bundle(): string {
     return $this->getMeta('bundle');
   }
 
-  public function setBundle(string $bundle): void {
+  public function setBundle(string $bundle): self {
     $this->setMeta('bundle', $bundle);
+    return $this;
   }
 
   public function entityId(): string|int {
     return $this->getMeta('entity_id', '0');
   }
 
-  public function setEntityId(string|int $entity_id): void {
+  public function setEntityId(string|int $entity_id): self {
     $this->setMeta('entity_id', (string) $entity_id);
+    return $this;
   }
 
   public function label(): string {
     return $this->getMeta('label');
   }
 
-  public function setLabel(string $label): void {
+  public function setLabel(string $label): self {
     $this->setMeta('label', $label);
+    return $this;
   }
 
   public function uuid(): string {
     return $this->getMeta('uuid');
   }
 
-  public function setUuid(string $uuid): void {
+  public function setUuid(string $uuid): self {
     $this->setMeta('uuid', $uuid);
+    return $this;
   }
 
   public function path(): string {
     return $this->getMeta('path');
   }
 
-  public function setPath(string $path): void {
+  public function setPath(string $path): self {
     $this->setMeta('path', $path);
+    return $this;
   }
 
   public function defaultLangcode(): string {
     return $this->getMeta('default_langcode');
   }
 
-  public function setDefaultLangcode(string $langcode): void {
+  public function setDefaultLangcode(string $langcode): self {
     $this->setMeta('default_langcode', $langcode);
+    return $this;
   }
 
   public function dependencies(): array {
@@ -116,60 +149,62 @@ class ExportArray extends \ArrayObject {
     return array_key_exists($uuid, $this->dependencies());
   }
 
-  public function setDependencies(array $dependencies): void {
+  public function setDependencies(array $dependencies): self {
     $this->setMeta('depends', $dependencies);
+    return $this;
   }
 
   public function options(): array {
     return $this->getMeta('options', []);
   }
 
-  public function setOptions(array $options): void {
+  public function setOptions(array $options): self {
     $this['_meta']['options'] = $options;
-  }
-
-  public function content(): array {
-    return $this['default'] ?? [];
-  }
-
-  public function setContent(array $data): void {
-    $this['default'] = $data;
-  }
-
-  public function getField(string $field_name, string $langcode = 'default') {
-    if ($langcode === $this->defaultLangcode()) {
-      $langcode = 'default';
-    }
-
-    return $langcode === 'default' ?
-      $this['default'][$field_name] :
-      ($this['translations'][$langcode][$field_name] ?? NULL);
-  }
-
-  public function setField(string $field_name, $value, string $langcode = 'default'): void {
-    if ($langcode === $this->defaultLangcode()) {
-      $langcode = 'default';
-    }
-
-    if ($langcode === 'default') {
-      $this['default'][$field_name] = $value;
-    }
+    return $this;
   }
 
   public function translations(): array {
     return $this['translations'] ?? [];
   }
 
-  public function translation(string $langcode = NULL): array {
+  public function unsetTranslation(string $langcode): void {
+    \unset($this['translations'][$langcode]);
+  }
+
+  public function fields(string $langcode = 'default'): array {
+    if ($langcode === $this->defaultLangcode()) {
+      return $this['default'] ?? [];
+    }
+
     return $this['translations'][$langcode] ?? [];
   }
 
-  public function setTranslation(string $langcode, array $data): void {
-    $this['translations'][$langcode] = $data;
+  public function setFields(array $fields, string $langcode = 'default'): self {
+    if ($langcode === $this->defaultLangcode()) {
+      $this['default'] = $fields;
+      return $this;
+    }
+
+    $this['translations'][$langcode] = $fields;
+    return $this;
   }
 
-  public function unsetTranslation(string $langcode): void {
-    \unset($this['translations'][$langcode]);
+  public function getField(string $field_name, string $langcode = 'default') {
+    if ($langcode === $this->defaultLangcode()) {
+      return $this['default'][$field_name];
+    }
+
+    return $this['translations'][$langcode][$field_name] ?? NULL;
+  }
+
+  public function setField(string $field_name, $value, string $langcode = 'default'): self {
+    if ($langcode === $this->defaultLangcode()) {
+      $this['default'][$field_name] = $value;
+      return $this;
+    }
+
+    $this['translations'][$langcode][$field_name] = $value;
+    return $this;
   }
 
   public function hasMeta(string $name): bool {
@@ -180,8 +215,9 @@ class ExportArray extends \ArrayObject {
     return $this->hasMeta($name) ? $this['_meta'][$name] : $default_value;
   }
 
-  public function setMeta(string $name, $value): void {
+  public function setMeta(string $name, $value): self {
     $this['_meta'][$name] = $value;
+    return $this;
   }
 
   public function hasOption(string $name): bool {
@@ -192,8 +228,9 @@ class ExportArray extends \ArrayObject {
     return $this->hasOption($name) ? $this->options()[$name] : $default_value;
   }
 
-  public function setOption(string $name, $value): void {
+  public function setOption(string $name, $value): self {
     $this['_meta']['options'][$name] = $value;
+    return $this;
   }
 
   public function unsetOption(string $name): void {

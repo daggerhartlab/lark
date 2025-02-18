@@ -6,7 +6,6 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\lark\ExportableStatus;
 use Drupal\lark\Entity\LarkSourceInterface;
-use Drupal\lark\Service\Exporter;
 
 /**
  * Model for wrapping entities for export.
@@ -14,25 +13,18 @@ use Drupal\lark\Service\Exporter;
 class Exportable implements ExportableInterface {
 
   /**
-   * If the export exists, this is the array of values that was exported.
-   *
-   * @var \Drupal\lark\Model\ExportArray
-   */
-  protected ExportArray $sourceExportedArray;
-
-  /**
    * This is the new export array that we'll modify and use for export.
    *
    * @var \Drupal\lark\Model\ExportArray
    */
-  protected ExportArray $exportArray;
+  protected ExportArray $entityExportArray;
 
   /**
-   * Actual export file path.
+   * If the export exists, this is the array of values that was exported.
    *
-   * @var string|null
+   * @var \Drupal\lark\Model\ExportArray
    */
-  protected ?string $exportFilepath = NULL;
+  protected ExportArray $sourceExportArray;
 
   /**
    * Source plugin for this exportable, if known.
@@ -40,27 +32,6 @@ class Exportable implements ExportableInterface {
    * @var \Drupal\lark\Entity\LarkSourceInterface|null
    */
   protected ?LarkSourceInterface $source = NULL;
-
-  /**
-   * True if the export file for this entity exists.
-   *
-   * @var bool
-   */
-  protected bool $exportExists = FALSE;
-
-  /**
-   * Dependencies array keys are entity UUIDs, values are entity type IDs.
-   *
-   * @var string[]
-   */
-  protected array $dependencies = [];
-
-  /**
-   * Additional metadata to be added during export.
-   *
-   * @var array
-   */
-  protected array $metaOptions = [];
 
   /**
    * Export status.
@@ -74,8 +45,8 @@ class Exportable implements ExportableInterface {
    *   Entity.
    */
   public function __construct(protected ContentEntityInterface $entity) {
-    $this->exportArray = ExportArray::createFromEntity($this->entity);
-    $this->sourceExportedArray = new ExportArray();
+    $this->entityExportArray = ExportArray::createFromEntity($this->entity);
+    $this->sourceExportArray = new ExportArray();
   }
 
   /**
@@ -89,59 +60,59 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function getDependencies(): array {
-    return $this->exportArray->dependencies();
+    return $this->entityExportArray->dependencies();
   }
 
   /**
    * {@inheritdoc}
    */
   public function setDependencies(array $dependencies): self {
-    $this->exportArray->setDependencies($dependencies);
+    $this->entityExportArray->setDependencies($dependencies);
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMetaOptions(): array {
-    return $this->exportArray->options();
+  public function getOptions(): array {
+    return $this->entityExportArray->options();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMetaOptions(array $options): self {
-    $this->exportArray->setOptions($options);
+  public function setOptions(array $options): self {
+    $this->entityExportArray->setOptions($options);
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMetaOption(string $name): mixed {
-    return $this->exportArray->getOption($name);
+  public function getOption(string $name): mixed {
+    return $this->entityExportArray->getOption($name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasMetaOption(string $name): bool {
-    return $this->exportArray->hasOption($name);
+  public function hasOption(string $name): bool {
+    return $this->entityExportArray->hasOption($name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMetaOption(string $name, $value): self {
-    $this->exportArray->setOption($name, $value);
+  public function setOption(string $name, $value): self {
+    $this->entityExportArray->setOption($name, $value);
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getSourceExportedArray(): ExportArray {
-    return $this->sourceExportedArray;
+  public function getSourceExportArray(): ExportArray {
+    return $this->sourceExportArray;
   }
 
   /**
@@ -170,15 +141,7 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function getExportExists(): bool {
-    return $this->exportExists;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setExportExists(bool $exportExists): self {
-    $this->exportExists = $exportExists;
-    return $this;
+    return $this->getFilepath() && \file_exists($this->getFilepath());
   }
 
   /**
@@ -193,11 +156,12 @@ class Exportable implements ExportableInterface {
    */
   public function setSource(?LarkSourceInterface $source): self {
     $this->source = $source;
-    if ($source && !$this->getExportFilepath()) {
-      $this->setExportFilepath($source->getDestinationFilepath(
+    if ($source && !$this->getFilepath()) {
+      // Set the export filepath and attempt to load the source's ExportArray.
+      $this->setFilepath($source->getDestinationFilepath(
         $this->entity()->getEntityTypeId(),
         $this->entity()->bundle(),
-        $this->getExportFilename()
+        $this->getFilename()
       ));
     }
     return $this;
@@ -206,18 +170,19 @@ class Exportable implements ExportableInterface {
   /**
    * {@inheritdoc}
    */
-  public function getExportFilepath(): ?string {
-    return $this->exportFilepath;
+  public function getFilepath(): string {
+    return $this->entityExportArray->path();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setExportFilepath(string $filepath): self {
-    $this->exportFilepath = $filepath;
-    $this->setExportExists(\file_exists($filepath));
+  public function setFilepath(string $filepath): self {
+    $this->entityExportArray->setPath($filepath);
+
+    // If we have an export, load its ExportArray.
     if ($this->getExportExists()) {
-      $this->sourceExportedArray = new ExportArray(Yaml::decode(\file_get_contents($filepath)));
+      $this->sourceExportArray = new ExportArray(Yaml::decode(\file_get_contents($filepath)));
     }
 
     return $this;
@@ -226,7 +191,7 @@ class Exportable implements ExportableInterface {
   /**
    * {@inheritdoc}
    */
-  public function getExportFilename(): string {
+  public function getFilename(): string {
     return $this->entity()->uuid() . '.yml';
   }
 
@@ -241,28 +206,7 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function toArray(): array {
-    // Use a new ExportArray instead of ::exportArray because this method is
-    // called when generating a Diff.
-    $export = clone $this->exportArray;
-    $export->setEntityTypeId($this->entity()->getEntityTypeId());
-    $export->setBundle($this->entity()->bundle());
-    $export->setEntityId($this->entity()->id());
-    $export->setLabel($this->entity()->label());
-    $export->setPath($this->getExportFilepath());
-    $export->setUuid($this->entity()->uuid());
-    $export->setDefaultLangcode($this->entity->language()->getId());
-    $export->setDependencies($this->dependencies);
-    $export->setContent(Exporter::getEntityExportArray($this->entity()));
-    $export->setOptions($this->getMetaOptions());
-
-    foreach ($this->entity()->getTranslationLanguages() as $langcode => $language) {
-      if ($langcode === $this->entity()->language()->getId()) {
-        continue;
-      }
-      $export->setTranslation($langcode, Exporter::getEntityExportArray($this->entity()->getTranslation($langcode)));
-    }
-
-    return $export->cleanArray();
+    return $this->entityExportArray->cleanArray();
   }
 
 }

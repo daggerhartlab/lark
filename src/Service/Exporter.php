@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Service;
 
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
@@ -15,6 +17,7 @@ use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Export entities and their dependencies.
@@ -98,7 +101,7 @@ class Exporter implements ExporterInterface {
    */
   protected function writeToYaml(ExportableInterface $exportable): bool {
     return (bool) \file_put_contents(
-      $exportable->getExportFilepath(),
+      $exportable->getFilepath(),
       $exportable->toYaml(),
     );
   }
@@ -112,7 +115,7 @@ class Exporter implements ExporterInterface {
    * @return array
    *   Entity export array.
    */
-  public static function getEntityExportArray(ContentEntityInterface $entity): array {
+  public static function getEntityArray(ContentEntityInterface $entity): array {
     $array = $entity->toArray();
     $handler_manager = \Drupal::service(FieldTypeHandlerManagerInterface::class);
 
@@ -133,6 +136,46 @@ class Exporter implements ExporterInterface {
     }
 
     return $array;
+  }
+
+  /**
+   * Get dependencies as array of uuid -> entity type id pairs for the entity.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   Entity.
+   * @param array $dependencies
+   *   Array that is modified during recursion.
+   *
+   * @return array
+   *   Uuid and entity_type_id pairs.
+   */
+  public static function getEntityExportDependencies(ContentEntityInterface $entity, array &$dependencies = []): array {
+    $entity->getFieldDefinitions();
+
+    foreach ($entity->getFields() as $field) {
+      if ($field instanceof EntityReferenceFieldItemListInterface) {
+        foreach ($field->referencedEntities() as $referenced_entity) {
+          // Don't export config entities.
+          if ($referenced_entity instanceof ConfigEntityInterface) {
+            continue;
+          }
+          // Don't export users.
+          if ($referenced_entity instanceof UserInterface) {
+            continue;
+          }
+
+          // If the referenced entity is already processing, do nothing.
+          if (array_key_exists($referenced_entity->uuid(), $dependencies)) {
+            continue;
+          }
+
+          $dependencies += static::getEntityExportDependencies($referenced_entity, $dependencies);
+        }
+      }
+    }
+
+    $dependencies[$entity->uuid()] = $entity->getEntityTypeId();
+    return $dependencies;
   }
 
 }

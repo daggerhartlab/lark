@@ -185,7 +185,7 @@ class DownloadController extends ControllerBase {
     // Add all contents of the export storage to the archive.
     foreach ($exportables as $exportable) {
       $source = $exportable->getSource();
-      $filename = str_replace($source->directoryProcessed(FALSE), '', $exportable->getExportFilepath());
+      $filename = str_replace($source->directoryProcessed(FALSE), '', $exportable->getFilepath());
       $archive->addString($filename, Yaml::encode($exportable->toArray()));
 
       foreach ($this->metaOptionManager->getInstances() as $meta_option) {

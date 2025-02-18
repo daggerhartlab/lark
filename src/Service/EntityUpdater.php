@@ -87,7 +87,7 @@ class EntityUpdater implements EntityUpdaterInterface {
    * {@inheritdoc}
    */
   public function setEntityValues(ContentEntityInterface $entity, ExportArray $export): void {
-    foreach ($export->content() as $field_name => $values) {
+    foreach ($export->fields() as $field_name => $values) {
       if (!$entity->hasField($field_name)) {
         $this->logger->warning("Field $field_name does not exist on entity {$entity->getEntityTypeId()}, {$entity->uuid()}.");
         continue;

@@ -111,15 +111,15 @@ class ExportableFactory implements ExportableFactoryInterface {
       $entity = $this->entityRepository->loadEntityByUuid($export->entityTypeId(), $export->uuid());
 
       if (!$entity) {
-        $entity = $this->entityTypeManager->getStorage($export->entityTypeId())->create($export->content());
+        $entity = $this->entityTypeManager->getStorage($export->entityTypeId())->create($export->fields('default'));
       }
 
       $exportable = new Exportable($entity);
       $exportable
         ->setDependencies($export->dependencies())
-        ->setMetaOptions($export->options())
+        ->setOptions($export->options())
         ->setSource($source)
-        ->setExportFilepath($export->path())
+        ->setFilepath($export->path())
         ->setStatus($this->statusResolver->getExportableStatus($exportable, $export));
 
       $exportables[$uuid] = $exportable;
@@ -233,8 +233,8 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exportable->setSource($source ?? $this->statusResolver->getExportableSource($exportable));
     $exportable->setStatus($this->statusResolver->getExportableStatus($exportable));
 
-    if ($exportable->getExportExists() && isset($exportable->getSourceExportedArray()['_meta']['options'])) {
-      $exportable->setMetaOptions($exportable->getSourceExportedArray()['_meta']['options']);
+    if ($exportable->getExportExists() && isset($exportable->getSourceExportArray()['_meta']['options'])) {
+      $exportable->setOptions($exportable->getSourceExportArray()['_meta']['options']);
     }
     $this->overrideMetaValues($exportable, $exports_meta_option_overrides);
 
@@ -274,9 +274,9 @@ class ExportableFactory implements ExportableFactoryInterface {
         $destination_filepath = $source->getDestinationFilepath(
           $entity->getEntityTypeId(),
           $entity->bundle(),
-          $exportable->getExportFilename(),
+          $exportable->getFilename(),
         );
-        $exportable->setExportFilepath($destination_filepath);
+        $exportable->setFilepath($destination_filepath);
       }
 
       $this->overrideMetaValues($exportable, $exports_meta_option_overrides);
@@ -305,7 +305,7 @@ class ExportableFactory implements ExportableFactoryInterface {
         array_key_exists($meta_option->id(), $exports_meta_option_overrides[$uuid]) &&
         !empty($exports_meta_option_overrides[$uuid][$meta_option->id()])
       ) {
-        $exportable->setMetaOption($meta_option->id(), $exports_meta_option_overrides[$uuid][$meta_option->id()]);
+        $exportable->setOption($meta_option->id(), $exports_meta_option_overrides[$uuid][$meta_option->id()]);
       }
 
       // Allow meta option plugins to perform last minute changes or actions.

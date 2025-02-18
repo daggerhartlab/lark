@@ -423,7 +423,7 @@ class Importer implements ImporterInterface {
       foreach ($export->translations() as $langcode => $translation_data) {
         if ($this->languageManager->getLanguage($langcode)) {
           $export->setDefaultLangcode($langcode);
-          $export->setContent(\array_merge($export->content(), $translation_data));
+          $export->setFields(\array_merge($export->fields('default'), $translation_data));
           $export->unsetTranslation($langcode);
           $use_default = FALSE;
           break;
@@ -448,7 +448,7 @@ class Importer implements ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   protected function processValuesForImport(ContentEntityInterface $entity, ExportArray $export) {
-    foreach ($export->content() as $field_name => $values) {
+    foreach ($export->fields('default') as $field_name => $values) {
       if (is_array($values) && $entity->hasField($field_name)) {
         $field = $entity->get($field_name);
         $value = $this->fieldTypeManager->alterImportValues($export->getField($field_name), $field);

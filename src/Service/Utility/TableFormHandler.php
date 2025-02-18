@@ -189,7 +189,7 @@ class TableFormHandler {
             '#value' => $entity->label(),
           ],
           'export_details' => [
-            '#markup' => "<p><strong>Export Path: </strong> <code>{$exportable->getExportFilename()}</code></p>",
+            '#markup' => "<p><strong>Export Path: </strong> <code>{$exportable->getFilename()}</code></p>",
           ],
           'diff_link' => [
             '#type' => 'operations',

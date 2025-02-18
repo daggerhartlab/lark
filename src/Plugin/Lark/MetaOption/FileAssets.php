@@ -42,8 +42,8 @@ final class FileAssets extends MetaOptionBase {
 
     // Whether asset is exported.
     $is_exported_msg = $this->t('Asset not exported.');
-    if ($exportable->getExportFilepath()) {
-      $destination = dirname($exportable->getExportFilepath());
+    if ($exportable->getFilepath()) {
+      $destination = dirname($exportable->getFilepath());
       if ($this->assetFileManager->assetIsExported($file, $destination)) {
         $path = $destination . DIRECTORY_SEPARATOR . $this->assetFileManager->assetExportFilename($file);
         $is_exported_msg = $this->t('Asset exported: @path', ['@path' => $path]);
@@ -63,7 +63,7 @@ final class FileAssets extends MetaOptionBase {
       ],
     ];
 
-    $meta_option = $exportable->hasMetaOption($this->id()) ? $exportable->getMetaOption($this->id()) : [];
+    $meta_option = $exportable->hasOption($this->id()) ? $exportable->getOption($this->id()) : [];
 
     // Should export.
     $should_export_value = $this->larkSettings->shouldExportAssets();
@@ -153,14 +153,14 @@ final class FileAssets extends MetaOptionBase {
     // Default to settings. Then, if an export override exists let it make the
     // decision about exporting.
     $should_export = $this->larkSettings->shouldExportAssets();
-    $export_override = $exportable->getMetaOption($this->id())['should_export'] ?? NULL;
+    $export_override = $exportable->getOption($this->id())['should_export'] ?? NULL;
     $export_override_exists = !is_null($exportable);
     if ($export_override_exists) {
       $should_export = (bool) $export_override;
     }
 
     if ($should_export) {
-      $asset_archive_path = $this->assetFileManager->exportAsset($entity, \dirname($exportable->getExportFilepath()));
+      $asset_archive_path = $this->assetFileManager->exportAsset($entity, \dirname($exportable->getFilepath()));
       $archive->addModify([$asset_archive_path], '', $exportable->getSource()->directoryProcessed());
     }
   }
@@ -176,14 +176,14 @@ final class FileAssets extends MetaOptionBase {
     // Default to settings. Then, if an export override exists let it make the
     // decision about exporting.
     $should_export = $this->larkSettings->shouldExportAssets();
-    $export_override = $exportable->getMetaOption($this->id())['should_export'] ?? NULL;
+    $export_override = $exportable->getOption($this->id())['should_export'] ?? NULL;
     $export_override_exists = !is_null($exportable);
     if ($export_override_exists) {
       $should_export = (bool) $export_override;
     }
 
     if ($should_export) {
-      $this->assetFileManager->exportAsset($entity, \dirname($exportable->getExportFilepath()));
+      $this->assetFileManager->exportAsset($entity, \dirname($exportable->getFilepath()));
     }
   }
 
@@ -206,7 +206,7 @@ final class FileAssets extends MetaOptionBase {
       $this->assetFileManager->importAsset(
         $entity,
         dirname($export->path()),
-        $export->content()['uri'][0]['value']
+        $export->fields('default')['uri'][0]['value']
       );
     }
   }
