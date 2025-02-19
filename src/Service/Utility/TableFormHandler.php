@@ -41,10 +41,20 @@ class TableFormHandler {
    * @return array
    */
   public function table(): array {
+    $path = $this->moduleHandler->getModule('lark')->getPath();
+
     return [
-      '#tree' => TRUE,
-      '#theme' => 'table',
-      '#header' => $this->headers(),
+      '#theme' => 'toggle_row_table',
+      '#header' => [
+        'icon' => [
+          'class' => ['status-icon'],
+          'data' => $this->t('Status')
+        ],
+        'entity_id' => $this->t('Entity ID'),
+        'entity_type' => $this->t('Entity Type'),
+        'bundle' => $this->t('Bundle'),
+        'label' => $this->t('Label'),
+      ],
       '#rows' => [],
       '#attributes' => [
         'class' => ['lark-exportables-table-form'],
@@ -52,23 +62,25 @@ class TableFormHandler {
       '#attached' => [
         'library' => ['lark/admin']
       ],
-    ];
-  }
-
-  /**
-   * @return array
-   */
-  public function headers(): array {
-    return [
-      'icon' => [
-        'class' => ['status-icon'],
-        'data' => $this->t('Status')
+      '#toggle_handle_header' => $this->t('Toggle'),
+      '#toggle_handle_open' => [
+        '#theme' => 'image',
+        '#alt' => 'Toggle row',
+        '#attributes' => [
+          'src' => Url::fromUri("base:/{$path}/assets/icons/file-yaml.png")->toString(),
+          'width' => '35',
+          'height' => '35',
+        ],
       ],
-      'entity_id' => $this->t('Entity ID'),
-      'entity_type' => $this->t('Entity Type'),
-      'bundle' => $this->t('Bundle'),
-      'label' => $this->t('Label'),
-      'toggle'  => $this->t('Toggle'),
+      '#toggle_handle_close' => [
+        '#theme' => 'image',
+        '#alt' => 'Toggle row',
+        '#attributes' => [
+          'src' => Url::fromUri("base:/{$path}/assets/icons/file-yaml.png")->toString(),
+          'width' => '35',
+          'height' => '35',
+        ],
+      ],
     ];
   }
 
@@ -90,8 +102,7 @@ class TableFormHandler {
   public function rows(array $exportables, array &$form, FormStateInterface $form_state, string $tree_name) {
     $rows = [];
     foreach ($exportables as $exportable) {
-      $new_rows = $this->exportableTableRows($exportable, $form, $form_state, [$tree_name]);
-      $rows = array_merge($rows, $new_rows);
+      $rows[] = $this->exportableTableRows($exportable, $form, $form_state, [$tree_name]);
     }
 
     return $rows;
@@ -145,14 +156,47 @@ class TableFormHandler {
    */
   private function exportableTableRows(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents = []): array {
     $entity = $exportable->entity();
-    $uuid = $exportable->entity()->uuid();
-
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
-    $path = $this->moduleHandler->getModule('lark')->getPath();
+
+    // Form & Yaml row.
+    $details_row = [
+      'heading' => [
+        '#type' => 'html_tag',
+        '#tag' => 'h2',
+        '#value' => $entity->label(),
+      ],
+      'export_details' => [
+        '#markup' => "<p><strong>Export Path: </strong> <code>{$exportable->getFilename()}</code></p>",
+      ],
+      'diff_link' => [
+        '#type' => 'operations',
+        '#access' => $exportable->getStatus() === ExportableStatus::OutOfSync,
+        '#links' => [
+          'import_all' => [
+            'title' => $this->t('View diff'),
+            'url' => $exportable->entity()->toUrl('lark-diff'),
+          ],
+        ],
+      ],
+      'yaml_export' => [
+        '#type' => 'html_tag',
+        '#tag' => 'pre',
+        '#value' => Markup::create(\htmlentities($exportable->toYaml())),
+        '#attributes' => [
+          'class' => ['lark-yaml-export-pre'],
+        ],
+        '#weight' => 100,
+      ]
+    ];
+
+    foreach ($this->metaOptionManager->getInstances() as $meta_option) {
+      if ($meta_option->applies($exportable->entity())) {
+        $details_row[$meta_option->id()] = $meta_option->formElement($exportable, $form, $form_state, $render_parents);
+      }
+    }
 
     // Data row.
     $data_row = [
-      'class' => ['lark-toggle-row'],
       'data' => [
         'icon' => [
           'class' => ['status-icon'],
@@ -162,71 +206,13 @@ class TableFormHandler {
         'entity_type' => $entity->getEntityTypeId(),
         'bundle' => $entity->bundle(),
         'label' => $entity->label(),
-        'toggle'  => [
-          'class' => ['lark-toggle-handle'],
-          'data-uuid' => $uuid,
-          'data' => [
-            'icon' => [
-              '#theme' => 'image',
-              '#alt' => 'Toggle row',
-              '#attributes' => [
-                'src' => Url::fromUri("base:/{$path}/assets/icons/file-yaml.png")->toString(),
-                'width' => '35',
-                'height' => '35',
-              ],
-            ],
-          ],
+        'details_row' => [
+          'data' => $details_row,
         ],
       ],
     ];
 
-    // Form & Yaml row.
-    $form_row = [
-      'form' => [
-        'class' => ['lark-toggle-details-row', 'lark-toggle-details-row--' . $uuid],
-        'colspan' => count($this->headers()),
-        'data' => [
-          'heading' => [
-            '#type' => 'html_tag',
-            '#tag' => 'h2',
-            '#value' => $entity->label(),
-          ],
-          'export_details' => [
-            '#markup' => "<p><strong>Export Path: </strong> <code>{$exportable->getFilename()}</code></p>",
-          ],
-          'diff_link' => [
-            '#type' => 'operations',
-            '#access' => $exportable->getStatus() === ExportableStatus::OutOfSync,
-            '#links' => [
-              'import_all' => [
-                'title' => $this->t('View diff'),
-                'url' => $exportable->entity()->toUrl('lark-diff'),
-              ],
-            ],
-          ],
-          'yaml_export' => [
-            '#type' => 'html_tag',
-            '#tag' => 'pre',
-            '#value' => Markup::create(\htmlentities($exportable->toYaml())),
-            '#attributes' => [
-              'class' => ['lark-yaml-export-pre'],
-            ],
-            '#weight' => 100,
-          ]
-        ],
-      ],
-    ];
-
-    foreach ($this->metaOptionManager->getInstances() as $meta_option) {
-      if ($meta_option->applies($exportable->entity())) {
-        $form_row['form']['data'][$meta_option->id()] = $meta_option->formElement($exportable, $form, $form_state, $render_parents);
-      }
-    }
-
-    return [
-      $data_row,
-      $form_row,
-    ];
+    return $data_row;
   }
 
 }

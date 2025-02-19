@@ -2,5 +2,7 @@ admin:
   css:
     theme:
       assets/css/lark.admin.css: {}
+
+toggle-row-table:
   js:
-    assets/js/exports-browser.js: {}
+    assets/js/toggle-row-table.js: {}
