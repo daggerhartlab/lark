@@ -4,7 +4,7 @@ namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Serialization\Yaml;
-use Drupal\lark\ExportableStatus;
+use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Entity\LarkSourceInterface;
 
 /**
@@ -36,7 +36,7 @@ class Exportable implements ExportableInterface {
   /**
    * Export status.
    *
-   * @var \Drupal\lark\ExportableStatus
+   * @var \Drupal\lark\Model\ExportableStatus
    */
   protected ExportableStatus $status = ExportableStatus::NotImported;
 

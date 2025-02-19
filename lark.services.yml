@@ -85,12 +85,12 @@ services:
     class: Drupal\lark\Service\Utility\ExportUtility
     autowire: true
 
-  Drupal\lark\Service\Utility\ExportableSourceResolver:
-    class: Drupal\lark\Service\Utility\ExportableSourceResolver
+  Drupal\lark\Service\Utility\SourceResolver:
+    class: Drupal\lark\Service\Utility\SourceResolver
     autowire: true
 
-  Drupal\lark\Service\Utility\ExportableStatusResolver:
-    class: Drupal\lark\Service\Utility\ExportableStatusResolver
+  Drupal\lark\Service\Utility\StatusResolver:
+    class: Drupal\lark\Service\Utility\StatusResolver
     autowire: true
 
   Drupal\lark\Service\Utility\SourceUtility:

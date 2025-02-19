@@ -4,7 +4,7 @@ namespace Drupal\lark\Service\Utility;
 
 use Drupal\Component\Diff\Diff;
 use Drupal\Core\Serialization\Yaml;
-use Drupal\lark\ExportableStatus;
+use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\LarkSettings;
@@ -14,12 +14,12 @@ use Drupal\lark\Service\ImporterInterface;
  * Used to determine the status of an exportable entity and prepare exports for
  * comparison.
  */
-class ExportableStatusResolver {
+class StatusResolver {
 
   public function __construct(
-    protected ExportableSourceResolver $sourceResolver,
+    protected SourceResolver $sourceResolver,
     protected ImporterInterface $importer,
-    protected LarkSettings $settings,
+    protected LarkSettings $larkSettings,
   ) {}
 
   /**
@@ -30,7 +30,7 @@ class ExportableStatusResolver {
    * @param \Drupal\lark\Model\ExportArray|null $sourceExportArray
    *   The export array.
    *
-   * @return \Drupal\lark\ExportableStatus
+   * @return \Drupal\lark\Model\ExportableStatus
    *   The status code.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
@@ -107,7 +107,7 @@ class ExportableStatusResolver {
    *   The processed export array.
    */
   public function processExportArrayForComparison(array $array): array {
-    $this->deepUnsetAll($array, $this->settings->ignoredComparisonKeysArray());
+    $this->deepUnsetAll($array, $this->larkSettings->ignoredComparisonKeysArray());
     return $array;
   }
 

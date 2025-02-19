@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\lark;
+namespace Drupal\lark\Model;
 
 enum ExportableStatus {
 

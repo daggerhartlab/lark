@@ -12,8 +12,8 @@ use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
-use Drupal\lark\Service\Utility\ExportableSourceResolver;
-use Drupal\lark\Service\Utility\ExportableStatusResolver;
+use Drupal\lark\Service\Utility\SourceResolver;
+use Drupal\lark\Service\Utility\StatusResolver;
 
 /**
  * Factory for creating exportable entities.
@@ -38,8 +38,8 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityUtility $entityUtility,
     protected EntityRepositoryInterface $entityRepository,
-    protected ExportableSourceResolver $sourceResolver,
-    protected ExportableStatusResolver $statusResolver,
+    protected SourceResolver $sourceResolver,
+    protected StatusResolver $statusResolver,
     protected FileSystemInterface $fileSystem,
     protected ImporterInterface $importer,
     protected MetaOptionManager $metaOptionManager,

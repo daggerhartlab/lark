@@ -4,7 +4,7 @@ namespace Drupal\lark\Model;
 
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\lark\ExportableStatus;
+use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Entity\LarkSourceInterface;
 
 /**
@@ -101,7 +101,7 @@ interface ExportableInterface {
   /**
    * Get status code that indicates how the entity and export arrays compare.
    *
-   * @return \Drupal\lark\ExportableStatus
+   * @return \Drupal\lark\Model\ExportableStatus
    *   Status code.
    */
   public function getStatus(): ExportableStatus;
@@ -117,7 +117,7 @@ interface ExportableInterface {
   /**
    * Set a status code that indicates how the entity and export arrays compare.
    *
-   * @param \Drupal\lark\ExportableStatus $status
+   * @param \Drupal\lark\Model\ExportableStatus $status
    *   Status code.
    *
    * @return \Drupal\lark\Model\ExportableInterface

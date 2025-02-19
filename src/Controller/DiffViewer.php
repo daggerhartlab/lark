@@ -5,19 +5,16 @@ namespace Drupal\lark\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Diff\DiffFormatter;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
-use Drupal\lark\Service\Utility\ExportableStatusResolver;
+use Drupal\lark\Service\Utility\StatusResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 class DiffViewer extends ControllerBase {
 
   public function __construct(
     protected ExportableFactoryInterface $exportableFactory,
     protected DiffFormatter $diffFormatter,
-    protected ExportableStatusResolver $statusResolver,
+    protected StatusResolver $statusResolver,
   ) {
   }
 
@@ -28,7 +25,7 @@ class DiffViewer extends ControllerBase {
     return new static(
       $container->get(ExportableFactoryInterface::class),
       $container->get(DiffFormatter::class),
-      $container->get(ExportableStatusResolver::class),
+      $container->get(StatusResolver::class),
     );
   }
 

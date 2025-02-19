@@ -12,7 +12,7 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\MetaOptionManager;
-use Drupal\lark\Service\Utility\ExportableSourceResolver;
+use Drupal\lark\Service\Utility\SourceResolver;
 use Drupal\system\FileDownloadController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -26,7 +26,7 @@ class DownloadController extends ControllerBase {
     protected ExportableFactoryInterface $exportableFactory,
     protected MetaOptionManager $metaOptionManager,
     protected ImporterInterface $importer,
-    protected ExportableSourceResolver $sourceResolver,
+    protected SourceResolver $sourceResolver,
     EntityTypeManagerInterface $entityTypeManager,
   ) {
     $this->entityTypeManager = $entityTypeManager;
@@ -39,7 +39,7 @@ class DownloadController extends ControllerBase {
       $container->get(ExportableFactoryInterface::class),
       $container->get(MetaOptionManager::class),
       $container->get(ImporterInterface::class),
-      $container->get(ExportableSourceResolver::class),
+      $container->get(SourceResolver::class),
       $container->get(EntityTypeManagerInterface::class),
     );
   }

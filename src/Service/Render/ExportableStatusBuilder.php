@@ -5,7 +5,7 @@ namespace Drupal\lark\Service\Render;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
-use Drupal\lark\ExportableStatus;
+use Drupal\lark\Model\ExportableStatus;
 
 /**
  * Utility class for building exportable status render elements.
@@ -21,22 +21,22 @@ class ExportableStatusBuilder {
   ) {}
 
   /**
-   * Get array keyed by ExportableStatus names.
+   * Build array keyed by ExportableStatus names.
    *
-   * @param mixed $default_value
+   * @param mixed $value
    *   Default value for each item in the array.
    *
    * @return array
-   *   Array keyed by ExportableStatus names.
+   *   Array keyed by ExportableStatus names and the value provided.
    */
-  public function getKeyedArray(mixed $default_value = NULL): array {
-    return array_fill_keys(array_column(ExportableStatus::cases(), 'name'), $default_value);
+  protected function fillStatusArray(mixed $value = NULL): array {
+    return array_fill_keys(array_column(ExportableStatus::cases(), 'name'), $value);
   }
 
   /**
    * Get status render details.
    *
-   * @param \Drupal\lark\ExportableStatus $status
+   * @param \Drupal\lark\Model\ExportableStatus $status
    *
    * @return string[]
    *   Exportable status render details.
@@ -61,14 +61,14 @@ class ExportableStatusBuilder {
       return $this->statusDetails;
     }
 
-    $statuses = $this->getKeyedArray([
+    $statuses = $this->fillStatusArray([
       'class_name' => '',
       'label' => '',
       'icon_url' => '',
-      'icon' => '',
-      'render' => '',
+      'icon_render' => '',
     ]);
 
+    $path = $this->moduleHandler->getModule('lark')->getPath();
     foreach ($statuses as $status_name => $details) {
       // Break TitleCase into separate words array.
       $words = array_filter(preg_split('/(?=[A-Z])/', $status_name));
@@ -82,7 +82,6 @@ class ExportableStatusBuilder {
           'class' => ['summary-label'],
         ],
       ];
-      $path = $this->moduleHandler->getModule('lark')->getPath();
       $details['icon_url'] = Url::fromUri("base:/{$path}/assets/icons/status--{$details['class_name']}.png")->toString();
       $details['icon_render'] = [
         '#theme' => 'image',
@@ -131,7 +130,7 @@ class ExportableStatusBuilder {
       ],
     ];
 
-    $status_counts = $this->getKeyedArray(0);
+    $status_counts = $this->fillStatusArray(0);
     $status_details = $this->getAllStatusRenderDetails();
 
     foreach ($exportables as $exportable) {

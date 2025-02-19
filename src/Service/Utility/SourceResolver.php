@@ -8,7 +8,7 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
 
-class ExportableSourceResolver {
+class SourceResolver {
 
   public function __construct(
     protected LarkSettings $larkSettings,
