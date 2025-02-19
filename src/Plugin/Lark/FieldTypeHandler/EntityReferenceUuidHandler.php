@@ -11,7 +11,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\lark\Attribute\LarkFieldTypeHandler;
 use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Plugin\Lark\FieldTypeHandlerBase;
-use Drupal\user\UserInterface;
+use Drupal\lark\Routing\EntityTypeInfo;
 
 /**
  * Plugin implementation of the lark_field_type_handler.
@@ -32,30 +32,29 @@ class EntityReferenceUuidHandler extends FieldTypeHandlerBase {
       $item = $field->get($delta);
       // Record entity reference target UUID and entity type.
       if ($item instanceof EntityReferenceItem && $item->get('entity')?->getTarget()) {
+        /** @var \Drupal\Core\Entity\EntityInterface $referenced_entity */
         $referenced_entity = $item->get('entity')->getTarget()->getValue();
 
-        if (
-          $referenced_entity instanceof ContentEntityInterface &&
-          !($referenced_entity instanceof UserInterface)
-        ) {
+        if (!$referenced_entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
+          continue;
+        }
 
-          // Override values with uuid that we'll use on import.
-          $values[$delta] = [
-            'target_uuid' => $referenced_entity->uuid(),
-            'target_entity_type' => $referenced_entity->getEntityTypeId(),
-            // Add additional information for entity reference revisions.
-            'target_bundle' => $referenced_entity->bundle(),
-            'original_values' => [],
-          ];
+        // Override values with uuid that we'll use on import.
+        $values[$delta] = [
+          'target_uuid' => $referenced_entity->uuid(),
+          'target_entity_type' => $referenced_entity->getEntityTypeId(),
+          // Add additional information for entity reference revisions.
+          'target_bundle' => $referenced_entity->bundle(),
+          'original_values' => [],
+        ];
 
-          foreach ($field->getFieldDefinition()->getFieldStorageDefinition()->getPropertyNames() as $property) {
-            $values[$delta]['original_values'][$property] = $item->get($property)->getValue();
-          }
+        foreach ($field->getFieldDefinition()->getFieldStorageDefinition()->getPropertyNames() as $property) {
+          $values[$delta]['original_values'][$property] = $item->get($property)->getValue();
+        }
 
-          // Unset the entity property to avoid serialization issues.
-          if (isset($values[$delta]['original_values']['entity'])) {
-            unset($values[$delta]['original_values']['entity']);
-          }
+        // Unset the entity property to avoid serialization issues.
+        if (isset($values[$delta]['original_values']['entity'])) {
+          unset($values[$delta]['original_values']['entity']);
         }
       }
     }

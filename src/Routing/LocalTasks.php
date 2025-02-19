@@ -41,47 +41,38 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
     $this->derivatives = [];
 
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
-      if ($entity_type->hasLinkTemplate('lark-load')) {
+      if (!$entity_type->get(EntityTypeInfo::IS_EXPORTABLE)) {
+        continue;
+      }
 
-        // Delete form seems to be the most common, so default to that.
-        $base_route_form = 'delete_form';
-        if ($entity_type->hasLinkTemplate('edit-form')) {
-          $base_route_form = 'edit_form';
-        }
-        if ($entity_type->hasLinkTemplate('canonical')) {
-          $base_route_form = 'canonical';
-        }
+      // Delete form seems to be the most common, so default to that.
+      $base_route_form = 'delete_form';
+      if ($entity_type->hasLinkTemplate('edit-form')) {
+        $base_route_form = 'edit_form';
+      }
+      if ($entity_type->hasLinkTemplate('canonical')) {
+        $base_route_form = 'canonical';
+      }
 
-        $this->derivatives["$entity_type_id.lark_load"] = [
-          'route_name' => "entity.$entity_type_id.lark_load",
-          'title' => $this->t('Lark'),
-          'base_route' => "entity.$entity_type_id." . $base_route_form,
-          'weight' => 100,
-        ];
+      $template_instances = RouteTemplates::getRouteTemplates($entity_type_id);
+      $parent = array_shift($template_instances);
 
-        $this->derivatives["$entity_type_id.lark_export"] = [
-          'route_name' => "entity.$entity_type_id.lark_export",
-          'title' => $this->t('Export'),
-          'parent_id' => "lark.entities:$entity_type_id.lark_load",
-        ];
+      $this->derivatives["$entity_type_id.{$parent['name']}"] = [
+        'route_name' => $parent['route']['name'],
+        'title' => $this->t('@lark_link_label', [
+          '@lark_link_label' => $parent['link']['label']
+        ]),
+        'base_route' => "entity.$entity_type_id." . $base_route_form,
+        'weight' => 100,
+      ];
 
-        $this->derivatives["$entity_type_id.lark_import"] = [
-          'route_name' => "entity.$entity_type_id.lark_import",
-          'title' => $this->t('Import'),
-          'parent_id' => "lark.entities:$entity_type_id.lark_load",
-        ];
-
-        $this->derivatives["$entity_type_id.lark_download"] = [
-          'route_name' => "entity.$entity_type_id.lark_download",
-          'title' => $this->t('Download'),
-          'parent_id' => "lark.entities:$entity_type_id.lark_load",
-        ];
-
-        $this->derivatives["$entity_type_id.lark_diff"] = [
-          'route_name' => "entity.$entity_type_id.lark_diff",
-          'title' => $this->t('Diff'),
-          'parent_id' => "lark.entities:$entity_type_id.lark_load",
-          'weight' => 100,
+      foreach ($template_instances as $instance) {
+        $this->derivatives["$entity_type_id.{$instance['name']}"] = [
+          'route_name' => $instance['route']['name'],
+          'title' => $this->t('@lark_link_label', [
+            '@lark_link_label' => $instance['link']['label']
+          ]),
+          'parent_id' => "lark.entities:$entity_type_id.{$parent['name']}",
         ];
       }
     }

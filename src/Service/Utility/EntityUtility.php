@@ -2,15 +2,16 @@
 
 namespace Drupal\lark\Service\Utility;
 
-use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
-use Drupal\user\UserInterface;
 
 class EntityUtility {
 
   public function __construct(
+    protected EntityTypeManagerInterface $entityTypeManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeHandlerManager,
   ) {}
 
@@ -46,8 +47,7 @@ class EntityUtility {
    *   UUID => Entity type id pairs, including the given entity.
    */
   public function getEntityUuidEntityTypePairs(ContentEntityInterface $entity, array &$found): array {
-    // Don't export users.
-    if ($entity instanceof UserInterface) {
+    if (!$entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
       return [];
     }
 
@@ -56,12 +56,7 @@ class EntityUtility {
     foreach ($entity->getFields() as $field) {
       if ($field instanceof EntityReferenceFieldItemListInterface) {
         foreach ($field->referencedEntities() as $referenced_entity) {
-          // Don't export config entities.
-          if ($referenced_entity instanceof ConfigEntityInterface) {
-            continue;
-          }
-          // Don't export users.
-          if ($referenced_entity instanceof UserInterface) {
+          if (!$referenced_entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
             continue;
           }
 

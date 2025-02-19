@@ -4,17 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Service;
 
-use Drupal\Core\Config\Entity\ConfigEntityInterface;
-use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
-use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Model\LarkSettings;
-use Drupal\user\UserInterface;
 
 /**
  * Export entities and their dependencies to yaml.

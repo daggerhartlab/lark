@@ -17,6 +17,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Exception\LarkImportException;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Routing\EntityTypeInfo;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
 
@@ -372,7 +373,7 @@ class Importer implements ImporterInterface {
 
     $entity_type = $this->entityTypeManager->getDefinition($export->entityTypeId());
     /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
-    if (!$entity_type->entityClassImplements(ContentEntityInterface::class)) {
+    if (!$entity_type->get(EntityTypeInfo::IS_EXPORTABLE)) {
       throw new LarkImportException("Only content entities can be imported. Export {$export->uuid()} is a '{$export->entityTypeId()}'.");
     }
   }

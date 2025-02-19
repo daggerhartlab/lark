@@ -3,7 +3,6 @@
 namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\lark\Service\Exporter;
 use Drupal\lark\Service\Utility\EntityUtility;
 
 /**

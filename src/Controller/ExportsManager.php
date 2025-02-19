@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Controller;
 
-use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Serialization\Yaml;
-use Drupal\Core\Url;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\Render\ExportableStatusBuilder;
@@ -22,7 +17,6 @@ use Drupal\lark\Service\Render\SourceViewBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Entity exports controller.
