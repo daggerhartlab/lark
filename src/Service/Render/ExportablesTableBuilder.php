@@ -11,7 +11,6 @@ use Drupal\lark\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\MetaOptionManager;
-use Drupal\lark\Service\Render\ExportableStatusBuilder;
 
 class ExportablesTableBuilder {
 
@@ -91,7 +90,7 @@ class ExportablesTableBuilder {
    *
    * @return array
    */
-  public function rows(array $exportables, array &$form, FormStateInterface $form_state, string $tree_name) {
+  protected function rows(array $exportables, array &$form, FormStateInterface $form_state, string $tree_name) {
     $rows = [];
     foreach ($exportables as $exportable) {
       $rows[] = $this->row($exportable, $form, $form_state, [$tree_name]);
@@ -110,7 +109,7 @@ class ExportablesTableBuilder {
    *
    * @return array
    */
-  private function row(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents = []): array {
+  protected function row(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents = []): array {
     $entity = $exportable->entity();
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
 

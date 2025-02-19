@@ -132,7 +132,7 @@ class ExportsManager extends ControllerBase {
   public function viewSource(string $lark_source): array {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->entityTypeManager()->getStorage('lark_source')->load($lark_source);
-    return $this->sourceViewBuilder->viewSource($source);
+    return $this->sourceViewBuilder->view($source);
   }
 
   /**

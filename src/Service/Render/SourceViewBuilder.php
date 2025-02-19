@@ -13,6 +13,8 @@ use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\Render\ExportableStatusBuilder;
+use Drupal\lark\Service\Utility\ExportUtility;
+use Drupal\lark\Service\Utility\SourceUtility;
 
 class SourceViewBuilder {
 
@@ -21,9 +23,12 @@ class SourceViewBuilder {
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ImporterInterface $importer,
+    protected ExportUtility $exportUtility,
     protected ExportableFactoryInterface $exportableFactory,
     protected ExportableStatusBuilder $statusBuilder,
     protected ModuleHandlerInterface $moduleHandler,
+    protected SourceRootsViewBuilder $rootsViewBuilder,
+    protected SourceUtility $sourceUtility,
   ) {}
 
   /**
@@ -39,7 +44,7 @@ class SourceViewBuilder {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function viewSource(LarkSourceInterface $source): array {
+  public function view(LarkSourceInterface $source): array {
     $import_link = Link::createFromRoute('Import All', 'lark.action_import_source', [
       'lark_source' => $source->id(),
     ])->toRenderable();
@@ -56,7 +61,7 @@ class SourceViewBuilder {
         'import' => $import_link,
         'download' => $download_link,
       ],
-      'table' => $this->tablePopulated($source),
+      'table' => $this->table($source),
     ];
 
     return $build;
@@ -117,47 +122,37 @@ class SourceViewBuilder {
    *
    * @return array
    */
-  public function tablePopulated(LarkSourceInterface $source): array {
-    $exports = $this->importer->discoverSourceExports($source);
-    $exports = array_reverse($exports);
-    $source_root_exports = $this->getRootLevelExports($exports);
-    $table = $this->table();
-
-    // The root export is a top-level table row
-    foreach ($source_root_exports as $root_uuid => $root_export) {
-      // Get the root_export's Exportable along with dependencies.
-      $root_exportable = $this->exportableFactory->createFromSource($source->id(), $root_uuid);
-      if (!$root_exportable) {
-        continue;
-      }
-
-      $table['#rows'][] = $this->tableToggleRow($source, $root_exportable);
-      $table['#rows'][] = $this->tableDetailsRow($source, $root_exportable);
-    }
+  public function table(LarkSourceInterface $source): array {
+    $path = $this->moduleHandler->getModule('lark')->getPath();
+    $table = [
+      '#theme' => 'toggle_row_table',
+      '#header' => $this->headers(),
+      '#rows' => $this->rows($source),
+      '#attributes' => ['class' => ['lark-source-table']],
+      '#attached' => ['library' => ['lark/admin']],
+      '#toggle_handle_open' => [
+        '#theme' => 'image',
+        '#alt' => 'Toggle row',
+        '#attributes' => [
+          'src' => Url::fromUri("base:/{$path}/assets/icons/folder-closed.png")->toString(),
+          'width' => '35',
+          'height' => '35',
+        ],
+      ],
+      '#toggle_handle_close' => [
+        '#theme' => 'image',
+        '#alt' => 'Toggle row',
+        '#attributes' => [
+          'src' => Url::fromUri("base:/{$path}/assets/icons/folder-open.png")->toString(),
+          'width' => '35',
+          'height' => '35',
+        ],
+      ],
+    ];
 
     return $table;
   }
 
-  /**
-   * @return array
-   */
-  protected function table(): array {
-    return [
-      '#type' => 'table',
-      '#header' => $this->toggleHeaders(),
-      '#rows' => [],
-      '#attributes' => [
-        'class' => ['lark-source-table'],
-      ],
-      '#attached' => [
-        'library' => ['lark/admin'],
-      ],
-    ];
-  }
-
-  /**
-   * @return array[]
-   */
   protected function headers(): array {
     return [
       'status' => [
@@ -183,253 +178,56 @@ class SourceViewBuilder {
     ];
   }
 
-  /**
-   * @return array[]
-   */
-  protected function toggleHeaders(): array {
-    return $this->headers() + [
-        'toggle' => [
-          'class' => ['toggle'],
-          'data' => $this->t('Details'),
-        ]
-      ];
-  }
+  protected function rows(LarkSourceInterface $source): array {
+    $exports = $this->importer->discoverSourceExports($source);
+    $exports = array_reverse($exports);
+    $source_root_exports = $this->exportUtility->getRootLevelExports($exports);
 
-  /**
-   * Same as the data row, but with toggle instead of operations.
-   *
-   * @param \Drupal\lark\Entity\LarkSourceInterface $source
-   *   Source plugin.
-   * @param \Drupal\lark\Model\ExportableInterface $exportable
-   *   Exportable entity.
-   *
-   * @return array
-   *   Table row.
-   */
-  protected function tableToggleRow(LarkSourceInterface $source, ExportableInterface $exportable): array {
-    $row = $this->tableDataRow($source, $exportable);
-    //unset($row['data']['operations']);
-    $path = $this->moduleHandler->getModule('lark')->getPath();
-    $row['data']['toggle'] = [
-      'class' => ['lark-toggle-handle'],
-      'data-uuid' => $exportable->entity()->uuid(),
-      'data' => [
-        'icon' => [
-          '#theme' => 'image',
-          '#alt' => 'Toggle row',
-          '#attributes' => [
-            'src' => Url::fromUri("base:/{$path}/assets/icons/folder-closed.png")->toString(),
-            'width' => '35',
-            'height' => '35',
-          ],
-        ],
-      ],
-    ];
-    return $row;
-  }
-
-  /**
-   * Build single table row for exportable entity.
-   *
-   * @param \Drupal\lark\Entity\LarkSourceInterface $source
-   *   Source plugin.
-   * @param \Drupal\lark\Model\ExportableInterface $exportable
-   *   Exportable entity.
-   *
-   * @return array
-   *   Table row.
-   */
-  protected function tableDataRow(LarkSourceInterface $source, ExportableInterface $exportable): array {
-    $relative = str_replace($source->directoryProcessed(FALSE) . DIRECTORY_SEPARATOR, '', $exportable->getFilepath());
-    $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
-    return [
-      'class' => [
-        'lark-toggle-row',
-        'lark-toggle-row--' . $status_details['class_name']
-      ],
-      'data' => [
-        'status' => [
-          'class' => ['status'],
-          'data' => $status_details['icon_render'],
-        ],
-        'entity_type' => [
-          'class' => ['entity-type'],
-          'data' => $exportable->entity()->getEntityTypeId(),
-        ],
-        'label' => [
-          'class' => ['label'],
-          'data' => $exportable->entity()->label(),
-        ],
-        'filepath' => [
-          'class' => ['filepath'],
-          'data' => Markup::create("<small title='{$exportable->getFilepath()}'><code>{$relative}</code></small>"),
-        ],
-        'operations' => [
-          'data' => $this->sourceExportableOperations($source, $exportable),
-        ],
-      ],
-    ];
-  }
-
-  /**
-   * @param \Drupal\lark\Entity\LarkSourceInterface $source
-   * @param \Drupal\lark\Model\ExportableInterface $root_exportable
-   *
-   * @return array[]
-   */
-  protected function tableDetailsRow(LarkSourceInterface $source, ExportableInterface $root_exportable): array {
-    $root_uuid = $root_exportable->entity()->uuid();
-    $dependency_exportables = $this->getRootDependencyExportables($source, $root_uuid);
-
-    return [
-      'details' => [
-        'colspan' => count($this->toggleHeaders()),
-        'class' => ['lark-toggle-details-row', 'lark-toggle-details-row--' . $root_uuid],
-        'data' => [
-          'summary' => $this->statusBuilder->getExportablesSummary($dependency_exportables),
-          'dependencies_heading' => [
-            '#type' => 'html_tag',
-            '#tag' => 'h4',
-            '#value' => $this->t('Dependencies'),
-          ],
-          'dependencies_description' => [
-            '#type' => 'html_tag',
-            '#tag' => 'small',
-            '#value' => $this->t('All dependencies of an entity are imported along with the parent entities.'),
-          ],
-          'dependencies_table' => [
-            '#type' => 'table',
-            '#attributes' => ['class' => ['lark-exports-table']],
-            '#empty' => $this->t('No dependencies found.'),
-            '#header' => $this->headers(),
-            '#rows' => array_map(function (ExportableInterface $exportable) use ($source) {
-              return $this->tableDataRow($source, $exportable);
-            }, $dependency_exportables),
-          ],
-        ],
-      ],
-    ];
-  }
-
-  /**
-   * @param \Drupal\lark\Entity\LarkSourceInterface $source
-   * @param string $root_uuid
-   *
-   * @return array
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  protected function getRootDependencyExportables(LarkSourceInterface $source, string $root_uuid): array {
-    $dependency_exports = $this->importer->discoverSourceExport($source, $root_uuid);
-    $dependency_exports = array_reverse($dependency_exports);
-    $dependency_exportables = [];
-    foreach ($dependency_exports as $dependency_uuid => $dependency_export) {
-      if ($dependency_uuid === $root_uuid) {
+    // The root export is a top-level table row
+    $rows = [];
+    foreach ($source_root_exports as $root_uuid => $root_export) {
+      // Get the root_export's Exportable along with dependencies.
+      $root_exportable = $this->exportableFactory->createFromSource($source->id(), $root_uuid);
+      if (!$root_exportable) {
         continue;
       }
 
-      $dependency_exportable = $this->exportableFactory->createFromSource($source->id(), $dependency_uuid);
-      if ($dependency_exportable) {
-        $dependency_exportables[] = $dependency_exportable;
-      }
+      $rows[] = $this->row($source, $root_exportable);
     }
 
-    return $dependency_exportables;
+    return $rows;
   }
 
-  /**
-   * Build operation links for given exportable.
-   *
-   * @param \Drupal\lark\Entity\LarkSourceInterface $source
-   *   Source plugin.
-   * @param \Drupal\lark\Model\ExportableInterface $exportable
-   *   Exportable entity.
-   *
-   * @return array
-   *   Render array.
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Core\Entity\EntityMalformedException
-   */
-  protected function sourceExportableOperations(LarkSourceInterface $source, ExportableInterface $exportable): array {
-    // Determine export status and possible operations.
-    $operations = [];
-
-    if ($exportable->entity()->isNew()) {
-      $operations['import'] = [
-        'title' => $this->t('Import'),
-        'url' => Url::fromRoute('lark.action_import_source_entity', [
-          'lark_source' => $source->id(),
-          'uuid' => $exportable->entity()->uuid(),
-        ]),
-      ];
-    }
-    if (!$exportable->entity()->isNew()) {
-      $entity_type = $this->entityTypeManager->getDefinition($exportable->entity()->getEntityTypeId());
-
-      if ($entity_type->hasLinkTemplate('canonical')) {
-        $operations['view'] = [
-          'title' => $this->t('View'),
-          'url' => $exportable->entity()->toUrl()->setRouteParameter('lark_source', $source->id()),
-        ];
-      }
-      if ($entity_type->hasLinkTemplate('edit-form')) {
-        $operations['edit_form'] = [
-          'title' => $this->t('Edit'),
-          'url' => $exportable->entity()->toUrl('edit-form'),
-        ];
-      }
-      if ($entity_type->hasLinkTemplate('lark-load')) {
-        $operations['lark'] = [
-          'title' => $this->t('Export'),
-          'url' => $exportable->entity()->toUrl('lark-load'),
-        ];
-      }
-      if ($entity_type->hasLinkTemplate('lark-import')) {
-        $operations['lark_import'] = [
-          'title' => $this->t('Import'),
-          'url' => $exportable->entity()->toUrl('lark-import'),
-        ];
-      }
-      if ($entity_type->hasLinkTemplate('lark-download')) {
-        $operations['lark_download'] = [
-          'title' => $this->t('Download'),
-          'url' => $exportable->entity()->toUrl('lark-download'),
-        ];
-      }
-      if ($entity_type->hasLinkTemplate('lark-diff')) {
-        $operations['lark_diff'] = [
-          'title' => $this->t('Diff'),
-          'url' => $exportable->entity()->toUrl('lark-diff'),
-        ];
-      }
-
-    }
-
+  protected function row(LarkSourceInterface $source, ExportableInterface $exportable): array {
+    $relative = str_replace($source->directoryProcessed(FALSE) . DIRECTORY_SEPARATOR, '', $exportable->getFilepath());
+    $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
     return [
-      '#type' => 'operations',
-      '#links' => $operations,
+      'status' => [
+        'class' => ['status'],
+        'data' => $status_details['icon_render'],
+      ],
+      'entity_type' => [
+        'class' => ['entity-type'],
+        'data' => $exportable->entity()->getEntityTypeId(),
+      ],
+      'label' => [
+        'class' => ['label'],
+        'data' => $exportable->entity()->label(),
+      ],
+      'filepath' => [
+        'class' => ['filepath'],
+        'data' => Markup::create("<small title='{$exportable->getFilepath()}'><code>{$relative}</code></small>"),
+      ],
+      'operations' => [
+        'data' => [
+          '#type' => 'operations',
+          '#links' => $this->sourceUtility->getExportableOperations($source, $exportable),
+        ],
+      ],
+      'details' => [
+        'data' => $this->rootsViewBuilder->view($source, $exportable),
+      ],
     ];
-  }
-
-  /**
-   * Get only the root-level exports.
-   *
-   * @param array $exports
-   *   Exports array.
-   *
-   * @return array
-   *   Root-level exports.
-   */
-  protected function getRootLevelExports(array $exports): array {
-    return array_filter($exports, function ($export, $uuid) use ($exports) {
-      foreach ($exports as $other_export) {
-        if (isset($other_export['_meta']['depends'][$uuid])) {
-          return FALSE;
-        }
-      }
-
-      return TRUE;
-    }, ARRAY_FILTER_USE_BOTH);
   }
 
 }

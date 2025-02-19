@@ -69,8 +69,16 @@ services:
     class: Drupal\lark\Service\Render\ExportablesTableBuilder
     autowire: true
 
+  Drupal\lark\Service\Render\SourceRootsViewBuilder:
+    class: Drupal\lark\Service\Render\SourceRootsViewBuilder
+    autowire: true
+
   Drupal\lark\Service\Render\SourceViewBuilder:
     class: Drupal\lark\Service\Render\SourceViewBuilder
+    autowire: true
+
+  Drupal\lark\Service\Utility\ExportUtility:
+    class: Drupal\lark\Service\Utility\ExportUtility
     autowire: true
 
   Drupal\lark\Service\Utility\ExportableSourceResolver:
@@ -79,4 +87,8 @@ services:
 
   Drupal\lark\Service\Utility\ExportableStatusResolver:
     class: Drupal\lark\Service\Utility\ExportableStatusResolver
+    autowire: true
+
+  Drupal\lark\Service\Utility\SourceUtility:
+    class: Drupal\lark\Service\Utility\SourceUtility
     autowire: true
