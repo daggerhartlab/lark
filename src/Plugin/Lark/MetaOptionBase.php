@@ -7,7 +7,6 @@ namespace Drupal\lark\Plugin\Lark;
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Archiver\ArchiveTar;
-use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
@@ -17,6 +16,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Plugin\Lark\MetaOptionInterface;
+use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\AssetFileManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -79,7 +79,7 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
    * {@inheritdoc}
    */
   public function applies(EntityInterface $entity): bool {
-    return $entity instanceof ContentEntityInterface;
+    return $entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE);
   }
 
   /**

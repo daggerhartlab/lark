@@ -41,7 +41,7 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
     $this->derivatives = [];
 
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
-      if (!$entity_type->get('_lark_exportable')) {
+      if (!$entity_type->get(EntityTypeInfo::IS_EXPORTABLE)) {
         continue;
       }
 

@@ -3,7 +3,6 @@
 namespace Drupal\lark\Service;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
@@ -11,6 +10,7 @@ use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\lark\Service\Utility\SourceResolver;
 use Drupal\lark\Service\Utility\StatusResolver;
@@ -68,7 +68,7 @@ class ExportableFactory implements ExportableFactoryInterface {
       throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} not found.");
     }
 
-    if (!($entity instanceof ContentEntityInterface)) {
+    if (!$entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
       throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} is not a content entity.");
     }
 
@@ -145,12 +145,12 @@ class ExportableFactory implements ExportableFactoryInterface {
       return $this->exportableCache[$uuid];
     }
 
-    $content_entity_types = array_filter($this->entityTypeManager->getDefinitions(), function($def) {
-      return $def instanceof ContentEntityTypeInterface;
-    });
-
     $found = NULL;
-    foreach ($content_entity_types as $entity_type) {
+    foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
+      if (!$entity_type->get(EntityTypeInfo::IS_EXPORTABLE)) {
+        continue;
+      }
+
       $found = $this->entityTypeManager->getStorage($entity_type->id())->loadByProperties([
         'uuid' => $uuid,
       ]);

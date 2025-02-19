@@ -5,7 +5,6 @@ namespace Drupal\lark\Routing;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Entity\LarkSourceInterface;
@@ -15,6 +14,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityTypeInfo implements ContainerInjectionInterface {
 
   use StringTranslationTrait;
+
+  const IS_EXPORTABLE = '_lark_exportable';
 
   /**
    * EntityTypeInfo constructor.
@@ -51,17 +52,17 @@ class EntityTypeInfo implements ContainerInjectionInterface {
     foreach ($entity_types as $entity_type_id => $entity_type) {
       // Only content entities.
       if (!($entity_type instanceof ContentEntityTypeInterface)) {
-        $entity_type->set('_lark_exportable', FALSE);
+        $entity_type->set(static::IS_EXPORTABLE, FALSE);
         continue;
       }
 
       // Never export/import Users.
       if ($entity_type_id === 'user') {
-        $entity_type->set('_lark_exportable', FALSE);
+        $entity_type->set(static::IS_EXPORTABLE, FALSE);
         continue;
       }
 
-      $entity_type->set('_lark_exportable', TRUE);
+      $entity_type->set(static::IS_EXPORTABLE, TRUE);
 
       // Add our Lark links to each exportable content type.
       // The delete-form template is used to extract and set additional params
