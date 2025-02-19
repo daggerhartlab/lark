@@ -217,7 +217,7 @@ class SourceViewBuilder {
           '#theme' => 'image',
           '#alt' => 'Toggle row',
           '#attributes' => [
-            'src' => Url::fromUri("base:/{$path}/assets/icons/file-yaml.png")->toString(),
+            'src' => Url::fromUri("base:/{$path}/assets/icons/folder-closed.png")->toString(),
             'width' => '35',
             'height' => '35',
           ],
