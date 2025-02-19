@@ -36,8 +36,8 @@ services:
     class: Drupal\lark\Service\Utility\SourceViewBuilder
     autowire: true
 
-  Drupal\lark\Service\Utility\TableFormHandler:
-    class: Drupal\lark\Service\Utility\TableFormHandler
+  Drupal\lark\Service\Utility\ExportablesTableBuilder:
+    class: Drupal\lark\Service\Utility\ExportablesTableBuilder
     autowire: true
 
   Drupal\lark\Service\ExportableFactoryInterface:

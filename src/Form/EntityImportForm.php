@@ -9,33 +9,10 @@ use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
-use Drupal\lark\Service\Utility\TableFormHandler;
+use Drupal\lark\Service\Utility\ExportablesTableBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class EntityImportForm extends FormBase {
-
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected LarkSettings $larkSettings,
-    protected ExportableFactoryInterface $exportableFactory,
-    protected ImporterInterface $importer,
-    protected ExportableStatusBuilder $statusBuilder,
-    protected TableFormHandler $tableFormHandler,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get(EntityTypeManagerInterface::class),
-      $container->get(LarkSettings::class),
-      $container->get(ExportableFactoryInterface::class),
-      $container->get(ImporterInterface::class),
-      $container->get(ExportableStatusBuilder::class),
-      $container->get(TableFormHandler::class),
-    );
-  }
+class EntityImportForm extends EntityBaseForm {
 
   /**
    * {@inheritdoc}
@@ -103,7 +80,7 @@ class EntityImportForm extends FormBase {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-      'table' => $this->tableFormHandler->tablePopulated($exportables, $form, $form_state, 'export_form_values')
+      'table' => $this->tableFormHandler->table($exportables, $form, $form_state, 'export_form_values')
     ];
 
     return $form;

@@ -12,7 +12,7 @@ use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\MetaOptionManager;
 
-class TableFormHandler {
+class ExportablesTableBuilder {
 
   use StringTranslationTrait;
 
@@ -31,16 +31,7 @@ class TableFormHandler {
    *
    * @return array
    */
-  public function tablePopulated(array $exportables, array &$form, FormStateInterface $form_state, string $tree_name): array {
-    $table = $this->table();
-    $table['#rows'] = $this->rows($exportables, $form, $form_state, $tree_name);
-    return $table;
-  }
-
-  /**
-   * @return array
-   */
-  public function table(): array {
+  public function table(array $exportables, array &$form, FormStateInterface $form_state, string $tree_name): array {
     $path = $this->moduleHandler->getModule('lark')->getPath();
 
     return [
@@ -55,7 +46,7 @@ class TableFormHandler {
         'bundle' => $this->t('Bundle'),
         'label' => $this->t('Label'),
       ],
-      '#rows' => [],
+      '#rows' => $this->rows($exportables, $form, $form_state, $tree_name),
       '#attributes' => [
         'class' => ['lark-exportables-table-form'],
       ],
@@ -102,46 +93,10 @@ class TableFormHandler {
   public function rows(array $exportables, array &$form, FormStateInterface $form_state, string $tree_name) {
     $rows = [];
     foreach ($exportables as $exportable) {
-      $rows[] = $this->exportableTableRows($exportable, $form, $form_state, [$tree_name]);
+      $rows[] = $this->row($exportable, $form, $form_state, [$tree_name]);
     }
 
     return $rows;
-  }
-
-  /**
-   * @param string $tree_name
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *
-   * @return array
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  public function getSubmittedMetaOptionOverrides(string $tree_name, FormStateInterface $form_state): array {
-    $submitted_values = $form_state->getValues()[$tree_name] ?? [];
-    $overrides = [];
-    foreach ($submitted_values as $uuid => $values) {
-      $exportable = $this->exportableFactory->createFromUuid($uuid);
-
-      foreach ($this->metaOptionManager->getInstances() as $form_plugin) {
-        // Ensure the plugin applies to the entity.
-        if (!$form_plugin->applies($exportable->entity())) {
-          continue;
-        }
-
-        // Ensure it has submitted values.
-        if (!array_key_exists($form_plugin->id(), $values)) {
-          $values[$form_plugin->id()] = [];
-        }
-
-        // Allow the plugin to record the values to the export.
-        $plugin_values = $form_plugin->processFormValues($values[$form_plugin->id()], $exportable, $form_state);
-        if ($plugin_values) {
-          $overrides[$uuid][$form_plugin->id()] = $plugin_values;
-        }
-      }
-    }
-    return $overrides;
   }
 
   /**
@@ -154,7 +109,7 @@ class TableFormHandler {
    *
    * @return array
    */
-  private function exportableTableRows(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents = []): array {
+  private function row(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents = []): array {
     $entity = $exportable->entity();
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
 
@@ -195,8 +150,8 @@ class TableFormHandler {
       }
     }
 
-    // Data row.
-    $data_row = [
+    // Toggle row with details row as the last cell.
+    return [
       'data' => [
         'icon' => [
           'class' => ['status-icon'],
@@ -211,8 +166,6 @@ class TableFormHandler {
         ],
       ],
     ];
-
-    return $data_row;
   }
 
 }

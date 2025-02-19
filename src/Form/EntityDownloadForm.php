@@ -10,35 +10,10 @@ use Drupal\lark\Controller\DownloadController;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\MetaOptionManager;
 use Drupal\lark\Service\Utility\ExportableStatusBuilder;
-use Drupal\lark\Service\Utility\TableFormHandler;
+use Drupal\lark\Service\Utility\ExportablesTableBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class EntityDownloadForm extends FormBase {
-
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileSystemInterface $fileSystem,
-    protected ExportableFactoryInterface $exportableFactory,
-    protected MetaOptionManager $metaOptionManager,
-    protected DownloadController $downloadController,
-    protected ExportableStatusBuilder $statusBuilder,
-    protected TableFormHandler $tableFormHandler,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get(EntityTypeManagerInterface::class),
-      $container->get(FileSystemInterface::class),
-      $container->get(ExportableFactoryInterface::class),
-      $container->get(MetaOptionManager::class),
-      DownloadController::create($container),
-      $container->get(ExportableStatusBuilder::class),
-      $container->get(TableFormHandler::class),
-    );
-  }
+class EntityDownloadForm extends EntityBaseForm {
 
   /**
    * {@inheritdoc}
@@ -83,7 +58,7 @@ class EntityDownloadForm extends FormBase {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-      'table' => $this->tableFormHandler->tablePopulated($exportables, $form, $form_state, 'export_form_values')
+      'table' => $this->tableFormHandler->table($exportables, $form, $form_state, 'export_form_values')
     ];
     return $form;
   }
@@ -92,7 +67,7 @@ class EntityDownloadForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $meta_options_overrides = $this->tableFormHandler->getSubmittedMetaOptionOverrides('export_form_values', $form_state);
+    $meta_options_overrides = $this->getSubmittedOverrides('export_form_values', $form_state);
 
     $response = $this->downloadController->downloadExportResponse(
       $form_state->getValue('entity_type_id'),
