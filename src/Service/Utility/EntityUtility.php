@@ -4,13 +4,18 @@ namespace Drupal\lark\Service\Utility;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\ContentEntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
 use Drupal\user\UserInterface;
 
 class EntityUtility {
 
+  protected array $allowedEntityTypeIds = [];
+
   public function __construct(
+    protected EntityTypeManagerInterface $entityTypeManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeHandlerManager,
   ) {}
 

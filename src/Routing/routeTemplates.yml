@@ -1,0 +1,74 @@
+# These are the default values of the 'routes:'.
+template:
+  name: '__NAME__'
+  link:
+    label: ''
+    key: '--NAME--'
+  route:
+    name: 'entity.__ENTITY_TYPE_ID__.__NAME__'
+    path: '/lark/'
+    defaults:
+      _title: ''
+    options:
+      _admin_route: TRUE
+      _lark_entity_type_id: '__ENTITY_TYPE_ID__'
+    requirements:
+      _permission: ''
+
+instances:
+  # This is the base route/tab.
+  lark_load:
+    link:
+      label: 'Lark'
+    route:
+      path: '/lark/__ENTITY_TYPE_ID__'
+      defaults:
+        _title: 'Lark'
+        _controller: '\Drupal\lark\Controller\ExportsManager::larkLoad'
+      requirements:
+        _permission: 'lark export entity,lark import entity'
+
+  # These are sub-tabs of lark_load.
+  lark_export:
+    link:
+      label: 'Export'
+    route:
+      path: '/lark/export/__ENTITY_TYPE_ID__'
+      defaults:
+        _title: 'Lark Export'
+        _form: '\Drupal\lark\Form\EntityExportForm'
+      requirements:
+        _permission: 'lark export entity'
+
+  lark_import:
+    link:
+      label: 'Import'
+    route:
+      path: '/lark/import/__ENTITY_TYPE_ID__'
+      defaults:
+        _title: 'Lark Import'
+        _form: '\Drupal\lark\Form\EntityImportForm'
+      requirements:
+        _permission: 'lark import entity'
+
+  lark_download:
+    link:
+      label: 'Download'
+    route:
+      path: '/lark/download/__ENTITY_TYPE_ID__'
+      defaults:
+        _title: 'Lark Download'
+        _form: '\Drupal\lark\Form\EntityDownloadForm'
+      requirements:
+        _permission: 'lark export entity'
+
+  lark_diff:
+    link:
+      label: 'Diff'
+    route:
+      path: '/lark/diff/__ENTITY_TYPE_ID__'
+      defaults:
+        _title: 'Lark Diff'
+        _controller: '\Drupal\lark\Controller\DiffViewer::build'
+      requirements:
+        _permission: 'lark export entity'

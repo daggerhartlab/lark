@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Service\Utility\EntityUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class EntityTypeInfo implements ContainerInjectionInterface {
@@ -22,7 +23,8 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *   Current user.
    */
   public function __construct(
-    private AccountInterface $currentUser,
+    protected AccountInterface $currentUser,
+    protected EntityUtility $entityUtility,
   ) {}
 
   /**
@@ -31,6 +33,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get(AccountInterface::class),
+      $container->get(EntityUtility::class),
     );
   }
 
@@ -45,32 +48,45 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    * @see hook_entity_type_alter()
    */
   public function entityTypeAlter(array &$entity_types): array {
-    foreach ($entity_types as $entity_type) {
+    foreach ($entity_types as $entity_type_id => $entity_type) {
       // Only content entities.
       if (!($entity_type instanceof ContentEntityTypeInterface)) {
+        $entity_type->set('_lark_exportable', FALSE);
         continue;
       }
 
-      $entity_type_id = $entity_type->id();
+      // Never export/import Users.
+      if ($entity_type_id === 'user') {
+        $entity_type->set('_lark_exportable', FALSE);
+        continue;
+      }
 
-      // The edit-form template is used to extract and set additional parameters
-      // dynamically. If there is no 'edit-form' template then still create the
+      $entity_type->set('_lark_exportable', TRUE);
+
+      // Add our Lark links to each exportable content type.
+      // The delete-form template is used to extract and set additional params
+      // dynamically. If there is no 'delete-form' template still create the
       // link using 'entity_type_id/{entity_type_id}' as the link. This allows
       // lark info to be viewed for any entity, even if the url has to be typed manually.
       // @see https://gitlab.com/drupalspoons/devel/-/issues/377
-      $link_template = $entity_type->getLinkTemplate('delete-form') ?: $entity_type_id . "/{{$entity_type_id}}";
-      $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-load', "/lark/$entity_type_id");
+      $link_template = $entity_type->getLinkTemplate('edit-form') ?: $entity_type_id . "/{{$entity_type_id}}";
+      $template_instances = RouteTemplates::getRouteTemplates($entity_type_id);
+      $parent = array_shift($template_instances);
 
-      // Create a subtask.
-      if ($entity_type->hasLinkTemplate('lark-load')) {
+      $key = $parent['link']['key'];
+      $path = $parent['route']['path'] . $this->getTemplatePath($link_template);
+      $entity_type->setLinkTemplate($key, $path);
+
+      // Create subtasks.
+      if ($entity_type->hasLinkTemplate($parent['link']['key'])) {
         // We use canonical template to extract and set additional parameters
         // dynamically.
-        $link_template = $entity_type->getLinkTemplate('lark-load');
-
-        $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-export', "/lark/export/$entity_type_id");
-        $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-import', "/lark/import/$entity_type_id");
-        $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-diff', "/lark/diff/$entity_type_id");
-        $this->setEntityTypeLinkTemplate($entity_type, $link_template, 'lark-download', "/lark/download/$entity_type_id");
+        $link_template = $entity_type->getLinkTemplate($parent['link']['key']);
+        foreach ($template_instances as $instance) {
+          $key = $instance['link']['key'];
+          $path = $instance['route']['path'] . $this->getTemplatePath($link_template);
+          $entity_type->setLinkTemplate($key, $path);
+        }
       }
     }
 
@@ -89,7 +105,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    * @param string $base_path
    *   Base path for link key.
    */
-  protected function setEntityTypeLinkTemplate(EntityTypeInterface $entity_type, string $link_template, string $link_key, string $base_path) {
+  protected function getTemplatePath(string $link_template) {
     // Extract all route parameters from the given template and set them to
     // the current template.
     // Some entity templates can contain not only entity id,
@@ -104,7 +120,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       }
     }
 
-    $entity_type->setLinkTemplate($link_key, $base_path . $path_parts);
+    return $path_parts;
   }
 
   /**
@@ -124,11 +140,15 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       $this->currentUser->hasPermission('lark export entity') ||
       $this->currentUser->hasPermission('lark import entity')
     ) {
-      if ($entity->hasLinkTemplate('lark-load')) {
+      $template_instances = RouteTemplates::getRouteTemplates($entity->getEntityTypeId());
+      $parent = array_shift($template_instances);
+      if ($entity->hasLinkTemplate($parent['link']['key'])) {
         $operations['lark'] = [
-          'title' => $this->t('Lark'),
+          'title' => $this->t('@lark_link_label', [
+            '@lark_link_label' => $parent['link']['label'],
+          ]),
           'weight' => 100,
-          'url' => $entity->toUrl('lark-load'),
+          'url' => $entity->toUrl($parent['link']['key']),
         ];
       }
     }
