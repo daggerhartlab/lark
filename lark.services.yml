@@ -77,6 +77,10 @@ services:
     class: Drupal\lark\Service\Render\SourceViewBuilder
     autowire: true
 
+  Drupal\lark\Service\Utility\EntityUtility:
+    class: Drupal\lark\Service\Utility\EntityUtility
+    autowire: true
+
   Drupal\lark\Service\Utility\ExportUtility:
     class: Drupal\lark\Service\Utility\ExportUtility
     autowire: true

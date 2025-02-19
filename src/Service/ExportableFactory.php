@@ -36,11 +36,12 @@ class ExportableFactory implements ExportableFactoryInterface {
 
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected EntityUtility $entityUtility,
     protected EntityRepositoryInterface $entityRepository,
-    protected ImporterInterface $importer,
     protected ExportableSourceResolver $sourceResolver,
     protected ExportableStatusResolver $statusResolver,
     protected FileSystemInterface $fileSystem,
+    protected ImporterInterface $importer,
     protected MetaOptionManager $metaOptionManager,
   ) {}
 
@@ -77,7 +78,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     $items = [];
-    $items = EntityUtility::getEntityUuidEntityTypePairs($entity, $items);
+    $items = $this->entityUtility->getEntityUuidEntityTypePairs($entity, $items);
     foreach ($items as $item_uuid => $item_entity_type_id) {
       /** @var \Drupal\Core\Entity\ContentEntityInterface $item_entity */
       $item_entity = $this->entityRepository->loadEntityByUuid($item_entity_type_id, $item_uuid);
