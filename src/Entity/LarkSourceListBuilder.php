@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\lark;
+namespace Drupal\lark\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;

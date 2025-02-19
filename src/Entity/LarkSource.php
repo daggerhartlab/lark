@@ -22,7 +22,7 @@ use Drupal\Core\Extension\ExtensionPathResolver;
  *     plural = "@count sources",
  *   ),
  *   handlers = {
- *     "list_builder" = "Drupal\lark\LarkSourceListBuilder",
+ *     "list_builder" = "Drupal\lark\Entity\LarkSourceListBuilder",
  *     "form" = {
  *       "add" = "Drupal\lark\Form\LarkSourceForm",
  *       "edit" = "Drupal\lark\Form\LarkSourceForm",
