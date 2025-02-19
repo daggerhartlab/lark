@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\lark\Service\Utility;
+namespace Drupal\lark\Service\Render;
 
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -11,6 +11,7 @@ use Drupal\lark\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\MetaOptionManager;
+use Drupal\lark\Service\Render\ExportableStatusBuilder;
 
 class ExportablesTableBuilder {
 

@@ -12,8 +12,8 @@ use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ExporterInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\MetaOptionManager;
-use Drupal\lark\Service\Utility\ExportableStatusBuilder;
-use Drupal\lark\Service\Utility\ExportablesTableBuilder;
+use Drupal\lark\Service\Render\ExportableStatusBuilder;
+use Drupal\lark\Service\Render\ExportablesTableBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class EntityBaseForm extends FormBase {

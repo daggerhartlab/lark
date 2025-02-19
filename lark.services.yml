@@ -16,37 +16,26 @@ services:
     tags:
       - { name: event_subscriber }
 
+  # Services alphabetical, folders last.
   Drupal\lark\Service\AssetFileManager:
     class: Drupal\lark\Service\AssetFileManager
     autowire: true
 
-  Drupal\lark\Service\Utility\ExportableSourceResolver:
-    class: Drupal\lark\Service\Utility\ExportableSourceResolver
+  Drupal\lark\Service\EntityUpdaterInterface:
+    class: Drupal\lark\Service\EntityUpdater
     autowire: true
-
-  Drupal\lark\Service\Utility\ExportableStatusBuilder:
-    class: Drupal\lark\Service\Utility\ExportableStatusBuilder
-    autowire: true
-
-  Drupal\lark\Service\Utility\ExportableStatusResolver:
-    class: Drupal\lark\Service\Utility\ExportableStatusResolver
-    autowire: true
-
-  Drupal\lark\Service\Utility\SourceViewBuilder:
-    class: Drupal\lark\Service\Utility\SourceViewBuilder
-    autowire: true
-
-  Drupal\lark\Service\Utility\ExportablesTableBuilder:
-    class: Drupal\lark\Service\Utility\ExportablesTableBuilder
-    autowire: true
+    arguments:
+      $logger: '@lark.entity_logger'
 
   Drupal\lark\Service\ExportableFactoryInterface:
     class: Drupal\lark\Service\ExportableFactory
     autowire: true
 
-  Drupal\lark\Service\MetaOptionManager:
-    class: Drupal\lark\Service\MetaOptionManager
-    parent: default_plugin_manager
+  Drupal\lark\Service\ExporterInterface:
+    class: Drupal\lark\Service\Exporter
+    autowire: true
+    arguments:
+      $logger: '@lark.entity_logger'
 
   Drupal\lark\Service\FieldTypeHandlerManagerInterface:
     class: Drupal\lark\Service\FieldTypeHandlerManager
@@ -55,6 +44,16 @@ services:
     arguments:
       $cache_backend: '@cache.default'
 
+  Drupal\lark\Service\ImporterInterface:
+    class: Drupal\lark\Service\Importer
+    autowire: true
+    arguments:
+      $logger: '@lark.entity_logger'
+
+  Drupal\lark\Service\MetaOptionManager:
+    class: Drupal\lark\Service\MetaOptionManager
+    parent: default_plugin_manager
+
   # @deprecated
   Drupal\lark\Service\SourceManagerInterface:
     class: Drupal\lark\Service\SourceManager
@@ -62,20 +61,22 @@ services:
     arguments:
       $cache_backend: '@cache.default'
 
-  Drupal\lark\Service\ExporterInterface:
-    class: Drupal\lark\Service\Exporter
+  Drupal\lark\Service\Render\ExportableStatusBuilder:
+    class: Drupal\lark\Service\Render\ExportableStatusBuilder
     autowire: true
-    arguments:
-      $logger: '@lark.entity_logger'
 
-  Drupal\lark\Service\EntityUpdaterInterface:
-    class: Drupal\lark\Service\EntityUpdater
+  Drupal\lark\Service\Render\ExportablesTableBuilder:
+    class: Drupal\lark\Service\Render\ExportablesTableBuilder
     autowire: true
-    arguments:
-      $logger: '@lark.entity_logger'
 
-  Drupal\lark\Service\ImporterInterface:
-    class: Drupal\lark\Service\Importer
+  Drupal\lark\Service\Render\SourceViewBuilder:
+    class: Drupal\lark\Service\Render\SourceViewBuilder
     autowire: true
-    arguments:
-      $logger: '@lark.entity_logger'
+
+  Drupal\lark\Service\Utility\ExportableSourceResolver:
+    class: Drupal\lark\Service\Utility\ExportableSourceResolver
+    autowire: true
+
+  Drupal\lark\Service\Utility\ExportableStatusResolver:
+    class: Drupal\lark\Service\Utility\ExportableStatusResolver
+    autowire: true
