@@ -26,7 +26,7 @@ interface ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function importSourceEntity(string $source_id, string $uuid, bool $show_messages = TRUE): void;
+  public function importSourceExport(string $source_id, string $uuid, bool $show_messages = TRUE): void;
 
   /**
    * Import all lark exported content.

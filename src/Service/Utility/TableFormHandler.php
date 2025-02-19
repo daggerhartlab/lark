@@ -2,6 +2,7 @@
 
 namespace Drupal\lark\Service\Utility;
 
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -19,6 +20,7 @@ class TableFormHandler {
     protected ExportableStatusBuilder $statusBuilder,
     protected MetaOptionManager $metaOptionManager,
     protected ExportableFactoryInterface $exportableFactory,
+    protected ModuleHandlerInterface $moduleHandler,
   ) {}
 
   /**
@@ -146,6 +148,7 @@ class TableFormHandler {
     $uuid = $exportable->entity()->uuid();
 
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());
+    $path = $this->moduleHandler->getModule('lark')->getPath();
 
     // Data row.
     $data_row = [
@@ -167,7 +170,7 @@ class TableFormHandler {
               '#theme' => 'image',
               '#alt' => 'Toggle row',
               '#attributes' => [
-                'src' => '/modules/contrib/lark/assets/icons/file-yaml.png',
+                'src' => Url::fromUri("base:/{$path}/assets/icons/file-yaml.png")->toString(),
                 'width' => '35',
                 'height' => '35',
               ],

@@ -17,7 +17,7 @@ use Drupal\lark\Model\LarkSettings;
 use Drupal\user\UserInterface;
 
 /**
- * Export entities and their dependencies.
+ * Export entities and their dependencies to yaml.
  */
 class Exporter implements ExporterInterface {
 
@@ -28,26 +28,18 @@ class Exporter implements ExporterInterface {
    *
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   The lark exportable factory service.
-   * @param \Drupal\lark\Service\FieldTypeHandlerManagerInterface $fieldTypeManager
-   *   The lark field type handler plugin manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
-   *   The file system service.
-   * @param \Drupal\lark\Service\AssetFileManager $assetFileManager
-   *   The asset file manager.
+   * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
+   *   Meta options manager.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    */
   public function __construct(
-    protected LarkSettings $settings,
     protected ExportableFactoryInterface $exportableFactory,
-    protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected FileSystemInterface $fileSystem,
-    protected AssetFileManager $assetFileManager,
     protected MetaOptionManager $metaOptionManager,
     protected LoggerChannelInterface $logger,
     protected MessengerInterface $messenger,

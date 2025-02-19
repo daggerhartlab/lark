@@ -6,13 +6,9 @@ use Drupal\Core\DefaultContent\AdminAccountSwitcher;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileExists;
-use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
-use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportArray;
-use Drupal\lark\Model\LarkSettings;
 use Drupal\user\EntityOwnerInterface;
 
 /**
@@ -24,11 +20,9 @@ use Drupal\user\EntityOwnerInterface;
 class EntityUpdater implements EntityUpdaterInterface {
 
   public function __construct(
-    protected LarkSettings $settings,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
     protected LanguageManagerInterface $languageManager,
-    protected FileSystemInterface $fileSystem,
     protected AdminAccountSwitcher $accountSwitcher,
     protected LoggerChannelInterface $logger,
   ) {}

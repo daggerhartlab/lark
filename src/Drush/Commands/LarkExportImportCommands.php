@@ -58,7 +58,7 @@ class LarkExportImportCommands extends DrushCommands {
   #[CLI\Argument(name: 'uuid', description: 'Entity UUID.')]
   #[CLI\Usage(name: 'lark:import-entity source_id entity_uuid', description: 'Import a single entity with its dependencies.')]
   public function importEntity(string $source_id, string $uuid): void {
-    $this->entityImporter->importSourceEntity($source_id, $uuid, FALSE);
+    $this->entityImporter->importSourceExport($source_id, $uuid, FALSE);
     $this->logger()->success(dt("Import of {$uuid} from {$source_id} complete."));
   }
 

@@ -61,7 +61,6 @@ class ExportableStatusBuilder {
       return $this->statusDetails;
     }
 
-    $path = $this->moduleHandler->getModule('lark')->getPath();
     $statuses = $this->getKeyedArray([
       'class_name' => '',
       'label' => '',
@@ -83,6 +82,7 @@ class ExportableStatusBuilder {
           'class' => ['summary-label'],
         ],
       ];
+      $path = $this->moduleHandler->getModule('lark')->getPath();
       $details['icon_url'] = Url::fromUri("base:/{$path}/assets/icons/status--{$details['class_name']}.png")->toString();
       $details['icon_render'] = [
         '#theme' => 'image',

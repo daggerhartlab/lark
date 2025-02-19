@@ -3,6 +3,7 @@
 namespace Drupal\lark\Service\Utility;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -21,6 +22,7 @@ class SourceViewBuilder {
     protected ImporterInterface $importer,
     protected ExportableFactoryInterface $exportableFactory,
     protected ExportableStatusBuilder $statusBuilder,
+    protected ModuleHandlerInterface $moduleHandler,
   ) {}
 
   /**
@@ -206,6 +208,7 @@ class SourceViewBuilder {
   protected function tableToggleRow(LarkSourceInterface $source, ExportableInterface $exportable): array {
     $row = $this->tableDataRow($source, $exportable);
     //unset($row['data']['operations']);
+    $path = $this->moduleHandler->getModule('lark')->getPath();
     $row['data']['toggle'] = [
       'class' => ['lark-toggle-handle'],
       'data-uuid' => $exportable->entity()->uuid(),
@@ -214,7 +217,7 @@ class SourceViewBuilder {
           '#theme' => 'image',
           '#alt' => 'Toggle row',
           '#attributes' => [
-            'src' => '/modules/contrib/lark/assets/icons/file-yaml.png',
+            'src' => Url::fromUri("base:/{$path}/assets/icons/file-yaml.png")->toString(),
             'width' => '35',
             'height' => '35',
           ],

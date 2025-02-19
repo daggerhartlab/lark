@@ -82,7 +82,7 @@ class ExportsManager extends ControllerBase {
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */
   public function importEntity(LarkSourceInterface $lark_source, string $uuid): RedirectResponse {
-    $this->importer->importSourceEntity($lark_source->id(), $uuid);
+    $this->importer->importSourceExport($lark_source->id(), $uuid);
     return new RedirectResponse($lark_source->toUrl()->toString());
   }
 

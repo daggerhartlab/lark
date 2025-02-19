@@ -2,25 +2,18 @@
 
 namespace Drupal\lark\Service;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
-use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\lark\Service\Utility\ExportableSourceResolver;
 use Drupal\lark\Service\Utility\ExportableStatusResolver;
-use Drupal\user\UserInterface;
 
 /**
  * Factory for creating exportable entities.
@@ -28,23 +21,25 @@ use Drupal\user\UserInterface;
 class ExportableFactory implements ExportableFactoryInterface {
 
   /**
-   * Cache single exportable items.
+   * Cache single exportable items keyed by uuid.
    *
    * @var array
    */
   protected array $exportableCache = [];
+
+  /**
+   * Cache for arrays of exportables keyed by root exportabled uuid.
+   *
+   * @var array
+   */
   protected array $collectionsCache = [];
 
   public function __construct(
-    protected ConfigFactoryInterface $configFactory,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,
-    protected LarkSettings $larkSettings,
-    protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected ImporterInterface $importer,
     protected ExportableSourceResolver $sourceResolver,
     protected ExportableStatusResolver $statusResolver,
-    protected ModuleHandlerInterface $moduleHandler,
     protected FileSystemInterface $fileSystem,
     protected MetaOptionManager $metaOptionManager,
   ) {}

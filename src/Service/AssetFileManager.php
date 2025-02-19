@@ -10,7 +10,7 @@ use Drupal\lark\Model\LarkSettings;
 class AssetFileManager {
 
   public function __construct(
-    protected LarkSettings $settings,
+    protected LarkSettings $larkSettings,
     protected FileSystemInterface $fileSystem,
     protected EntityTypeManagerInterface $entityTypeManager,
   ) {}
@@ -54,7 +54,7 @@ class AssetFileManager {
     $result = $this->fileSystem->copy(
       $asset_file,
       $destination . DIRECTORY_SEPARATOR . $this->assetExportFilename($file),
-      $this->settings->assetExportFileExists()
+      $this->larkSettings->assetExportFileExists()
     );
 
     // If there's a file without the prefix, it is old and can be removed.
@@ -113,7 +113,7 @@ class AssetFileManager {
       $uri = $this->fileSystem->copy(
         $source,
         $destination_uri,
-        $this->settings->assetImportFileExists()
+        $this->larkSettings->assetImportFileExists()
       );
       $entity->setFileUri($uri);
     }

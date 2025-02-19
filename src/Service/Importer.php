@@ -8,7 +8,6 @@ use Drupal\Component\Graph\Graph;
 use Drupal\Component\Serialization\Yaml;
 use Drupal\Component\Utility\SortArray;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Installer\InstallerKernel;
 use Drupal\Core\Language\LanguageManagerInterface;
@@ -17,7 +16,6 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Exception\LarkImportException;
 use Drupal\lark\Model\ExportArray;
-use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
@@ -37,18 +35,14 @@ class Importer implements ImporterInterface {
   /**
    * LarkEntityImporter constructor.
    *
-   * @param \Drupal\lark\Model\LarkSettings $settings
-   *   Lark settings.
    * @param \Drupal\lark\Service\EntityUpdaterInterface $upserter
    *   Service for upserting entities.
-   * @param \Drupal\lark\Service\AssetFileManager $assetFileManager,
-   *   File asset handling.
+   * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
+   *   Meta options manager.
    * @param \Drupal\lark\Service\FieldTypeHandlerManagerInterface $fieldTypeManager
    *   The lark field type handler plugin manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
-   *   The entity repository service.
    * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager service.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
@@ -57,13 +51,10 @@ class Importer implements ImporterInterface {
    *   The messenger service.
    */
   public function __construct(
-    protected LarkSettings $settings,
     protected EntityUpdaterInterface $upserter,
-    protected AssetFileManager $assetFileManager,
     protected MetaOptionManager $metaOptionManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected EntityRepositoryInterface $entityRepository,
     protected LanguageManagerInterface $languageManager,
     protected LoggerChannelInterface $logger,
     protected MessengerInterface $messenger,
@@ -106,7 +97,7 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function importSourceEntity(string $source_id, string $uuid, bool $show_messages = TRUE): void {
+  public function importSourceExport(string $source_id, string $uuid, bool $show_messages = TRUE): void {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
     $exports = $this->discoverSourceExport($source, $uuid);
@@ -257,7 +248,6 @@ class Importer implements ImporterInterface {
 
     // Add the entity itself last.
     $dependencies[$uuid] = $export;
-
     return $dependencies;
   }
 
@@ -334,6 +324,7 @@ class Importer implements ImporterInterface {
       $this->processValuesForImport($entity, $export);
       $this->upserter->setEntityValues($entity, $export);
 
+      // Allow meta options to act immediately before saving.
       foreach ($this->metaOptionManager->getInstances() as $meta_option) {
         if ($meta_option->applies($entity)) {
           $meta_option->preImportSave($entity, $export);
