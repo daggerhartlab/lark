@@ -10,6 +10,10 @@ use Drupal\user\UserInterface;
 
 class EntityUtility {
 
+  public function __construct(
+    protected FieldTypeHandlerManagerInterface $fieldTypeHandlerManager,
+  ) {}
+
   /**
    * Get dependencies as array of uuid -> entity type id pairs for the entity.
    *
@@ -19,9 +23,9 @@ class EntityUtility {
    * @return array
    *   Uuid and entity_type_id pairs.
    */
-  public static function getEntityExportDependencies(ContentEntityInterface $entity): array {
+  public function getEntityExportDependencies(ContentEntityInterface $entity): array {
     $dependencies = [];
-    $dependencies = static::getEntityUuidEntityTypePairs($entity, $dependencies);
+    $dependencies = $this->getEntityUuidEntityTypePairs($entity, $dependencies);
     // We only want dependencies. Remove this entity if found.
     if (array_key_last($dependencies) === $entity->uuid()) {
       unset($dependencies[$entity->uuid()]);
@@ -41,7 +45,7 @@ class EntityUtility {
    * @return array
    *   UUID => Entity type id pairs, including the given entity.
    */
-  public static function getEntityUuidEntityTypePairs(ContentEntityInterface $entity, array &$found): array {
+  public function getEntityUuidEntityTypePairs(ContentEntityInterface $entity, array &$found): array {
     // Don't export users.
     if ($entity instanceof UserInterface) {
       return [];
@@ -66,7 +70,7 @@ class EntityUtility {
             continue;
           }
 
-          $found += static::getEntityUuidEntityTypePairs($referenced_entity, $found);
+          $found += $this->getEntityUuidEntityTypePairs($referenced_entity, $found);
         }
       }
     }
@@ -84,9 +88,8 @@ class EntityUtility {
    * @return array
    *   Entity export array.
    */
-  public static function getEntityArray(ContentEntityInterface $entity): array {
+  public function getEntityArray(ContentEntityInterface $entity): array {
     $array = $entity->toArray();
-    $handler_manager = \Drupal::service(FieldTypeHandlerManagerInterface::class);
 
     // Remove keys that may not be unique across environments.
     $id_keys = array_filter([
@@ -100,7 +103,7 @@ class EntityUtility {
     // Process the field values through the field type handlers.
     foreach ($array as $field_name => $default_values) {
       if (is_array($default_values)) {
-        $array[$field_name] = $handler_manager->alterExportValues($default_values, $entity, $entity->get($field_name));
+        $array[$field_name] = $this->fieldTypeHandlerManager->alterExportValues($default_values, $entity, $entity->get($field_name));
       }
     }
 

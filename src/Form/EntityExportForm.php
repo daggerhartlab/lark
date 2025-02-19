@@ -7,9 +7,9 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\ExportableFactoryInterface;
-use Drupal\lark\Service\Utility\ExportableStatusBuilder;
+use Drupal\lark\Service\Render\ExportableStatusBuilder;
 use Drupal\lark\Service\ExporterInterface;
-use Drupal\lark\Service\Utility\TableFormHandler;
+use Drupal\lark\Service\Render\ExportablesTableBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -18,41 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see \Drupal\devel\Routing\RouteSubscriber
  * @see \Drupal\devel\Plugin\Derivative\DevelLocalTask
  */
-class EntityExportForm extends FormBase {
-
-  /**
-   * EntityExportForm constructor.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   * @param \Drupal\lark\Model\LarkSettings $larkSettings
-   * @param \Drupal\lark\Service\ExporterInterface $entityExporter
-   *   The entity exporter service.
-   * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
-   * @param \Drupal\lark\Service\Utility\ExportableStatusBuilder $statusBuilder
-   * @param \Drupal\lark\Service\Utility\TableFormHandler $tableFormHandler
-   */
-  public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected LarkSettings $larkSettings,
-    protected ExporterInterface $entityExporter,
-    protected ExportableFactoryInterface $exportableFactory,
-    protected ExportableStatusBuilder $statusBuilder,
-    protected TableFormHandler $tableFormHandler,
-  ) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get(EntityTypeManagerInterface::class),
-      $container->get(LarkSettings::class),
-      $container->get(ExporterInterface::class),
-      $container->get(ExportableFactoryInterface::class),
-      $container->get(ExportableStatusBuilder::class),
-      $container->get(TableFormHandler::class),
-    );
-  }
+class EntityExportForm extends EntityBaseForm {
 
   /**
    * {@inheritdoc}
@@ -114,7 +80,7 @@ class EntityExportForm extends FormBase {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-      'table' => $this->tableFormHandler->tablePopulated($exportables, $form, $form_state, 'export_form_values')
+      'table' => $this->tableFormHandler->table($exportables, $form, $form_state, 'export_form_values')
     ];
 
     return $form;
@@ -124,9 +90,9 @@ class EntityExportForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $meta_option_overrides = $this->tableFormHandler->getSubmittedMetaOptionOverrides('export_form_values', $form_state);
+    $meta_option_overrides = $this->getSubmittedOverrides('export_form_values', $form_state);
 
-    $this->entityExporter->exportEntity(
+    $this->exporter->exportEntity(
       $form_state->getValue('source'),
       $form_state->getValue('entity_type_id'),
       (int) $form_state->getValue('entity_id'),

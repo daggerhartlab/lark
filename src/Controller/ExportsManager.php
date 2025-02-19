@@ -14,11 +14,11 @@ use Drupal\Core\Serialization\Yaml;
 use Drupal\Core\Url;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Service\Utility\ExportableStatusBuilder;
+use Drupal\lark\Service\Render\ExportableStatusBuilder;
 use Drupal\lark\Service\ExporterInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
-use Drupal\lark\Service\Utility\SourceViewBuilder;
+use Drupal\lark\Service\Render\SourceViewBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -132,7 +132,7 @@ class ExportsManager extends ControllerBase {
   public function viewSource(string $lark_source): array {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->entityTypeManager()->getStorage('lark_source')->load($lark_source);
-    return $this->sourceViewBuilder->viewSource($source);
+    return $this->sourceViewBuilder->view($source);
   }
 
   /**

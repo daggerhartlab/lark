@@ -1,11 +1,14 @@
 <?php
 
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Extension\ExtensionPathResolver;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManager;
 use League\CommonMark\GithubFlavoredMarkdownConverter;
+
+require_once __DIR__ . '/lark.theme.inc';
 
 /**
  * Implements hook_help().
@@ -16,6 +19,29 @@ function lark_help($route_name, RouteMatchInterface $route_match) {
       $output = _lark_readme_to_html();
       return $output;
   }
+}
+/**
+ * Implements hook_theme().
+ */
+function lark_theme() {
+  return [
+    'toggle_row_table' => [
+      'variables' => [
+        'header' => NULL,
+        'rows' => NULL,
+        'footer' => NULL,
+        'attributes' => [],
+        'caption' => NULL,
+        'colgroups' => [],
+        'sticky' => FALSE,
+        'responsive' => TRUE,
+        'empty' => '',
+        'toggle_handle_header' => NULL,
+        'toggle_handle_open' => NULL,
+        'toggle_handle_close' => NULL,
+      ],
+    ],
+  ];
 }
 
 /**
@@ -34,7 +60,7 @@ function lark_entity_type_alter(array &$entity_types) {
 /**
  * Implements hook_entity_operation()
  */
-function lark_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
+function lark_entity_operation(EntityInterface $entity) {
   /**
    * @var \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
    * @var \Drupal\lark\Routing\EntityTypeInfo $entity_type_info

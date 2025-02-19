@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\lark\Service\Utility;
+namespace Drupal\lark\Service\Render;
 
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
