@@ -5,7 +5,6 @@ namespace Drupal\lark\Service\Render;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Url;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
@@ -26,7 +25,7 @@ class SourceRootsViewBuilder {
 
   public function view(LarkSourceInterface $source, ExportableInterface $exportable): array {
     $root_uuid = $exportable->entity()->uuid();
-    $dependency_exportables = $this->sourceUtility->getRootDependencyExportables($source, $root_uuid);
+    $dependency_exportables = $this->getRootDependencyExportables($source, $root_uuid);
 
     return [
       'summary' => $this->statusBuilder->getExportablesSummary($dependency_exportables),
@@ -42,6 +41,33 @@ class SourceRootsViewBuilder {
       ],
       'dependencies_table' => $this->table($source, $dependency_exportables),
     ];
+  }
+
+
+  /**
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   * @param string $root_uuid
+   *
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function getRootDependencyExportables(LarkSourceInterface $source, string $root_uuid): array {
+    $dependency_exports = $this->importer->discoverSourceExport($source, $root_uuid);
+    $dependency_exports = array_reverse($dependency_exports);
+    $dependency_exportables = [];
+    foreach ($dependency_exports as $dependency_uuid => $dependency_export) {
+      if ($dependency_uuid === $root_uuid) {
+        continue;
+      }
+
+      $dependency_exportable = $this->exportableFactory->createFromSource($source->id(), $dependency_uuid);
+      if ($dependency_exportable) {
+        $dependency_exportables[] = $dependency_exportable;
+      }
+    }
+
+    return $dependency_exportables;
   }
 
   public function table(LarkSourceInterface $source, array $dependency_exportables): array {

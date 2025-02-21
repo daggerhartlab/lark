@@ -14,20 +14,22 @@ use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\MetaOptionManager;
 use Drupal\lark\Service\Render\ExportableStatusBuilder;
 use Drupal\lark\Service\Render\ExportablesTableBuilder;
+use Drupal\lark\Service\Utility\SourceUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class EntityBaseForm extends FormBase {
   public function __construct(
-    protected DownloadController         $downloadController,
+    protected DownloadController $downloadController,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ExportableFactoryInterface $exportableFactory,
-    protected ExportableStatusBuilder    $statusBuilder,
-    protected ExporterInterface          $exporter,
-    protected FileSystemInterface        $fileSystem,
-    protected ImporterInterface          $importer,
-    protected LarkSettings               $larkSettings,
-    protected MetaOptionManager          $metaOptionManager,
-    protected ExportablesTableBuilder    $tableFormHandler,
+    protected ExportableStatusBuilder $statusBuilder,
+    protected ExportablesTableBuilder $exportablesTableBuilder,
+    protected ExporterInterface $exporter,
+    protected FileSystemInterface $fileSystem,
+    protected ImporterInterface $importer,
+    protected LarkSettings $larkSettings,
+    protected MetaOptionManager $metaOptionManager,
+    protected SourceUtility $sourceUtility,
   ) {}
 
   /**
@@ -39,12 +41,13 @@ abstract class EntityBaseForm extends FormBase {
       $container->get(EntityTypeManagerInterface::class),
       $container->get(ExportableFactoryInterface::class),
       $container->get(ExportableStatusBuilder::class),
+      $container->get(ExportablesTableBuilder::class),
       $container->get(ExporterInterface::class),
       $container->get(FileSystemInterface::class),
       $container->get(ImporterInterface::class),
       $container->get(LarkSettings::class),
       $container->get(MetaOptionManager::class),
-      $container->get(ExportablesTableBuilder::class),
+      $container->get(SourceUtility::class),
     );
   }
 

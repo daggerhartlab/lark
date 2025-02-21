@@ -2,48 +2,102 @@
 
 namespace Drupal\lark\Service\Utility;
 
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Service\ExportableFactoryInterface;
-use Drupal\lark\Service\ImporterInterface;
 
 class SourceUtility {
 
   use StringTranslationTrait;
 
+  protected EntityStorageInterface $storage;
+
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected ExportableFactoryInterface $exportableFactory,
-    protected ImporterInterface $importer,
-  ) {}
+  ) {
+    $this->storage = $this->entityTypeManager->getStorage('lark_source');
+  }
 
   /**
-   * @param \Drupal\lark\Entity\LarkSourceInterface $source
-   * @param string $root_uuid
+   * Get source storage.
+   *
+   * @return \Drupal\Core\Entity\EntityStorageInterface
+   *   Source storage.
+   */
+  public function storage(): EntityStorageInterface {
+    return $this->storage;
+  }
+
+  /**
+   * Load source by id.
+   *
+   * @param string $id
+   *   Source id.
+   *
+   * @return \Drupal\lark\Entity\LarkSourceInterface|null
+   *   Source entity or NULL if not found.
+   */
+  public function load(string $id): ?LarkSourceInterface {
+    return $this->storage()->load($id);
+  }
+
+  /**
+   * Load multiple sources by id.
+   *
+   * @param array $ids
+   *   Source ids.
+   *
+   * @return \Drupal\lark\Entity\LarkSourceInterface[]
+   *   Source entities.
+   */
+  public function loadMultiple(array $ids): array {
+    return $this->storage()->loadMultiple($ids);
+  }
+
+  /**
+   * Load sources by properties.
+   *
+   * @param array $properties
+   *   Properties.
+   *
+   * @return \Drupal\lark\Entity\LarkSourceInterface[]
+   *   Source entities.
+   */
+  public function loadByProperties(array $properties): array {
+    return $this->storage()->loadByProperties($properties);
+  }
+
+  /**
+   * Create a new source.
+   *
+   * @param array $values
+   *   Values.
+   *
+   * @return \Drupal\lark\Entity\LarkSourceInterface
+   *   Source entity.
+   */
+  public function create(array $values = []): LarkSourceInterface {
+    return $this->storage()->create($values);
+  }
+
+  /**
+   * Get source options.
    *
    * @return array
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   *   Source options.
    */
-  public function getRootDependencyExportables(LarkSourceInterface $source, string $root_uuid): array {
-    $dependency_exports = $this->importer->discoverSourceExport($source, $root_uuid);
-    $dependency_exports = array_reverse($dependency_exports);
-    $dependency_exportables = [];
-    foreach ($dependency_exports as $dependency_uuid => $dependency_export) {
-      if ($dependency_uuid === $root_uuid) {
-        continue;
-      }
-
-      $dependency_exportable = $this->exportableFactory->createFromSource($source->id(), $dependency_uuid);
-      if ($dependency_exportable) {
-        $dependency_exportables[] = $dependency_exportable;
-      }
+  public function sourcesAsOptions(): array {
+    $sources = $this->storage()->loadByProperties([
+      'status' => 1,
+    ]);
+    $options = [];
+    foreach ($sources as $source) {
+      $options[$source->id()] = $source->label();
     }
-
-    return $dependency_exportables;
+    return $options;
   }
 
   /**

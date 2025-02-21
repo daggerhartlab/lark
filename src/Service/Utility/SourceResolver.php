@@ -2,7 +2,6 @@
 
 namespace Drupal\lark\Service\Utility;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
@@ -11,9 +10,9 @@ use Drupal\lark\Model\LarkSettings;
 class SourceResolver {
 
   public function __construct(
-    protected LarkSettings $larkSettings,
-    protected EntityTypeManagerInterface $entityTypeManager,
     protected FileSystemInterface $fileSystem,
+    protected LarkSettings $larkSettings,
+    protected SourceUtility $sourceUtility,
   ) {}
 
   /**
@@ -30,7 +29,7 @@ class SourceResolver {
   public function resolveSource(ExportableInterface $exportable): ?LarkSourceInterface {
     $entity = $exportable->entity();
     /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+    $sources = $this->sourceUtility->loadByProperties([
       'status' => 1,
     ]);
 
@@ -54,7 +53,7 @@ class SourceResolver {
    */
   public function getTmpSource(): LarkSourceInterface {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->create([
+    $source = $this->sourceUtility->create([
       'id' => 'tmp',
       'label' => 'Temporary Storage',
       'directory' => $this->fileSystem->getTempDirectory(),
@@ -73,10 +72,10 @@ class SourceResolver {
    */
   public function defaultSource(): LarkSourceInterface {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($this->larkSettings->defaultSource());
+    $source = $this->sourceUtility->load($this->larkSettings->defaultSource());
 
     if (!$source) {
-      $source = $this->entityTypeManager->getStorage('lark_source')->create([
+      $source = $this->sourceUtility->create([
         'id' => '_default_source_missing',
         'label' => 'Default source not set',
         'directory' => $this->fileSystem->getTempDirectory(),

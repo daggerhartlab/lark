@@ -6,11 +6,11 @@ namespace Drupal\lark\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\TypedConfigManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileExists;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Model\LarkSettings;
+use Drupal\lark\Service\Utility\SourceUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -23,23 +23,30 @@ final class SettingsForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
-   * @param $typedConfigManager
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed config manager.
+   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   *   The source utility.
+   * @param \Drupal\lark\Model\LarkSettings $larkSettings
+   *   The Lark settings.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     TypedConfigManagerInterface $typedConfigManager,
-    protected EntityTypeManagerInterface $entityTypeManager,
+    protected SourceUtility $sourceUtility,
     protected LarkSettings $larkSettings,
   ) {
     parent::__construct($config_factory, $typedConfigManager);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
-      $container->get(EntityTypeManagerInterface::class),
+      $container->get(SourceUtility::class),
       $container->get(LarkSettings::class),
     );
   }
@@ -62,14 +69,7 @@ final class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
-    /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
-      'status' => 1,
-    ]);
-    $source_options = [];
-    foreach ($sources as $source) {
-      $source_options[$source->id()] = $source->label();
-    }
+    $source_options = $this->sourceUtility->sourcesAsOptions();
 
     $form['default_source'] = [
       '#type' => 'select',
@@ -142,33 +142,6 @@ final class SettingsForm extends ConfigFormBase {
           FileExists::Rename->name => $this->t('Rename the asset being imported and update the File entity.'),
           FileExists::Replace->name => $this->t('Replace the existing asset attached to the File entity with the new asset.'),
         ],
-      ],
-    ];
-
-    $form['sources_list'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Sources'),
-      '#open' => TRUE,
-      '#description' => $this->t('List of all export sources.'),
-      '#weight' => 101,
-      'table' => [
-        '#type' => 'table',
-        '#title' => $this->t('Sources'),
-        '#empty' => $this->t('No sources found.'),
-        '#header' => [
-          'provider' => $this->t('Provider'),
-          'id' => $this->t('Source ID'),
-          'label' => $this->t('Label'),
-          'directory' => $this->t('Directory'),
-        ],
-        '#rows' => array_map(function ($source) {
-          return [
-            'provider' => $source->provider(),
-            'id' => $source->id(),
-            'label' => $source->label(),
-            'directory' => $source->directoryProcessed(),
-          ];
-        }, $sources),
       ],
     ];
 

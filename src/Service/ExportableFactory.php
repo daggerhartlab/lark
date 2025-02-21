@@ -13,6 +13,7 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\lark\Service\Utility\SourceResolver;
+use Drupal\lark\Service\Utility\SourceUtility;
 use Drupal\lark\Service\Utility\StatusResolver;
 
 /**
@@ -35,14 +36,15 @@ class ExportableFactory implements ExportableFactoryInterface {
   protected array $collectionsCache = [];
 
   public function __construct(
+    protected EntityRepositoryInterface $entityRepository,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityUtility $entityUtility,
-    protected EntityRepositoryInterface $entityRepository,
-    protected SourceResolver $sourceResolver,
-    protected StatusResolver $statusResolver,
     protected FileSystemInterface $fileSystem,
     protected ImporterInterface $importer,
     protected MetaOptionManager $metaOptionManager,
+    protected SourceResolver $sourceResolver,
+    protected SourceUtility $sourceUtility,
+    protected StatusResolver $statusResolver,
   ) {}
 
   /**
@@ -110,7 +112,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
+    $source = $this->sourceUtility->load($source_id);
     $exports = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
     foreach ($exports as $uuid => $export) {
@@ -166,7 +168,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+    $sources = $this->sourceUtility->loadByProperties([
       'status' => 1,
     ]);
     foreach ($sources as $source) {

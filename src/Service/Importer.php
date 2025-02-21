@@ -18,6 +18,7 @@ use Drupal\lark\Exception\LarkImportException;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Routing\EntityTypeInfo;
+use Drupal\lark\Service\Utility\SourceUtility;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
 
@@ -52,13 +53,14 @@ class Importer implements ImporterInterface {
    *   The messenger service.
    */
   public function __construct(
-    protected EntityUpdaterInterface $upserter,
-    protected MetaOptionManager $metaOptionManager,
-    protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected EntityUpdaterInterface $upserter,
+    protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected LanguageManagerInterface $languageManager,
     protected LoggerChannelInterface $logger,
+    protected MetaOptionManager $metaOptionManager,
     protected MessengerInterface $messenger,
+    protected SourceUtility $sourceUtility,
   ) {}
 
   /**
@@ -66,7 +68,7 @@ class Importer implements ImporterInterface {
    */
   public function importSourcesAll(bool $show_messages = TRUE): void {
     /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+    $sources = $this->sourceUtility->loadByProperties([
       'status' => 1,
     ]);
 
@@ -80,7 +82,7 @@ class Importer implements ImporterInterface {
    */
   public function importSource(string $source_id, bool $show_messages = TRUE): void {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
+    $source = $this->sourceUtility->load($source_id);
     $exports = $this->discoverSourceExports($source);
 
     try {
@@ -99,8 +101,7 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function importSourceExport(string $source_id, string $uuid, bool $show_messages = TRUE): void {
-    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
+    $source = $this->sourceUtility->load($source_id);
     $exports = $this->discoverSourceExport($source, $uuid);
     if (!isset($exports[$uuid])) {
       $message = $this->t('No export found with UUID @uuid in source @source.', [

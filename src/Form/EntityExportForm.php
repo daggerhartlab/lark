@@ -40,18 +40,10 @@ class EntityExportForm extends EntityBaseForm {
     $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
-    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
-      'status' => 1,
-    ]);
-    $options = [];
-    foreach ($sources as $source) {
-      $options[$source->id()] = $source->label();
-    }
-
     $form['source'] = [
       '#type' => 'select',
       '#title' => $this->t('Export Source'),
-      '#options' => $options,
+      '#options' => $this->sourceUtility->sourcesAsOptions(),
       '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->larkSettings->defaultSource(),
       '#required' => TRUE,
       '#weight' => -101,
@@ -80,7 +72,7 @@ class EntityExportForm extends EntityBaseForm {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-      'table' => $this->tableFormHandler->table($exportables, $form, $form_state, 'export_form_values')
+      'table' => $this->exportablesTableBuilder->table($exportables, $form, $form_state, 'export_form_values')
     ];
 
     return $form;
