@@ -12,10 +12,25 @@ use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\MetaOptionManager;
 
+/**
+ * Build the render array for a table of Exportables.
+ */
 class ExportablesTableBuilder {
 
   use StringTranslationTrait;
 
+  /**
+   * ExportablesTableBuilder constructor.
+   *
+   * @param \Drupal\lark\Service\Render\ExportableStatusBuilder $statusBuilder
+   *   Exportable status builder.
+   * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
+   *   Meta option manager.
+   * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
+   *   Exportable factory.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   Module handler.
+   */
   public function __construct(
     protected ExportableStatusBuilder $statusBuilder,
     protected MetaOptionManager $metaOptionManager,
@@ -24,12 +39,20 @@ class ExportablesTableBuilder {
   ) {}
 
   /**
-   * @param array $exportables
+   * Build the table render array.
+   *
+   * @param \Drupal\lark\Model\ExportableInterface[] $exportables
+   *   Array of Exportables.
    * @param array $form
+   *   Form this table is being added to.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Current form state.
    * @param string $tree_name
+   *   Name of the element this table will be placed within. This is needed for
+   *   solving renderer bugs involving tables.
    *
    * @return array
+   *   Render array for the table.
    */
   public function table(array $exportables, array &$form, FormStateInterface $form_state, string $tree_name): array {
     $path = $this->moduleHandler->getModule('lark')->getPath();

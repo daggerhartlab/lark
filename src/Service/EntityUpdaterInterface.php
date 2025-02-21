@@ -2,11 +2,16 @@
 
 namespace Drupal\lark\Service;
 
-
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportArray;
 
+/**
+ * Responsible for creating and updating entities during the import process.
+ *
+ * This service is unaware of the export data structure and only knows how to
+ * create or update entities based on the data provided.
+ */
 interface EntityUpdaterInterface {
 
   /**

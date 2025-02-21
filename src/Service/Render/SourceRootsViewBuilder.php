@@ -11,10 +11,27 @@ use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\Utility\SourceUtility;
 
+/**
+ * Build the render array for a Source's root-level Exports.
+ */
 class SourceRootsViewBuilder {
 
   use StringTranslationTrait;
 
+  /**
+   * SourceRootsViewBuilder constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
+   * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
+   *   Exportable factory.
+   * @param \Drupal\lark\Service\Render\ExportableStatusBuilder $statusBuilder
+   *   Exportable status builder.
+   * @param \Drupal\lark\Service\ImporterInterface $importer
+   *   The importer.
+   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   *   Source utility.
+   */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ExportableFactoryInterface $exportableFactory,
@@ -23,6 +40,15 @@ class SourceRootsViewBuilder {
     protected SourceUtility $sourceUtility,
   ) {}
 
+  /**
+   * Build the View for a Source's root-level Exports.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   The source entity.
+   *
+   * @return array
+   *   The render array.
+   */
   public function view(LarkSourceInterface $source, ExportableInterface $exportable): array {
     $root_uuid = $exportable->entity()->uuid();
     $dependency_exportables = $this->getRootDependencyExportables($source, $root_uuid);
@@ -45,10 +71,15 @@ class SourceRootsViewBuilder {
 
 
   /**
+   * Get the root-level dependencies of an exportable.
+   *
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   The source entity.
    * @param string $root_uuid
+   *   The UUID of the root exportable.
    *
    * @return array
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -70,6 +101,17 @@ class SourceRootsViewBuilder {
     return $dependency_exportables;
   }
 
+  /**
+   * Build the table render array.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   The source entity.
+   * @param \Drupal\lark\Model\ExportableInterface[] $dependency_exportables
+   *   The dependency exportables.
+   *
+   * @return array
+   *   The render array.
+   */
   public function table(LarkSourceInterface $source, array $dependency_exportables): array {
     return [
       '#theme' => 'table',
@@ -85,6 +127,12 @@ class SourceRootsViewBuilder {
     ];
   }
 
+  /**
+   * Build the table headers.
+   *
+   * @return array
+   *   The headers array.
+   */
   protected function headers(): array {
     return [
       'status' => [
@@ -110,6 +158,17 @@ class SourceRootsViewBuilder {
     ];
   }
 
+  /**
+   * Build the table rows.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   The source entity.
+   * @param \Drupal\lark\Model\ExportableInterface[] $dependency_exportables
+   *   The dependency exportables.
+   *
+   * @return array
+   *   The rows array.
+   */
   protected function rows(LarkSourceInterface $source, array $dependency_exportables): array {
     $rows = [];
     foreach ($dependency_exportables as $exportable) {
@@ -118,6 +177,17 @@ class SourceRootsViewBuilder {
     return $rows;
   }
 
+  /**
+   * Build a single table row.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   The source entity.
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
+   *   The exportable entity.
+   *
+   * @return array
+   *   The row array.
+   */
   protected function row(LarkSourceInterface $source, ExportableInterface $exportable): array {
     $relative = str_replace($source->directoryProcessed(FALSE) . DIRECTORY_SEPARATOR, '', $exportable->getFilepath());
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());

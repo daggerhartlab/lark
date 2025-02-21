@@ -19,6 +19,20 @@ use Drupal\user\EntityOwnerInterface;
  */
 class EntityUpdater implements EntityUpdaterInterface {
 
+  /**
+   * EntityUpdater constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+   *   The entity repository.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+   *   The language manager.
+   * @param \Drupal\Core\DefaultContent\AdminAccountSwitcher $accountSwitcher
+   *   The account switcher.
+   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
+   *   The logger.
+   */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityRepositoryInterface $entityRepository,

@@ -7,8 +7,21 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\FileInterface;
 use Drupal\lark\Model\LarkSettings;
 
+/**
+ * Handles the exporting/importing of assets attached to File entities.
+ */
 class AssetFileManager {
 
+  /**
+   * AssetFileManager constructor.
+   *
+   * @param \Drupal\lark\Model\LarkSettings $larkSettings
+   *   Lark settings.
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   File system service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
+   */
   public function __construct(
     protected LarkSettings $larkSettings,
     protected FileSystemInterface $fileSystem,
@@ -16,19 +29,28 @@ class AssetFileManager {
   ) {}
 
   /**
+   * Get the export filename for the asset.
+   *
    * @param \Drupal\file\FileInterface $entity
+   *   The file entity.
    *
    * @return string
+   *   The export filename.
    */
   public function assetExportFilename(FileInterface $entity): string {
     return $entity->uuid() . '--' . basename($entity->getFileUri());
   }
 
   /**
+   * Check if the asset attached to the given File entity is already exported.
+   *
    * @param \Drupal\file\FileInterface $entity
+   *   The file entity.
    * @param string $destination
+   *   Destination directory.
    *
    * @return bool
+   *   TRUE if the asset is already exported, FALSE otherwise.
    */
   public function assetIsExported(FileInterface $entity, string $destination): bool {
     $destination = \rtrim($destination, DIRECTORY_SEPARATOR);

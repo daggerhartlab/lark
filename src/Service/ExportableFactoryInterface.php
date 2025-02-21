@@ -7,7 +7,7 @@ use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
 
 /**
- * Factory for creating exportable entities.
+ * Factory for creating Exportable instances from various sources.
  */
 interface ExportableFactoryInterface {
 

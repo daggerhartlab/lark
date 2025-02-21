@@ -7,6 +7,9 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
 
+/**
+ * Utility for finding sources and data within sources.
+ */
 class SourceResolver {
 
   public function __construct(

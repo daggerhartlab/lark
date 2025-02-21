@@ -2,6 +2,9 @@
 
 namespace Drupal\lark\Service\Utility;
 
+/**
+ * Utility for ExportArray operations.
+ */
 class ExportUtility {
 
   /**

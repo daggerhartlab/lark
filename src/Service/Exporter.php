@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Service;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;

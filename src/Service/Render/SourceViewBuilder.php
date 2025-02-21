@@ -16,10 +16,33 @@ use Drupal\lark\Service\Render\ExportableStatusBuilder;
 use Drupal\lark\Service\Utility\ExportUtility;
 use Drupal\lark\Service\Utility\SourceUtility;
 
+/**
+ * Build the render array for a single Source.
+ */
 class SourceViewBuilder {
 
   use StringTranslationTrait;
 
+  /**
+   * SourceViewBuilder constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
+   * @param \Drupal\lark\Service\ImporterInterface $importer
+   *   The importer.
+   * @param \Drupal\lark\Service\Utility\ExportUtility $exportUtility
+   *   Export utility.
+   * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
+   *   Exportable factory.
+   * @param \Drupal\lark\Service\Render\ExportableStatusBuilder $statusBuilder
+   *   Exportable status builder.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   Module handler.
+   * @param \Drupal\lark\Service\Render\SourceRootsViewBuilder $rootsViewBuilder
+   *   Source roots view builder.
+   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   *   Source utility.
+   */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ImporterInterface $importer,
@@ -68,9 +91,13 @@ class SourceViewBuilder {
   }
 
   /**
+   * Build the summary details for a single Source.
+   *
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   Source config entity.
    *
    * @return array
+   *   Render array.
    */
   public function sourceDetails(LarkSourceInterface $source): array {
     return [
@@ -117,8 +144,12 @@ class SourceViewBuilder {
   }
 
   /**
+   * Build the table of exports for a single Source.
+   *
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   Source config entity.
    * @param \Drupal\lark\Model\ExportableInterface $root_exportable
+   *   The root-level exportable entity.
    *
    * @return array
    */
@@ -153,6 +184,12 @@ class SourceViewBuilder {
     return $table;
   }
 
+  /**
+   * Build the table headers.
+   *
+   * @return array
+   *   Headers array.
+   */
   protected function headers(): array {
     return [
       'status' => [
@@ -178,6 +215,15 @@ class SourceViewBuilder {
     ];
   }
 
+  /**
+   * Build the table rows.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   Source config entity.
+   *
+   * @return array
+   *   Rows array.
+   */
   protected function rows(LarkSourceInterface $source): array {
     $exports = $this->importer->discoverSourceExports($source);
     $exports = array_reverse($exports);
@@ -198,6 +244,17 @@ class SourceViewBuilder {
     return $rows;
   }
 
+  /**
+   * Build a single table row.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   Source config entity.
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
+   *   Exportable entity.
+   *
+   * @return array
+   *   Row array.
+   */
   protected function row(LarkSourceInterface $source, ExportableInterface $exportable): array {
     $relative = str_replace($source->directoryProcessed(FALSE) . DIRECTORY_SEPARATOR, '', $exportable->getFilepath());
     $status_details = $this->statusBuilder->getStatusRenderDetails($exportable->getStatus());

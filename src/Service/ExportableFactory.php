@@ -17,7 +17,7 @@ use Drupal\lark\Service\Utility\SourceUtility;
 use Drupal\lark\Service\Utility\StatusResolver;
 
 /**
- * Factory for creating exportable entities.
+ * Factory for creating Exportable instances from various sources.
  */
 class ExportableFactory implements ExportableFactoryInterface {
 
@@ -35,6 +35,28 @@ class ExportableFactory implements ExportableFactoryInterface {
    */
   protected array $collectionsCache = [];
 
+  /**
+   * ExportableFactory constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+   *   Entity repository.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
+   * @param \Drupal\lark\Service\Utility\EntityUtility $entityUtility
+   *   Entity utility service.
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   File system service.
+   * @param \Drupal\lark\Service\ImporterInterface $importer
+   *   Importer service.
+   * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
+   *   Meta option manager.
+   * @param \Drupal\lark\Service\Utility\SourceResolver $sourceResolver
+   *   Source resolver.
+   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   *   Source utility service.
+   * @param \Drupal\lark\Service\Utility\StatusResolver $statusResolver
+   *   Status resolver.
+   */
   public function __construct(
     protected EntityRepositoryInterface $entityRepository,
     protected EntityTypeManagerInterface $entityTypeManager,

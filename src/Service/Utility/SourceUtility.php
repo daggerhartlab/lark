@@ -9,12 +9,26 @@ use Drupal\Core\Url;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
 
+/**
+ * Source utility.
+ */
 class SourceUtility {
 
   use StringTranslationTrait;
 
+  /**
+   * Source storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
   protected EntityStorageInterface $storage;
 
+  /**
+   * SourceUtility constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
+   */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
   ) {

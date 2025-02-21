@@ -14,8 +14,19 @@ class ExportableStatusBuilder {
 
   use StringTranslationTrait;
 
+  /**
+   * Exportable status render details.
+   *
+   * @var array[]
+   */
   private array $statusDetails = [];
 
+  /**
+   * ExportableStatusBuilder constructor.
+   *
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   Module handler.
+   */
   public function __construct(
     protected ModuleHandlerInterface $moduleHandler,
   ) {}

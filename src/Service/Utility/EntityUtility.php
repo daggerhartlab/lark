@@ -8,6 +8,9 @@ use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
 
+/**
+ * Utility for entity operations.
+ */
 class EntityUtility {
 
   public function __construct(

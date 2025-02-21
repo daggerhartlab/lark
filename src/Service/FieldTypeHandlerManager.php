@@ -35,7 +35,7 @@ final class FieldTypeHandlerManager extends DefaultPluginManager implements Fiel
   /**
    * {@inheritdoc}
    */
-  public function getDefinitions() {
+  public function getDefinitions(): array {
     $definitions = parent::getDefinitions();
 
     // Sort by weight.
