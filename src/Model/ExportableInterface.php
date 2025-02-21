@@ -180,6 +180,33 @@ interface ExportableInterface {
   public function getFilename(): string;
 
   /**
+   * Determine if this Exportable is a file.
+   *
+   * @return bool
+   *   True if this Exportable is a file.
+   */
+  public function isFile(): bool;
+
+  /**
+   * Get the file asset filename.
+   *
+   * @return string|null
+   *   File asset filename.
+   */
+  public function getFileAssetFilename(): ?string;
+
+  /**
+   * Determine if the file asset is already exported.
+   *
+   * @param string $destination
+   *   Destination directory where the asset may be.
+   *
+   * @return bool
+   *   True if the asset is already exported, false otherwise.
+   */
+  public function isFileAssetExported(string $destination): bool;
+
+  /**
    * Get exportable as YAML.
    *
    * @return string

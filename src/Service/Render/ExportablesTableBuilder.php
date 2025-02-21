@@ -22,7 +22,7 @@ class ExportablesTableBuilder {
   /**
    * ExportablesTableBuilder constructor.
    *
-   * @param \Drupal\lark\Service\Render\ExportableStatusBuilder $statusBuilder
+   * @param \Drupal\lark\Service\Render\ExportablesStatusBuilder $statusBuilder
    *   Exportable status builder.
    * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
    *   Meta option manager.
@@ -32,10 +32,10 @@ class ExportablesTableBuilder {
    *   Module handler.
    */
   public function __construct(
-    protected ExportableStatusBuilder $statusBuilder,
-    protected MetaOptionManager $metaOptionManager,
+    protected ExportablesStatusBuilder   $statusBuilder,
+    protected MetaOptionManager          $metaOptionManager,
     protected ExportableFactoryInterface $exportableFactory,
-    protected ModuleHandlerInterface $moduleHandler,
+    protected ModuleHandlerInterface     $moduleHandler,
   ) {}
 
   /**

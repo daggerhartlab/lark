@@ -9,7 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Controller\DownloadController;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\MetaOptionManager;
-use Drupal\lark\Service\Render\ExportableStatusBuilder;
+use Drupal\lark\Service\Render\ExportablesStatusBuilder;
 use Drupal\lark\Service\Render\ExportablesTableBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -58,7 +58,7 @@ class EntityDownloadForm extends EntityBaseForm {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-      'table' => $this->tableFormHandler->table($exportables, $form, $form_state, 'export_form_values')
+      'table' => $this->exportablesTableBuilder->table($exportables, $form, $form_state, 'export_form_values')
     ];
     return $form;
   }

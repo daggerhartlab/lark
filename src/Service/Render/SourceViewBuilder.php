@@ -12,7 +12,6 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\Render\ExportableStatusBuilder;
 use Drupal\lark\Service\Utility\ExportUtility;
 use Drupal\lark\Service\Utility\SourceUtility;
 
@@ -34,7 +33,7 @@ class SourceViewBuilder {
    *   Export utility.
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   Exportable factory.
-   * @param \Drupal\lark\Service\Render\ExportableStatusBuilder $statusBuilder
+   * @param \Drupal\lark\Service\Render\ExportablesStatusBuilder $statusBuilder
    *   Exportable status builder.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   Module handler.
@@ -45,10 +44,10 @@ class SourceViewBuilder {
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected ImporterInterface $importer,
     protected ExportUtility $exportUtility,
     protected ExportableFactoryInterface $exportableFactory,
-    protected ExportableStatusBuilder $statusBuilder,
+    protected ExportablesStatusBuilder $statusBuilder,
+    protected ImporterInterface $importer,
     protected ModuleHandlerInterface $moduleHandler,
     protected SourceRootsViewBuilder $rootsViewBuilder,
     protected SourceUtility $sourceUtility,
@@ -84,6 +83,7 @@ class SourceViewBuilder {
         'import' => $import_link,
         'download' => $download_link,
       ],
+      'summary' => $this->sourceSummary($source),
       'table' => $this->table($source),
     ];
 
@@ -144,6 +144,25 @@ class SourceViewBuilder {
   }
 
   /**
+   * Build the summary for a single Source.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   Source config entity.
+   *
+   * @return array
+   *   Summary array.
+   */
+  public function sourceSummary(LarkSourceInterface $source): array {
+    $exports = $this->importer->discoverSourceExports($source);
+
+    $exportables = array_map(function($export) use ($source) {
+      return $this->exportableFactory->createFromExportArray($export, $source);
+    }, $exports);
+
+    return $this->statusBuilder->getExportablesSummary($exportables);
+  }
+
+  /**
    * Build the table of exports for a single Source.
    *
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
@@ -155,6 +174,7 @@ class SourceViewBuilder {
    */
   public function table(LarkSourceInterface $source): array {
     $path = $this->moduleHandler->getModule('lark')->getPath();
+
     $table = [
       '#theme' => 'toggle_row_table',
       '#header' => $this->headers(),
@@ -195,6 +215,10 @@ class SourceViewBuilder {
       'status' => [
         'class' => ['status'],
         'data' => $this->t('Status'),
+      ],
+      'dependencies' => [
+        'class' => ['dependencies'],
+        'data' => $this->t('Deps.'),
       ],
       'entity_type' => [
         'class' => ['entity-type'],
@@ -262,6 +286,10 @@ class SourceViewBuilder {
       'status' => [
         'class' => ['status'],
         'data' => $status_details['icon_render'],
+      ],
+      'dependencies' => [
+        'class' => ['dependencies'],
+        'data' => count($exportable->getDependencies()),
       ],
       'entity_type' => [
         'class' => ['entity-type'],

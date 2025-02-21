@@ -25,7 +25,7 @@ class SourceRootsViewBuilder {
    *   Entity type manager.
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   Exportable factory.
-   * @param \Drupal\lark\Service\Render\ExportableStatusBuilder $statusBuilder
+   * @param \Drupal\lark\Service\Render\ExportablesStatusBuilder $statusBuilder
    *   Exportable status builder.
    * @param \Drupal\lark\Service\ImporterInterface $importer
    *   The importer.
@@ -35,9 +35,9 @@ class SourceRootsViewBuilder {
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ExportableFactoryInterface $exportableFactory,
-    protected ExportableStatusBuilder $statusBuilder,
-    protected ImporterInterface $importer,
-    protected SourceUtility $sourceUtility,
+    protected ExportablesStatusBuilder   $statusBuilder,
+    protected ImporterInterface          $importer,
+    protected SourceUtility              $sourceUtility,
   ) {}
 
   /**

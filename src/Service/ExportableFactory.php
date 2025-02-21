@@ -10,6 +10,7 @@ use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\lark\Service\Utility\SourceResolver;
@@ -138,27 +139,34 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exports = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
     foreach ($exports as $uuid => $export) {
-      $entity = $this->entityRepository->loadEntityByUuid($export->entityTypeId(), $export->uuid());
-
-      if (!$entity) {
-        $entity = $this->entityTypeManager->getStorage($export->entityTypeId())->create($export->fields('default'));
-      }
-
-      $exportable = new Exportable($entity);
-      $this->prepareExportable($exportable, $source);
-
-      // Override entity export values with source export values.
-      $exportable
-        ->setDependencies($export->dependencies())
-        ->setOptions($export->options());
-
-      // Set status in comparison to the sourceExportArray.
-      $exportable->setStatus($this->statusResolver->resolveStatus($exportable, $export));
-      $exportables[$uuid] = $exportable;
+      $exportables[$uuid] = $this->createFromExportArray($export, $source);
     };
 
     $this->collectionsCache[$root_uuid] = $exportables;
     return $this->collectionsCache[$root_uuid];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createFromExportArray(ExportArray $export, ?LarkSourceInterface $source = NULL): ExportableInterface {
+    $entity = $this->entityRepository->loadEntityByUuid($export->entityTypeId(), $export->uuid());
+
+    if (!$entity) {
+      $entity = $this->entityTypeManager->getStorage($export->entityTypeId())->create($export->fields('default'));
+    }
+
+    $exportable = new Exportable($entity);
+    $this->prepareExportable($exportable, $source);
+
+    // Override entity export values with source export values.
+    $exportable
+      ->setDependencies($export->dependencies())
+      ->setOptions($export->options());
+
+    // Set status in comparison to the sourceExportArray.
+    $exportable->setStatus($this->statusResolver->resolveStatus($exportable, $export));
+    return $exportable;
   }
 
   /**

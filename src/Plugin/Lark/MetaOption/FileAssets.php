@@ -44,8 +44,8 @@ final class FileAssets extends MetaOptionBase {
     $is_exported_msg = $this->t('Asset not exported.');
     if ($exportable->getFilepath()) {
       $destination = dirname($exportable->getFilepath());
-      if ($this->assetFileManager->assetIsExported($file, $destination)) {
-        $path = $destination . DIRECTORY_SEPARATOR . $this->assetFileManager->assetExportFilename($file);
+      if ($exportable->isFileAssetExported($destination)) {
+        $path = $destination . DIRECTORY_SEPARATOR . $exportable->getFileAssetFilename();
         $is_exported_msg = $this->t('Asset exported: @path', ['@path' => $path]);
       }
     }
@@ -164,7 +164,7 @@ final class FileAssets extends MetaOptionBase {
 
     if ($should_export) {
       // Export to the tmp directory, then add it to the archive.
-      $asset_archive_path = $this->assetFileManager->exportAsset($file, \dirname($exportable->getFilepath()));
+      $asset_archive_path = $this->assetFileManager->exportAsset($exportable);
       $archive->addModify([$asset_archive_path], '', $exportable->getSource()->directoryProcessed());
     }
   }
@@ -187,7 +187,7 @@ final class FileAssets extends MetaOptionBase {
     }
 
     if ($should_export) {
-      $this->assetFileManager->exportAsset($entity, \dirname($exportable->getFilepath()));
+      $this->assetFileManager->exportAsset($exportable);
     }
   }
 

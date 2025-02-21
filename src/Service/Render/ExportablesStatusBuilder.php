@@ -10,7 +10,7 @@ use Drupal\lark\Model\ExportableStatus;
 /**
  * Utility class for building exportable status render elements.
  */
-class ExportableStatusBuilder {
+class ExportablesStatusBuilder {
 
   use StringTranslationTrait;
 
@@ -131,7 +131,7 @@ class ExportableStatusBuilder {
           'data' => [
             '#type' => 'html_tag',
             '#tag' => 'span',
-            '#value' => $this->t('Exports Status Summary'),
+            '#value' => $this->t('Status Summary'),
           ],
         ]
       ],

@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\Render\ExportableStatusBuilder;
+use Drupal\lark\Service\Render\ExportablesStatusBuilder;
 use Drupal\lark\Service\Render\ExportablesTableBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 

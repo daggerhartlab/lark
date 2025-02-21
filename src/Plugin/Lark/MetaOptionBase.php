@@ -15,7 +15,6 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Plugin\Lark\MetaOptionInterface;
 use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\AssetFileManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
