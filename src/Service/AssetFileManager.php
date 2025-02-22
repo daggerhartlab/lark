@@ -5,10 +5,25 @@ namespace Drupal\lark\Service;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\FileInterface;
+use Drupal\lark\Model\Exportable;
+use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
 
+/**
+ * Handles the exporting/importing of assets attached to File entities.
+ */
 class AssetFileManager {
 
+  /**
+   * AssetFileManager constructor.
+   *
+   * @param \Drupal\lark\Model\LarkSettings $larkSettings
+   *   Lark settings.
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   File system service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
+   */
   public function __construct(
     protected LarkSettings $larkSettings,
     protected FileSystemInterface $fileSystem,
@@ -16,54 +31,30 @@ class AssetFileManager {
   ) {}
 
   /**
-   * @param \Drupal\file\FileInterface $entity
-   *
-   * @return string
-   */
-  public function assetExportFilename(FileInterface $entity): string {
-    return $entity->uuid() . '--' . basename($entity->getFileUri());
-  }
-
-  /**
-   * @param \Drupal\file\FileInterface $entity
-   * @param string $destination
-   *
-   * @return bool
-   */
-  public function assetIsExported(FileInterface $entity, string $destination): bool {
-    $destination = \rtrim($destination, DIRECTORY_SEPARATOR);
-    return \file_exists($destination . DIRECTORY_SEPARATOR . $this->assetExportFilename($entity));
-  }
-
-  /**
    * Export the asset attached to the given File entity.
    *
-   * @param \Drupal\file\FileInterface $file
-   *   File entity.
-   * @param string $destination
-   *   Destination directory.
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
+   *   Exportable that is a file.
    *
    * @return string
    *   Path to new file.
    */
-  public function exportAsset(FileInterface $file, string $destination): string {
+  public function exportAsset(ExportableInterface $exportable): string {
+    if (!$exportable->isFile()) {
+      return '';
+    }
+
+    $file = $exportable->entity();
+    $destination = \dirname($exportable->getFilepath());
     $destination = \rtrim($destination, DIRECTORY_SEPARATOR);
     $this->fileSystem->prepareDirectory($destination);
 
     $asset_file = $file->getFileUri();
-    $result = $this->fileSystem->copy(
+    return $this->fileSystem->copy(
       $asset_file,
-      $destination . DIRECTORY_SEPARATOR . $this->assetExportFilename($file),
+      $destination . DIRECTORY_SEPARATOR . $exportable->getFileAssetFilename(),
       $this->larkSettings->assetExportFileExists()
     );
-
-    // If there's a file without the prefix, it is old and can be removed.
-    // @todo Remove this in a future release.
-    if (file_exists($destination . DIRECTORY_SEPARATOR . basename($asset_file))) {
-      $this->fileSystem->delete($destination . DIRECTORY_SEPARATOR . basename($asset_file));
-    }
-
-    return $result;
   }
 
   /**
@@ -80,8 +71,13 @@ class AssetFileManager {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function importAsset(FileInterface $entity, string $source_directory, string $destination_uri): void {
+    $exportable = new Exportable($entity);
+    if (!$exportable->isFile()) {
+      return;
+    }
+
     // If the source file doesn't exist, there's nothing we can do.
-    $source = $source_directory . DIRECTORY_SEPARATOR . $this->assetExportFilename($entity);
+    $source = $source_directory . DIRECTORY_SEPARATOR . $exportable->getFileAssetFilename();
     $destination_directory = dirname($destination_uri);
 
     if (!file_exists($source)) {

@@ -2,7 +2,6 @@
 
 namespace Drupal\lark\Service;
 
-
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 

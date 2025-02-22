@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Service;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Service\Utility\SourceUtility;
 
 /**
  * Export entities and their dependencies to yaml.
@@ -22,8 +22,6 @@ class Exporter implements ExporterInterface {
    *
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   The lark exportable factory service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entity type manager service.
    * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
    *   Meta options manager.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
@@ -33,17 +31,17 @@ class Exporter implements ExporterInterface {
    */
   public function __construct(
     protected ExportableFactoryInterface $exportableFactory,
-    protected EntityTypeManagerInterface $entityTypeManager,
-    protected MetaOptionManager $metaOptionManager,
     protected LoggerChannelInterface $logger,
+    protected MetaOptionManager $metaOptionManager,
     protected MessengerInterface $messenger,
+    protected SourceUtility $sourceUtility,
   ) {}
 
   /**
    * {@inheritdoc}
    */
   public function exportEntity(string $source_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $meta_options_overrides = []): void {
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
+    $source = $this->sourceUtility->load($source_id);
     $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity_id, $source, $meta_options_overrides);
 
     foreach ($exportables as $exportable) {

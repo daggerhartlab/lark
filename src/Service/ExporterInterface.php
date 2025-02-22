@@ -2,8 +2,6 @@
 
 namespace Drupal\lark\Service;
 
-use Drupal\lark\Entity\LarkSourceInterface;
-
 /**
  * Export entities and their dependencies.
  */

@@ -6,7 +6,6 @@ use Drupal\Core\Extension\ExtensionPathResolver;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManager;
-use League\CommonMark\GithubFlavoredMarkdownConverter;
 
 require_once __DIR__ . '/lark.theme.inc';
 
@@ -104,18 +103,21 @@ function _lark_readme_to_html() {
   $path_resolver = \Drupal::service(ExtensionPathResolver::class);
   $readme_path = $path_resolver->getPath('module', 'lark') . '/README.md';
   if (\file_exists($readme_path)) {
-    $converter = new GithubFlavoredMarkdownConverter([
-      'html_input' => 'strip',
-      'allow_unsafe_links' => FALSE,
-    ]);
-
     // Remove first line to prevent a double H1.
     $content = \file_get_contents($readme_path);
     $lines = explode("\n", $content);
     array_shift($lines);
     $content = implode("\n", $lines);
 
-    return Markup::create($converter->convert($content));
+    if (class_exists('\League\CommonMark\GithubFlavoredMarkdownConverter')) {
+      $converter = new League\CommonMark\GithubFlavoredMarkdownConverter([
+        'html_input' => 'strip',
+        'allow_unsafe_links' => FALSE,
+      ]);
+      $content = $converter->convert($content);
+    }
+
+    return Markup::create($content);
   }
 
   return '';

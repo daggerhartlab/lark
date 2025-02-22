@@ -16,6 +16,16 @@ use Drupal\lark\Service\ImporterInterface;
  */
 class StatusResolver {
 
+  /**
+   * StatusResolver constructor.
+   *
+   * @param \Drupal\lark\Service\Utility\SourceResolver $sourceResolver
+   *   The source resolver.
+   * @param \Drupal\lark\Service\ImporterInterface $importer
+   *   The importer.
+   * @param \Drupal\lark\Model\LarkSettings $larkSettings
+   *   The lark settings.
+   */
   public function __construct(
     protected SourceResolver $sourceResolver,
     protected ImporterInterface $importer,

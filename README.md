@@ -1,13 +1,13 @@
 # Lark
 
-Lark provides the functionality to export and import entities along with their
-dependencies from one Drupal site to another.
+Lark provides the functionality to export and import content entities along with
+their dependencies from one Drupal site to another.
 
 ## Setup
 
-Visit the Lark Sources page, and create a new Source for where you will export
-your content. Ideally, this directory should be outside of the
-document root of the Drupal site.
+Visit the Lark Sources page (`/admin/lark/source`), and create a new Source for
+where you will export your content. Ideally, this directory should be outside
+the document root of the Drupal site.
 
 You can make your exports directory relative to a module or theme by providing
 the module or theme name within brackets in the directory path.
@@ -19,9 +19,10 @@ Visit the Lark settings page and set default Lark Source.
 
 ## Exporting Entities
 
-Entities can be exported from the entity view page by clicking the
-"Lark" tab. This will provide a form where you can easily choose
-the Source plugin and export the entity and its dependencies.
+Entities can be exported from the entity's view/edit page by clicking the "Lark"
+tab. This will provide a form where you can easily export the entity and its
+dependencies. The export will be saved to the selected Lark Source, or can be
+downloaded as a `.tar.gz` file.
 
 To export an entity using drush, the following command can be used:
 
@@ -32,8 +33,11 @@ drush lark:export-entity <source id> <entity type> <entity id>
 ## Importing Entities
 
 Exported entities can be imported using the Source's UI, located at
-`/admin/lark/source/<source id>`. This page will list all  exports
-available within the source along with their export status.
+`/admin/lark/source/<source id>`. This page will list all  exports available
+within the source along with their export status.
+
+If the entity already exists on the site, the entity can be re-imported by
+visiting the entity's edit page and clicking the "Lark" tab.
 
 To import entities using drush, the following commands can be used:
 
@@ -48,8 +52,8 @@ drush lark:import-source <source id>
 drush lark:import-entity <source id> <uuid>
 ```
 
-## User Interface:
+## User Interface
 
 * `/admin/lark/source` - List of all sources. View a source to see its export contents.
-* `/node/{node}/lark-export` - Export a single node entity.
-* `/media/{media}/lark-export` - Export a single media entity.
+* `/lark/export/node/{node}` - Export a single node entity.
+* `/lark/export/media/{media}` - Export a single media entity.

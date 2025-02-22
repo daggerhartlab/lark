@@ -5,9 +5,10 @@ namespace Drupal\lark\Service;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Model\ExportArray;
 
 /**
- * Factory for creating exportable entities.
+ * Factory for creating Exportable instances from various sources.
  */
 interface ExportableFactoryInterface {
 
@@ -71,6 +72,19 @@ interface ExportableFactoryInterface {
    *   Exportables collection.
    */
   public function createFromSourceWithDependencies(string $source_id, string $root_uuid): array;
+
+  /**
+   * Create an exportable from an export array.
+   *
+   * @param \Drupal\lark\Model\ExportArray $export
+   *   Export array.
+   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
+   *   Source to prepare this exportable for if known.
+   *
+   * @return \Drupal\lark\Model\ExportableInterface
+   *   Exportable entity.
+   */
+  public function createFromExportArray(ExportArray $export, ?LarkSourceInterface $source = NULL): ExportableInterface;
 
   /**
    * Create an exportable from only a uuid.

@@ -10,13 +10,15 @@ use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\lark\Service\Utility\SourceResolver;
+use Drupal\lark\Service\Utility\SourceUtility;
 use Drupal\lark\Service\Utility\StatusResolver;
 
 /**
- * Factory for creating exportable entities.
+ * Factory for creating Exportable instances from various sources.
  */
 class ExportableFactory implements ExportableFactoryInterface {
 
@@ -34,15 +36,38 @@ class ExportableFactory implements ExportableFactoryInterface {
    */
   protected array $collectionsCache = [];
 
+  /**
+   * ExportableFactory constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
+   *   Entity repository.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity type manager.
+   * @param \Drupal\lark\Service\Utility\EntityUtility $entityUtility
+   *   Entity utility service.
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   File system service.
+   * @param \Drupal\lark\Service\ImporterInterface $importer
+   *   Importer service.
+   * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
+   *   Meta option manager.
+   * @param \Drupal\lark\Service\Utility\SourceResolver $sourceResolver
+   *   Source resolver.
+   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   *   Source utility service.
+   * @param \Drupal\lark\Service\Utility\StatusResolver $statusResolver
+   *   Status resolver.
+   */
   public function __construct(
+    protected EntityRepositoryInterface $entityRepository,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityUtility $entityUtility,
-    protected EntityRepositoryInterface $entityRepository,
-    protected SourceResolver $sourceResolver,
-    protected StatusResolver $statusResolver,
     protected FileSystemInterface $fileSystem,
     protected ImporterInterface $importer,
     protected MetaOptionManager $metaOptionManager,
+    protected SourceResolver $sourceResolver,
+    protected SourceUtility $sourceUtility,
+    protected StatusResolver $statusResolver,
   ) {}
 
   /**
@@ -110,31 +135,38 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager->getStorage('lark_source')->load($source_id);
+    $source = $this->sourceUtility->load($source_id);
     $exports = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
     foreach ($exports as $uuid => $export) {
-      $entity = $this->entityRepository->loadEntityByUuid($export->entityTypeId(), $export->uuid());
-
-      if (!$entity) {
-        $entity = $this->entityTypeManager->getStorage($export->entityTypeId())->create($export->fields('default'));
-      }
-
-      $exportable = new Exportable($entity);
-      $this->prepareExportable($exportable, $source);
-
-      // Override entity export values with source export values.
-      $exportable
-        ->setDependencies($export->dependencies())
-        ->setOptions($export->options());
-
-      // Set status in comparison to the sourceExportArray.
-      $exportable->setStatus($this->statusResolver->resolveStatus($exportable, $export));
-      $exportables[$uuid] = $exportable;
+      $exportables[$uuid] = $this->createFromExportArray($export, $source);
     };
 
     $this->collectionsCache[$root_uuid] = $exportables;
     return $this->collectionsCache[$root_uuid];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createFromExportArray(ExportArray $export, ?LarkSourceInterface $source = NULL): ExportableInterface {
+    $entity = $this->entityRepository->loadEntityByUuid($export->entityTypeId(), $export->uuid());
+
+    if (!$entity) {
+      $entity = $this->entityTypeManager->getStorage($export->entityTypeId())->create($export->fields('default'));
+    }
+
+    $exportable = new Exportable($entity);
+    $this->prepareExportable($exportable, $source);
+
+    // Override entity export values with source export values.
+    $exportable
+      ->setDependencies($export->dependencies())
+      ->setOptions($export->options());
+
+    // Set status in comparison to the sourceExportArray.
+    $exportable->setStatus($this->statusResolver->resolveStatus($exportable, $export));
+    return $exportable;
   }
 
   /**
@@ -166,7 +198,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+    $sources = $this->sourceUtility->loadByProperties([
       'status' => 1,
     ]);
     foreach ($sources as $source) {

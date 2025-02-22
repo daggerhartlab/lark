@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\Render\ExportableStatusBuilder;
+use Drupal\lark\Service\Render\ExportablesStatusBuilder;
 use Drupal\lark\Service\Render\ExportablesTableBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -34,7 +34,7 @@ class EntityImportForm extends EntityBaseForm {
     // Get a list of sources where this entity may be exported.
     $import_source_options = [];
     /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->entityTypeManager->getStorage('lark_source')->loadByProperties([
+    $sources = $this->sourceUtility->loadByProperties([
       'status' => 1,
     ]);
     foreach ($sources as $source) {
@@ -80,7 +80,7 @@ class EntityImportForm extends EntityBaseForm {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-      'table' => $this->tableFormHandler->table($exportables, $form, $form_state, 'export_form_values')
+      'table' => $this->exportablesTableBuilder->table($exportables, $form, $form_state, 'export_form_values')
     ];
 
     return $form;

@@ -5,15 +5,11 @@ declare(strict_types=1);
 namespace Drupal\lark\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
-use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Service\Render\ExportableStatusBuilder;
-use Drupal\lark\Service\ExporterInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Render\SourceViewBuilder;
+use Drupal\lark\Service\Utility\SourceUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -26,22 +22,17 @@ class ExportsManager extends ControllerBase {
   /**
    * The controller constructor.
    *
-   * @param \Drupal\lark\Service\Exporter $exporter
-   *   The entity exporter service.
+   * @param \Drupal\lark\Controller\DownloadController $downloadController
    * @param \Drupal\lark\Service\ImporterInterface $importer
    *   The entity importer service.
-   * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
-   *   The Lark exportable factory service.
+   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   * @param \Drupal\lark\Service\Render\SourceViewBuilder $sourceViewBuilder
    */
   public function __construct(
-    protected ExporterInterface $exporter,
-    protected ImporterInterface $importer,
-    protected ExportableFactoryInterface $exportableFactory,
-    protected EntityRepositoryInterface $entityRepository,
-    protected ExportableStatusBuilder $statusBuilder,
-    protected LarkSettings $settings,
-    protected SourceViewBuilder $sourceViewBuilder,
     protected DownloadController $downloadController,
+    protected ImporterInterface $importer,
+    protected SourceUtility $sourceUtility,
+    protected SourceViewBuilder $sourceViewBuilder,
   ) {}
 
   /**
@@ -49,14 +40,10 @@ class ExportsManager extends ControllerBase {
    */
   public static function create(ContainerInterface $container): self {
     return new static(
-      $container->get(ExporterInterface::class),
-      $container->get(ImporterInterface::class),
-      $container->get(ExportableFactoryInterface::class),
-      $container->get(EntityRepositoryInterface::class),
-      $container->get(ExportableStatusBuilder::class),
-      $container->get(LarkSettings::class),
-      $container->get(SourceViewBuilder::class),
       DownloadController::create($container),
+      $container->get(ImporterInterface::class),
+      $container->get(SourceUtility::class),
+      $container->get(SourceViewBuilder::class),
     );
   }
 
@@ -108,7 +95,7 @@ class ExportsManager extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function viewSourceTitle(string $lark_source): string {
-    $source = $this->entityTypeManager()->getStorage('lark_source')->load($lark_source);
+    $source = $this->sourceUtility->load($lark_source);
 
     return strtr('Source: %label', [
       '%label' => $source->label(),
@@ -125,7 +112,7 @@ class ExportsManager extends ControllerBase {
    */
   public function viewSource(string $lark_source): array {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->entityTypeManager()->getStorage('lark_source')->load($lark_source);
+    $source = $this->sourceUtility->load($lark_source);
     return $this->sourceViewBuilder->view($source);
   }
 

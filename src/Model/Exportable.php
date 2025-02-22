@@ -4,6 +4,7 @@ namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Serialization\Yaml;
+use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Entity\LarkSourceInterface;
 
@@ -195,6 +196,30 @@ class Exportable implements ExportableInterface {
    */
   public function getFilename(): string {
     return $this->entity()->uuid() . '.yml';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isFile(): bool {
+    return ($this->entity() instanceof FileInterface);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFileAssetFilename(): ?string {
+    return $this->isFile() ?
+      $this->entity()->uuid() . '--' . \basename($this->entity()->getFileUri()) :
+      NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isFileAssetExported(string $destination): bool {
+    $destination = \rtrim($destination, DIRECTORY_SEPARATOR);
+    return \file_exists($destination . DIRECTORY_SEPARATOR . $this->getFileAssetFilename());
   }
 
   /**

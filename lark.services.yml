@@ -61,8 +61,8 @@ services:
     arguments:
       $cache_backend: '@cache.default'
 
-  Drupal\lark\Service\Render\ExportableStatusBuilder:
-    class: Drupal\lark\Service\Render\ExportableStatusBuilder
+  Drupal\lark\Service\Render\ExportablesStatusBuilder:
+    class: Drupal\lark\Service\Render\ExportablesStatusBuilder
     autowire: true
 
   Drupal\lark\Service\Render\ExportablesTableBuilder:
