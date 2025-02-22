@@ -12,6 +12,16 @@ use Drupal\lark\Model\LarkSettings;
  */
 class SourceResolver {
 
+  /**
+   * SourceResolver constructor.
+   *
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   File system service.
+   * @param \Drupal\lark\Model\LarkSettings $larkSettings
+   *   Lark settings.
+   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   *   Source utility.
+   */
   public function __construct(
     protected FileSystemInterface $fileSystem,
     protected LarkSettings $larkSettings,
@@ -57,7 +67,7 @@ class SourceResolver {
   public function getTmpSource(): LarkSourceInterface {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->sourceUtility->create([
-      'id' => 'tmp',
+      'id' => '_tmp',
       'label' => 'Temporary Storage',
       'directory' => $this->fileSystem->getTempDirectory(),
       'status' => 0,
@@ -78,12 +88,7 @@ class SourceResolver {
     $source = $this->sourceUtility->load($this->larkSettings->defaultSource());
 
     if (!$source) {
-      $source = $this->sourceUtility->create([
-        'id' => '_default_source_missing',
-        'label' => 'Default source not set',
-        'directory' => $this->fileSystem->getTempDirectory(),
-        'status' => 0,
-      ]);
+      $source = $this->getTmpSource();
     }
 
     return $source;

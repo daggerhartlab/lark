@@ -80,7 +80,7 @@ class EntityImportForm extends EntityBaseForm {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-      'table' => $this->tableFormHandler->table($exportables, $form, $form_state, 'export_form_values')
+      'table' => $this->exportablesTableBuilder->table($exportables, $form, $form_state, 'export_form_values')
     ];
 
     return $form;
