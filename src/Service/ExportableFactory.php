@@ -136,9 +136,9 @@ class ExportableFactory implements ExportableFactoryInterface {
 
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->sourceUtility->load($source_id);
-    $exports = $this->importer->discoverSourceExport($source, $root_uuid);
+    $collection = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
-    foreach ($exports as $uuid => $export) {
+    foreach ($collection as $uuid => $export) {
       $exportables[$uuid] = $this->createFromExportArray($export, $source);
     };
 

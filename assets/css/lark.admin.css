@@ -60,6 +60,10 @@ table.lark-exportables-table-form td.status-icon {
   text-align: center;
 }
 
+.toggle-row-table--details {
+  padding-left: 3em;
+}
+
 /*
  * Status summary table.
  */

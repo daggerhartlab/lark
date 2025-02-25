@@ -102,21 +102,10 @@ class DownloadController extends ControllerBase {
     $archive = $this->newArchive($download_source->directoryProcessed() . '/lark-source.tar.gz');
 
     // Load the source's exports as a list of uuids to download.
-    $exports = $this->importer->discoverSourceExports($source);
-
-    // If we export root level items, we'll get their dependencies.
-    $root_level_exports = array_filter($exports, function ($export, $uuid) use ($exports) {
-      foreach ($exports as $other_export) {
-        if ($other_export->hasDependency($uuid)) {
-          return FALSE;
-        }
-      }
-
-      return TRUE;
-    }, ARRAY_FILTER_USE_BOTH);
+    $collection = $this->importer->discoverSourceExports($source);
 
     // Loop through each root-level export and add its entity to the archive.
-    foreach ($root_level_exports as $uuid => $export) {
+    foreach ($collection->getRootLevel() as $uuid => $export) {
       // Get the entity's id by its uuid.
       $entity_type_id = $export->entityTypeId();
       $entity = $this->entityTypeManager->getStorage($entity_type_id)->loadByProperties([

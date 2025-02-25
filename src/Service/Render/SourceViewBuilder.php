@@ -12,7 +12,6 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\Utility\ExportUtility;
 use Drupal\lark\Service\Utility\SourceUtility;
 
 /**
@@ -29,8 +28,6 @@ class SourceViewBuilder {
    *   Entity type manager.
    * @param \Drupal\lark\Service\ImporterInterface $importer
    *   The importer.
-   * @param \Drupal\lark\Service\Utility\ExportUtility $exportUtility
-   *   Export utility.
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   Exportable factory.
    * @param \Drupal\lark\Service\Render\ExportablesStatusBuilder $statusBuilder
@@ -44,7 +41,6 @@ class SourceViewBuilder {
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected ExportUtility $exportUtility,
     protected ExportableFactoryInterface $exportableFactory,
     protected ExportablesStatusBuilder $statusBuilder,
     protected ImporterInterface $importer,
@@ -153,11 +149,11 @@ class SourceViewBuilder {
    *   Summary array.
    */
   public function sourceSummary(LarkSourceInterface $source): array {
-    $exports = $this->importer->discoverSourceExports($source);
+    $collection = $this->importer->discoverSourceExports($source);
 
     $exportables = array_map(function($export) use ($source) {
       return $this->exportableFactory->createFromExportArray($export, $source);
-    }, $exports);
+    }, $collection->getArrayCopy());
 
     return $this->statusBuilder->getExportablesSummary($exportables);
   }
@@ -249,13 +245,11 @@ class SourceViewBuilder {
    *   Rows array.
    */
   protected function rows(LarkSourceInterface $source): array {
-    $exports = $this->importer->discoverSourceExports($source);
-    $exports = array_reverse($exports);
-    $source_root_exports = $this->exportUtility->getRootLevelExports($exports);
+    $collection = $this->importer->discoverSourceExports($source)->reverse();
 
-    // The root export is a top-level table row
+    // Root exports are top-level table rows.
     $rows = [];
-    foreach ($source_root_exports as $root_uuid => $root_export) {
+    foreach ($collection->getRootLevel() as $root_uuid => $root_export) {
       // Get the root_export's Exportable along with dependencies.
       $root_exportable = $this->exportableFactory->createFromSource($source->id(), $root_uuid);
       if (!$root_exportable) {

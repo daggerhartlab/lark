@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Service;
 
-use Drupal\Component\Graph\Graph;
-use Drupal\Component\Serialization\Yaml;
-use Drupal\Component\Utility\SortArray;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Installer\InstallerKernel;
@@ -17,10 +14,9 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Exception\LarkImportException;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Model\ExportCollection;
 use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\Utility\SourceUtility;
-use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
-use Symfony\Component\Finder\Finder as SymfonyFinder;
 
 /**
  * Import entities and their dependencies.
@@ -84,11 +80,11 @@ class Importer implements ImporterInterface {
   public function importSource(string $source_id, bool $show_messages = TRUE): void {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->sourceUtility->load($source_id);
-    $exports = $this->discoverSourceExports($source);
+    $collection = $this->discoverSourceExports($source);
 
     try {
-      $this->upsertEntities($exports);
-      $this->validateImportResults($exports, $show_messages);
+      $this->upsertEntities($collection);
+      $this->validateImportResults($collection, $show_messages);
     }
     catch (\Exception $exception) {
       if ($show_messages) {
@@ -103,8 +99,8 @@ class Importer implements ImporterInterface {
    */
   public function importSourceExport(string $source_id, string $uuid, bool $show_messages = TRUE): void {
     $source = $this->sourceUtility->load($source_id);
-    $exports = $this->discoverSourceExport($source, $uuid);
-    if (!isset($exports[$uuid])) {
+    $collection = $this->discoverSourceExport($source, $uuid);
+    if (!$collection->has($uuid)) {
       $message = $this->t('No export found with UUID @uuid in source @source.', [
         '@uuid' => $uuid,
         '@source' => $source->id(),
@@ -116,10 +112,9 @@ class Importer implements ImporterInterface {
       return;
     }
 
-    $exports = $this->discoverSourceExport($source, $uuid);
     try {
-      $this->upsertEntities($exports);
-      $this->validateImportResults($exports, $show_messages);
+      $this->upsertEntities($collection);
+      $this->validateImportResults($collection, $show_messages);
     }
     catch (\Exception $exception) {
       if ($show_messages) {
@@ -132,7 +127,7 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function discoverSourceExports(LarkSourceInterface $source): array {
+  public function discoverSourceExports(LarkSourceInterface $source): ExportCollection {
     if (array_key_exists($source->id(), $this->discoveryCache)) {
       return $this->discoveryCache[$source->id()];
     }
@@ -144,14 +139,14 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function discoverSourceExport(LarkSourceInterface $source, string $uuid): array {
-    return $this->exportFileManager->filterExportWithDependencies($uuid, $this->discoverSourceExports($source));
+  public function discoverSourceExport(LarkSourceInterface $source, string $uuid): ExportCollection {
+    return $this->discoverSourceExports($source)->getWithDependencies($uuid);
   }
 
   /**
    * Validate import results.
    *
-   * @param \Drupal\lark\Model\ExportArray[] $exports
+   * @param \Drupal\lark\Model\ExportCollection $collection
    *   Lark source exports data.
    * @param bool $show_messages
    *   Whether to show messages.
@@ -161,8 +156,8 @@ class Importer implements ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function validateImportResults(array $exports, bool $show_messages): void {
-    foreach ($exports as $uuid => $export) {
+  protected function validateImportResults(ExportCollection $collection, bool $show_messages): void {
+    foreach ($collection as $uuid => $export) {
       $entity_type = $export->entityTypeId();
       $entity = $this->entityTypeManager->getStorage($entity_type)->loadByProperties(['uuid' => $uuid]);
       if ($entity) {
@@ -193,7 +188,7 @@ class Importer implements ImporterInterface {
   /**
    * Imports content entities from disk.
    *
-   * @param \Drupal\lark\Model\ExportArray[] $exports
+   * @param \Drupal\lark\Model\ExportCollection $collection
    *   The source exports data, which has information on the entities to create
    *   in the necessary dependency order.
    *
@@ -202,12 +197,12 @@ class Importer implements ImporterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function upsertEntities(array $exports): void {
-    if (count($exports) === 0) {
+  protected function upsertEntities(ExportCollection $collection): void {
+    if (count($collection) === 0) {
       return;
     }
 
-    foreach ($exports as $export) {
+    foreach ($collection as $export) {
       $this->validateExport($export);
       $this->normalizeDefaultLanguage($export);
       $entity = $this->upserter->getOrCreateEntity(
