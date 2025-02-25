@@ -16,7 +16,7 @@ use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportCollection;
 use Drupal\lark\Routing\EntityTypeInfo;
-use Drupal\lark\Service\Utility\SourceUtility;
+use Drupal\lark\Service\LarkSourceManager;
 
 /**
  * Import entities and their dependencies.
@@ -57,7 +57,7 @@ class Importer implements ImporterInterface {
     protected LoggerChannelInterface $logger,
     protected MetaOptionManager $metaOptionManager,
     protected MessengerInterface $messenger,
-    protected SourceUtility $sourceUtility,
+    protected LarkSourceManager $sourceManager,
   ) {}
 
   /**
@@ -65,7 +65,7 @@ class Importer implements ImporterInterface {
    */
   public function importSourcesAll(bool $show_messages = TRUE): void {
     /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->sourceUtility->loadByProperties([
+    $sources = $this->sourceManager->loadByProperties([
       'status' => 1,
     ]);
 
@@ -79,7 +79,7 @@ class Importer implements ImporterInterface {
    */
   public function importSource(string $source_id, bool $show_messages = TRUE): void {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->sourceUtility->load($source_id);
+    $source = $this->sourceManager->load($source_id);
     $collection = $this->discoverSourceExports($source);
 
     try {
@@ -98,7 +98,7 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function importSourceExport(string $source_id, string $uuid, bool $show_messages = TRUE): void {
-    $source = $this->sourceUtility->load($source_id);
+    $source = $this->sourceManager->load($source_id);
     $collection = $this->discoverSourceExport($source, $uuid);
     if (!$collection->has($uuid)) {
       $message = $this->t('No export found with UUID @uuid in source @source.', [

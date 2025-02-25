@@ -10,7 +10,7 @@ use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\ExportCollection;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\Utility\SourceUtility;
+use Drupal\lark\Service\LarkSourceManager;
 
 /**
  * Build the render array for a Source's root-level Exports.
@@ -30,15 +30,15 @@ class SourceRootsViewBuilder {
    *   Exportable status builder.
    * @param \Drupal\lark\Service\ImporterInterface $importer
    *   The importer.
-   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
    *   Source utility.
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ExportableFactoryInterface $exportableFactory,
-    protected ExportablesStatusBuilder   $statusBuilder,
-    protected ImporterInterface          $importer,
-    protected SourceUtility              $sourceUtility,
+    protected ExportablesStatusBuilder $statusBuilder,
+    protected ImporterInterface $importer,
+    protected LarkSourceManager $sourceManager,
   ) {}
 
   /**
@@ -206,7 +206,7 @@ class SourceRootsViewBuilder {
       'operations' => [
         'data' => [
           '#type' => 'operations',
-          '#links' => $this->sourceUtility->getExportableOperations($source, $exportable),
+          '#links' => $this->sourceManager->getExportableOperations($source, $exportable),
         ],
       ],
     ];

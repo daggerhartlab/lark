@@ -14,22 +14,22 @@ use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\MetaOptionManager;
 use Drupal\lark\Service\Render\ExportablesStatusBuilder;
 use Drupal\lark\Service\Render\ExportablesTableBuilder;
-use Drupal\lark\Service\Utility\SourceUtility;
+use Drupal\lark\Service\LarkSourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class EntityBaseForm extends FormBase {
   public function __construct(
-    protected DownloadController         $downloadController,
+    protected DownloadController $downloadController,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ExportableFactoryInterface $exportableFactory,
-    protected ExportablesStatusBuilder   $statusBuilder,
-    protected ExportablesTableBuilder    $exportablesTableBuilder,
-    protected ExporterInterface          $exporter,
-    protected FileSystemInterface        $fileSystem,
-    protected ImporterInterface          $importer,
-    protected LarkSettings               $larkSettings,
-    protected MetaOptionManager          $metaOptionManager,
-    protected SourceUtility              $sourceUtility,
+    protected ExportablesStatusBuilder $statusBuilder,
+    protected ExportablesTableBuilder $exportablesTableBuilder,
+    protected ExporterInterface $exporter,
+    protected FileSystemInterface $fileSystem,
+    protected ImporterInterface $importer,
+    protected LarkSettings $larkSettings,
+    protected MetaOptionManager $metaOptionManager,
+    protected LarkSourceManager $sourceManager,
   ) {}
 
   /**
@@ -47,7 +47,7 @@ abstract class EntityBaseForm extends FormBase {
       $container->get(ImporterInterface::class),
       $container->get(LarkSettings::class),
       $container->get(MetaOptionManager::class),
-      $container->get(SourceUtility::class),
+      $container->get(LarkSourceManager::class),
     );
   }
 

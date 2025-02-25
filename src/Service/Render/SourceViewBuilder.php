@@ -12,7 +12,7 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\Utility\SourceUtility;
+use Drupal\lark\Service\LarkSourceManager;
 
 /**
  * Build the render array for a single Source.
@@ -36,7 +36,7 @@ class SourceViewBuilder {
    *   Module handler.
    * @param \Drupal\lark\Service\Render\SourceRootsViewBuilder $rootsViewBuilder
    *   Source roots view builder.
-   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
    *   Source utility.
    */
   public function __construct(
@@ -46,7 +46,7 @@ class SourceViewBuilder {
     protected ImporterInterface $importer,
     protected ModuleHandlerInterface $moduleHandler,
     protected SourceRootsViewBuilder $rootsViewBuilder,
-    protected SourceUtility $sourceUtility,
+    protected LarkSourceManager $sourceManager,
   ) {}
 
   /**
@@ -300,7 +300,7 @@ class SourceViewBuilder {
       'operations' => [
         'data' => [
           '#type' => 'operations',
-          '#links' => $this->sourceUtility->getExportableOperations($source, $exportable),
+          '#links' => $this->sourceManager->getExportableOperations($source, $exportable),
         ],
       ],
       'details' => [

@@ -8,6 +8,7 @@ use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\LarkSettings;
+use Drupal\lark\Service\LarkSourceManager;
 
 /**
  * Used to determine the status of an exportable entity and prepare exports for
@@ -18,13 +19,13 @@ class StatusResolver {
   /**
    * StatusResolver constructor.
    *
-   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
    *   The source resolver.
    * @param \Drupal\lark\Model\LarkSettings $larkSettings
    *   The lark settings.
    */
   public function __construct(
-    protected SourceUtility $sourceUtility,
+    protected LarkSourceManager $sourceManager,
     protected LarkSettings $larkSettings,
   ) {}
 
@@ -43,7 +44,7 @@ class StatusResolver {
    */
   public function resolveStatus(ExportableInterface $exportable, ?ExportArray $sourceExportArray = NULL): ExportableStatus {
     $entity = $exportable->entity();
-    $source = $this->sourceUtility->resolveSource($exportable);
+    $source = $this->sourceManager->resolveSource($exportable);
 
     if (!$source) {
       return ExportableStatus::NotExported;

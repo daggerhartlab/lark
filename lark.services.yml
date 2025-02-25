@@ -54,6 +54,10 @@ services:
     arguments:
       $logger: '@lark.entity_logger'
 
+  Drupal\lark\Service\LarkSourceManager:
+    class: Drupal\lark\Service\LarkSourceManager
+    autowire: true
+
   Drupal\lark\Service\MetaOptionManager:
     class: Drupal\lark\Service\MetaOptionManager
     parent: default_plugin_manager
@@ -87,8 +91,4 @@ services:
 
   Drupal\lark\Service\Utility\StatusResolver:
     class: Drupal\lark\Service\Utility\StatusResolver
-    autowire: true
-
-  Drupal\lark\Service\Utility\SourceUtility:
-    class: Drupal\lark\Service\Utility\SourceUtility
     autowire: true

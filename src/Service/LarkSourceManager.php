@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\lark\Service\Utility;
+namespace Drupal\lark\Service;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -14,7 +14,7 @@ use Drupal\lark\Model\LarkSettings;
 /**
  * Source utility.
  */
-class SourceUtility {
+class LarkSourceManager {
 
   use StringTranslationTrait;
 
@@ -26,7 +26,7 @@ class SourceUtility {
   protected EntityStorageInterface $storage;
 
   /**
-   * SourceUtility constructor.
+   * LarkSourceManager constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager.

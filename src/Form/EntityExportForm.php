@@ -43,7 +43,7 @@ class EntityExportForm extends EntityBaseForm {
     $form['source'] = [
       '#type' => 'select',
       '#title' => $this->t('Export Source'),
-      '#options' => $this->sourceUtility->sourcesAsOptions(),
+      '#options' => $this->sourceManager->sourcesAsOptions(),
       '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->larkSettings->defaultSource(),
       '#required' => TRUE,
       '#weight' => -101,
