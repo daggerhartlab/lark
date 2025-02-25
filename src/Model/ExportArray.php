@@ -3,6 +3,7 @@
 namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\file\FileInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
 
 /**
@@ -628,6 +629,43 @@ class ExportArray extends \ArrayObject {
     $translations = $this->translations();
     unset($translations[$langcode][$name]);
     $this->offsetSet('translations', $translations);
+  }
+
+  /**
+   * @return bool
+   */
+  public function isFile(): bool {
+    return $this->entityTypeId() === 'file';
+  }
+
+  /**
+   * @return string|null
+   */
+  public function fileAssetFilename(): ?string {
+    return $this->isFile() && isset($this->getField('uri')[0]['value']) ?
+      $this->uuid() . '--' . \basename($this->getField('uri')[0]['value']) :
+      NULL;
+  }
+
+  /**
+   * @return string|null
+   */
+  public function fileAssetFilepath(): ?string {
+    return $this->isFile() ?
+      \dirname($this->path()) . DIRECTORY_SEPARATOR . $this->fileAssetFilename() :
+      NULL;
+  }
+
+  /**
+   *
+   * @param string|null $destination
+   *   Defaults to this export's path.
+   *
+   * @return bool
+   */
+  public function fileAssetIsExported(string $destination = NULL): bool {
+    $destination = \rtrim($destination ?? $this->path(), DIRECTORY_SEPARATOR);
+    return \file_exists($destination . DIRECTORY_SEPARATOR . $this->fileAssetFilename());
   }
 
   /**

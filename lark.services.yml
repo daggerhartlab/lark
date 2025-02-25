@@ -27,6 +27,10 @@ services:
     arguments:
       $logger: '@lark.entity_logger'
 
+  Drupal\lark\Service\ExportFileManager:
+    class: Drupal\lark\Service\ExportFileManager
+    autowire: true
+
   Drupal\lark\Service\ExportableFactoryInterface:
     class: Drupal\lark\Service\ExportableFactory
     autowire: true

@@ -55,6 +55,7 @@ class Importer implements ImporterInterface {
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityUpdaterInterface $upserter,
+    protected ExportFileManager $exportFileManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
     protected LanguageManagerInterface $languageManager,
     protected LoggerChannelInterface $logger,
@@ -136,7 +137,7 @@ class Importer implements ImporterInterface {
       return $this->discoveryCache[$source->id()];
     }
 
-    $this->discoveryCache[$source->id()] = $this->getSourceExports($source);
+    $this->discoveryCache[$source->id()] = $this->exportFileManager->discoverExports($source->directoryProcessed());
     return $this->discoveryCache[$source->id()];
   }
 
@@ -144,113 +145,7 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function discoverSourceExport(LarkSourceInterface $source, string $uuid): array {
-    return $this->filterSingleExportWithDependencies($uuid, $this->discoverSourceExports($source));
-  }
-
-  /**
-   * Copy of core service functionality.
-   *
-   * @return array
-   *   Array of exports with dependencies.
-   *
-   * @see \Drupal\Core\DefaultContent\Finder
-   */
-  protected function getSourceExports(LarkSourceInterface $source): array {
-    try {
-      // Scan for all YAML files in the content directory.
-      $finder = SymfonyFinder::create()
-        ->in($source->directoryProcessed())
-        ->files()
-        ->name('*.yml');
-    }
-    catch (DirectoryNotFoundException) {
-      return [];
-    }
-
-    $graph = $files = [];
-    /** @var \Symfony\Component\Finder\SplFileInfo $file */
-    foreach ($finder as $file) {
-      $decoded = new ExportArray(Yaml::decode($file->getContents()));
-      $uuid = $decoded->uuid();
-      $files[$uuid] = $decoded;
-
-      // For the graph to work correctly, every entity must be mentioned in it.
-      // This is inspired by
-      // \Drupal\Core\Config\Entity\ConfigDependencyManager::getGraph().
-      $graph += [
-        $uuid => [
-          'edges' => [],
-          'uuid' => $uuid,
-        ],
-      ];
-
-      foreach ($decoded->dependencies() as $dependency_uuid => $entity_type) {
-        $graph[$dependency_uuid]['edges'][$uuid] = TRUE;
-        $graph[$dependency_uuid]['uuid'] = $dependency_uuid;
-      }
-    }
-    ksort($graph);
-
-    // Sort the dependency graph. The entities that are dependencies of other
-    // entities should come first.
-    $graph_object = new Graph($graph);
-    $sorted = $graph_object->searchAndSort();
-    uasort($sorted, SortArray::sortByWeightElement(...));
-
-    $entities = [];
-    foreach ($sorted as ['uuid' => $uuid]) {
-      if (array_key_exists($uuid, $files)) {
-        $entities[$uuid] = $files[$uuid];
-      }
-    }
-    return $entities;
-  }
-
-  /**
-   * Gather dependencies for a single $uuid.
-   *
-   * @param string $uuid
-   *   UUID of the export.
-   * @param \Drupal\lark\Model\ExportArray[] $exports
-   *   Found files array.
-   * @param array $found
-   *   Reference array to track all dependencies to prevent duplicates.
-   *
-   * @return array
-   *   Array of export with dependencies.
-   */
-  protected function filterSingleExportWithDependencies(string $uuid, array $exports, array &$found = []): array {
-    if (!isset($exports[$uuid])) {
-      throw new LarkImportException('Export with UUID ' . $uuid . ' not found.');
-    }
-
-    $export = $exports[$uuid];
-    $dependencies = [];
-    foreach ($export->dependencies() as $dependency_uuid => $entity_type) {
-      // Look for the dependency export.
-      // @todo - Handle missing dependencies?
-      if (
-        isset($exports[$dependency_uuid])
-        // Don't recurse into dependency if it's already been registered.
-        && !array_key_exists($dependency_uuid, $found)
-      ) {
-        // Recurse and get dependencies of this dependency.
-        if (!empty($exports[$dependency_uuid]->dependencies())) {
-
-          // Register the dependency to prevent redundant calls.
-          $found[$dependency_uuid] = NULL;
-          $dependencies += $this->filterSingleExportWithDependencies($dependency_uuid, $exports, $found);
-        }
-
-        // Add the dependency itself.
-        $dependencies[$dependency_uuid] = $exports[$dependency_uuid];
-        $found[$dependency_uuid] = $exports[$dependency_uuid];
-      }
-    }
-
-    // Add the entity itself last.
-    $dependencies[$uuid] = $export;
-    return $dependencies;
+    return $this->exportFileManager->filterExportWithDependencies($uuid, $this->discoverSourceExports($source));
   }
 
   /**

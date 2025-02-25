@@ -10,7 +10,7 @@ class ExportUtility {
   /**
    * Get only the root-level exports.
    *
-   * @param array $exports
+   * @param \Drupal\lark\Model\ExportArray[] $exports
    *   Exports array.
    *
    * @return array
@@ -19,7 +19,7 @@ class ExportUtility {
   public function getRootLevelExports(array $exports): array {
     return array_filter($exports, function ($export, $uuid) use ($exports) {
       foreach ($exports as $other_export) {
-        if (isset($other_export['_meta']['depends'][$uuid])) {
+        if ($other_export->hasDependency($uuid)) {
           return FALSE;
         }
       }
