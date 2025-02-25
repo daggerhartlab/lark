@@ -13,7 +13,6 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\Utility\EntityUtility;
-use Drupal\lark\Service\Utility\SourceResolver;
 use Drupal\lark\Service\Utility\SourceUtility;
 use Drupal\lark\Service\Utility\StatusResolver;
 
@@ -51,8 +50,6 @@ class ExportableFactory implements ExportableFactoryInterface {
    *   Importer service.
    * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
    *   Meta option manager.
-   * @param \Drupal\lark\Service\Utility\SourceResolver $sourceResolver
-   *   Source resolver.
    * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
    *   Source utility service.
    * @param \Drupal\lark\Service\Utility\StatusResolver $statusResolver
@@ -65,7 +62,6 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected FileSystemInterface $fileSystem,
     protected ImporterInterface $importer,
     protected MetaOptionManager $metaOptionManager,
-    protected SourceResolver $sourceResolver,
     protected SourceUtility $sourceUtility,
     protected StatusResolver $statusResolver,
   ) {}
@@ -234,12 +230,12 @@ class ExportableFactory implements ExportableFactoryInterface {
 
     // If no source is set, attempt to find it amongst all sources.
     if (!$source) {
-      $source = $this->sourceResolver->resolveSource($exportable);
+      $source = $this->sourceUtility->resolveSource($exportable);
     }
 
     // If no source found, use the default source.
     if (!$source) {
-      $source = $this->sourceResolver->defaultSource();
+      $source = $this->sourceUtility->getDefaultSource();
     }
 
     // Set status once we have a source.

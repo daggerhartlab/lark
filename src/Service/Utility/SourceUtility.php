@@ -4,10 +4,12 @@ namespace Drupal\lark\Service\Utility;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Model\LarkSettings;
 
 /**
  * Source utility.
@@ -31,6 +33,8 @@ class SourceUtility {
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected FileSystemInterface $fileSystem,
+    protected LarkSettings $larkSettings,
   ) {
     $this->storage = $this->entityTypeManager->getStorage('lark_source');
   }
@@ -112,6 +116,71 @@ class SourceUtility {
       $options[$source->id()] = $source->label();
     }
     return $options;
+  }
+
+
+
+  /**
+   * Get the source plugin for the given exportable.
+   *
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
+   *   The exportable entity.
+   *
+   * @return \Drupal\lark\Entity\LarkSourceInterface|null
+   *   The source plugin or NULL if not found.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   */
+  public function resolveSource(ExportableInterface $exportable): ?LarkSourceInterface {
+    $entity = $exportable->entity();
+    $sources = $this->loadByProperties([
+      'status' => 1,
+    ]);
+
+    foreach ($sources as $source) {
+      if ($source->exportExistsInSource($entity->getEntityTypeId(), $entity->bundle(), $entity->uuid())) {
+        return $source;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Source for temporary storage.
+   *
+   * @return \Drupal\lark\Entity\LarkSourceInterface
+   *   Source configured to the filesystem's tmp storage.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function getTmpSource(): LarkSourceInterface {
+    $source = $this->create([
+      'id' => '_tmp',
+      'label' => 'Temporary Storage',
+      'directory' => $this->fileSystem->getTempDirectory(),
+      'status' => 0,
+    ]);
+
+    return $source;
+  }
+
+  /**
+   * Get the default source.
+   *
+   * @return \Drupal\lark\Entity\LarkSourceInterface|null
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function getDefaultSource(): LarkSourceInterface {
+    $source = $this->load($this->larkSettings->defaultSource());
+
+    if (!$source) {
+      $source = $this->getTmpSource();
+    }
+
+    return $source;
   }
 
   /**

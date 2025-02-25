@@ -85,10 +85,6 @@ services:
     class: Drupal\lark\Service\Utility\EntityUtility
     autowire: true
 
-  Drupal\lark\Service\Utility\SourceResolver:
-    class: Drupal\lark\Service\Utility\SourceResolver
-    autowire: true
-
   Drupal\lark\Service\Utility\StatusResolver:
     class: Drupal\lark\Service\Utility\StatusResolver
     autowire: true
