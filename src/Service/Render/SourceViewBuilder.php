@@ -2,6 +2,7 @@
 
 namespace Drupal\lark\Service\Render;
 
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Link;
@@ -40,6 +41,7 @@ class SourceViewBuilder {
    *   Source utility.
    */
   public function __construct(
+    protected EntityTypeBundleInfoInterface $bundleInfo,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ExportableFactoryInterface $exportableFactory,
     protected ExportablesStatusBuilder $statusBuilder,
@@ -74,12 +76,19 @@ class SourceViewBuilder {
     $download_link['#attributes']['class'][] = 'button';
 
     $build = [
-      'details' => $this->sourceDetails($source),
+      'summary' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['lark-flex-break'],
+        ],
+        'details' => $this->sourceDetails($source),
+        'status' => $this->sourceStatusSummary($source),
+        'contents' => $this->sourceContentSummary($source),
+      ],
       'actions' => [
         'import' => $import_link,
         'download' => $download_link,
       ],
-      'summary' => $this->sourceSummary($source),
       'table' => $this->table($source),
     ];
 
@@ -98,6 +107,7 @@ class SourceViewBuilder {
   public function sourceDetails(LarkSourceInterface $source): array {
     return [
       '#type' => 'table',
+      '#responsive' => FALSE,
       '#header' => [
         'heading' => [
           'colspan' => 2,
@@ -136,6 +146,7 @@ class SourceViewBuilder {
       '#attributes' => [
         'class' => ['lark-source-view-summary'],
       ],
+      '#attached' => ['library' => ['lark/admin']],
     ];
   }
 
@@ -148,7 +159,7 @@ class SourceViewBuilder {
    * @return array
    *   Summary array.
    */
-  public function sourceSummary(LarkSourceInterface $source): array {
+  public function sourceStatusSummary(LarkSourceInterface $source): array {
     $collection = $this->importer->discoverSourceExports($source);
 
     $exportables = array_map(function($export) use ($source) {
@@ -156,6 +167,89 @@ class SourceViewBuilder {
     }, $collection->getArrayCopy());
 
     return $this->statusBuilder->getExportablesSummary($exportables);
+  }
+
+  /**
+   * Build the contents summary for a single Source.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *
+   * @return array
+   *   Summary table.
+   */
+  public function sourceContentSummary(LarkSourceInterface $source): array {
+    $collection = $this->importer->discoverSourceExports($source);
+    $counts = [];
+    $assets = 0;
+    $files = 0;
+    foreach ($collection->reverse() as $export) {
+      /** @var \Drupal\lark\Model\ExportArray $export */
+      $entity_type_id = $export->entityTypeId();
+      $bundle = $export->bundle();
+
+      if ($entity_type_id === 'file') {
+        $files += 1;
+        if ($export->fileAssetIsExported()) {
+          $assets += 1;
+        }
+        continue;
+      }
+
+      $counts[$entity_type_id][$bundle] = $counts[$entity_type_id][$bundle] ?? 0;
+      $counts[$entity_type_id][$bundle] += 1;
+    }
+
+    $rows = [];
+    foreach ($counts as $entity_type_id => $bundles) {
+      foreach ($bundles as $bundle => $count) {
+        $bundle_info = $this->bundleInfo->getBundleInfo($entity_type_id);
+        $rows[] = [
+          'bundle' => [
+            'header' => TRUE,
+            'data' => ($bundle == $entity_type_id) ?
+              $bundle_info[$bundle]['label'] :
+              "{$entity_type_id} : {$bundle_info[$bundle]['label']}",
+          ],
+          'count' => $count,
+        ];
+      }
+    }
+    $rows[] = [
+      'bundle' => [
+        'header' => TRUE,
+        'data' => $this->t("File"),
+      ],
+      'count' => $files,
+    ];
+    $rows[] = [
+      'bundle' => [
+        'header' => TRUE,
+        'data' => Markup::create("<em>File Assets</em>"),
+      ],
+      'count' => $assets,
+    ];
+
+    return [
+      '#type' => 'table',
+      '#responsive' => FALSE,
+      '#header' => [
+        'heading' => [
+          'colspan' => 2,
+          'class' => ['summary-heading'],
+          'data' => [
+            '#type' => 'html_tag',
+            '#tag' => 'span',
+            '#value' => $this->t('Contents Summary', [
+              '%label' => $source->label(),
+            ]),
+          ],
+        ],
+      ],
+      '#rows' => $rows,
+      '#attributes' => [
+        'class' => ['lark-source-view-summary'],
+      ],
+    ];
   }
 
   /**

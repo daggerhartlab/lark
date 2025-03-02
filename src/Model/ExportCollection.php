@@ -143,8 +143,8 @@ class ExportCollection extends \ArrayObject {
    * @return \Drupal\lark\Model\ExportCollection
    *   The new collection.
    */
-  public function map(callable $callback): ExportCollection {
-    return new static(array_map($callback, $this->getArrayCopy()));
+  public function map(callable $callback): array {
+    return array_map($callback, $this->getArrayCopy());
   }
 
   /**

@@ -248,6 +248,13 @@ class LarkSourceManager {
           'url' => $exportable->entity()->toUrl('lark-diff'),
         ];
       }
+      $operations['lark_prune'] = [
+        'title' => $this->t('Prune'),
+        'url' => Url::fromRoute('entity.lark_source.prune_confirm_form', [
+          'lark_source' => $source->id(),
+          'prune_target' => $exportable->entity()->uuid(),
+        ]),
+      ];
     }
 
     return $operations;

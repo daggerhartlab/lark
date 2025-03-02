@@ -1,3 +1,12 @@
+@media (min-width: 768px) {
+  .lark-flex-break {
+    display: flex;
+  }
+  .lark-flex-break > table {
+    margin-right: 2em;
+  }
+}
+
 .lark-exports-table th.status,
 .lark-exports-table td.status {
   max-width: 80px;
