@@ -2,6 +2,8 @@
 
 namespace Drupal\lark\Model;
 
+use Drupal\lark\Exception\LarkImportException;
+
 /**
  * Class ExportCollection
  *
@@ -81,7 +83,41 @@ class ExportCollection extends \ArrayObject {
    * @return void
    */
   public function add(ExportArray $export): void {
-    $this->set($export->uuid, $export);
+    $this->set($export->uuid(), $export);
+  }
+
+  /**
+   * Remove an item by UUID.
+   *
+   * @param string $uuid
+   *   The UUID of the item to remove.
+   */
+  public function remove(string $uuid): void {
+    $this->offsetUnset($uuid);
+  }
+
+  /**
+   * Merge another collection into this one.
+   *
+   * @param \Drupal\lark\Model\ExportCollection $collection
+   */
+  public function merge(ExportCollection $collection): void {
+    foreach ($collection as $export) {
+      $this->add($export);
+    }
+  }
+
+  /**
+   * Diff this collection with another.
+   *
+   * @param \Drupal\lark\Model\ExportCollection $collection
+   *   The collection to diff against.
+   *
+   * @return \Drupal\lark\Model\ExportCollection
+   *   The difference between the two collections.
+   */
+  public function diff(ExportCollection $collection): ExportCollection {
+    return new static(array_diff_key($this->getArrayCopy(), $collection->getArrayCopy()));
   }
 
   /**
@@ -107,8 +143,82 @@ class ExportCollection extends \ArrayObject {
    * @return \Drupal\lark\Model\ExportCollection
    *   The new collection.
    */
-  public function map(callable $callback): ExportCollection {
-    return new static(array_map($callback, $this->getArrayCopy()));
+  public function map(callable $callback): array {
+    return array_map($callback, $this->getArrayCopy());
+  }
+
+  /**
+   * Reverse the collection.
+   *
+   * @return \Drupal\lark\Model\ExportCollection
+   *   The reversed collection.
+   */
+  public function reverse(): ExportCollection {
+    return new static(array_reverse($this->getArrayCopy()));
+  }
+
+  /**
+   * Get the root-level exports.
+   *
+   * @return \Drupal\lark\Model\ExportCollection
+   *   The root-level exports.
+   */
+  public function getRootLevel(): ExportCollection {
+    $items = $this->getArrayCopy();
+    return $this->filter(function ($export, $uuid) use ($items) {
+      foreach ($items as $other_export) {
+        if ($other_export->hasDependency($uuid)) {
+          return FALSE;
+        }
+      }
+
+      return TRUE;
+    }, ARRAY_FILTER_USE_BOTH);
+  }
+
+  /**
+   * Gather dependencies for a single $uuid.
+   *
+   * @param string $uuid
+   *   UUID of the export.
+   * @param array $found
+   *   Reference array to track all dependencies to prevent duplicates.
+   *
+   * @return \Drupal\lark\Model\ExportCollection
+   *   Array of export with dependencies.
+   */
+  public function getWithDependencies(string $uuid, array &$found = []): ExportCollection {
+    $dependencies = new ExportCollection();
+    if (!$this->has($uuid)) {
+      return $dependencies;
+    }
+
+    $export = $this->get($uuid);
+    foreach ($export->dependencies() as $dependency_uuid => $entity_type) {
+      // Look for the dependency export.
+      // @todo - Handle missing dependencies?
+      if (
+        $this->has($dependency_uuid)
+        // Don't recurse into dependency if it's already been registered.
+        && !array_key_exists($dependency_uuid, $found)
+      ) {
+        // Recurse and get dependencies of this dependency.
+        if (!empty($this->get($dependency_uuid)->dependencies())) {
+
+          // Register the dependency to prevent redundant calls.
+          $found[$dependency_uuid] = NULL;
+          $dependencies->merge($this->getWithDependencies($dependency_uuid, $found));
+        }
+
+        // Add the dependency itself.
+        $dependencies->add($this->get($dependency_uuid));
+        $found[$dependency_uuid] = $this->get($dependency_uuid);
+      }
+    }
+
+    // Add the entity itself last.
+    $dependencies->add($export);
+    return $dependencies;
   }
 
 }

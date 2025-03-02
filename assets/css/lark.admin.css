@@ -1,3 +1,12 @@
+@media (min-width: 768px) {
+  .lark-flex-break {
+    display: flex;
+  }
+  .lark-flex-break > table {
+    margin-right: 2em;
+  }
+}
+
 .lark-exports-table th.status,
 .lark-exports-table td.status {
   max-width: 80px;
@@ -58,6 +67,10 @@ table.lark-exportables-table-form th.status-icon,
 table.lark-exportables-table-form td.status-icon {
   width: 50px;
   text-align: center;
+}
+
+.toggle-row-table--details {
+  padding-left: 3em;
 }
 
 /*

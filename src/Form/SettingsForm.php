@@ -10,7 +10,7 @@ use Drupal\Core\File\FileExists;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Service\Utility\SourceUtility;
+use Drupal\lark\Service\LarkSourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -25,7 +25,7 @@ final class SettingsForm extends ConfigFormBase {
    *   The config factory.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed config manager.
-   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
    *   The source utility.
    * @param \Drupal\lark\Model\LarkSettings $larkSettings
    *   The Lark settings.
@@ -33,7 +33,7 @@ final class SettingsForm extends ConfigFormBase {
   public function __construct(
     ConfigFactoryInterface $config_factory,
     TypedConfigManagerInterface $typedConfigManager,
-    protected SourceUtility $sourceUtility,
+    protected LarkSourceManager $sourceManager,
     protected LarkSettings $larkSettings,
   ) {
     parent::__construct($config_factory, $typedConfigManager);
@@ -46,7 +46,7 @@ final class SettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
-      $container->get(SourceUtility::class),
+      $container->get(LarkSourceManager::class),
       $container->get(LarkSettings::class),
     );
   }
@@ -69,7 +69,7 @@ final class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
-    $source_options = $this->sourceUtility->sourcesAsOptions();
+    $source_options = $this->sourceManager->sourcesAsOptions();
 
     $form['default_source'] = [
       '#type' => 'select',

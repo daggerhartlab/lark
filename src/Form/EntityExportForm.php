@@ -43,7 +43,7 @@ class EntityExportForm extends EntityBaseForm {
     $form['source'] = [
       '#type' => 'select',
       '#title' => $this->t('Export Source'),
-      '#options' => $this->sourceUtility->sourcesAsOptions(),
+      '#options' => $this->sourceManager->sourcesAsOptions(),
       '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->larkSettings->defaultSource(),
       '#required' => TRUE,
       '#weight' => -101,
@@ -59,9 +59,13 @@ class EntityExportForm extends EntityBaseForm {
     $form['actions'] = [
       '#type' => 'actions',
       '#weight' => -100,
-      'submit' => [
+      'export' => [
         '#type' => 'submit',
         '#value' => $this->t('Export'),
+      ],
+      'download' => [
+        '#type' => 'submit',
+        '#value' => $this->t('Download'),
       ],
     ];
 
@@ -82,15 +86,30 @@ class EntityExportForm extends EntityBaseForm {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $action = str_replace('edit-', '', $form_state->getTriggeringElement()['#id']);
     $meta_option_overrides = $this->getSubmittedOverrides('export_form_values', $form_state);
 
-    $this->exporter->exportEntity(
-      $form_state->getValue('source'),
-      $form_state->getValue('entity_type_id'),
-      (int) $form_state->getValue('entity_id'),
-      TRUE,
-      $meta_option_overrides,
-    );
+    switch ($action) {
+      case 'export':
+        $this->exporter->exportEntity(
+          $form_state->getValue('source'),
+          $form_state->getValue('entity_type_id'),
+          (int) $form_state->getValue('entity_id'),
+          TRUE,
+          $meta_option_overrides,
+        );
+        return;
+
+      case 'download':
+        $response = $this->downloadController->downloadExportResponse(
+          $form_state->getValue('entity_type_id'),
+          (int) $form_state->getValue('entity_id'),
+          $meta_option_overrides,
+        );
+
+        $form_state->setResponse($response);
+        break;
+    }
   }
 
 }

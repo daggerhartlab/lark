@@ -1,6 +1,6 @@
 lark administer configuration:
   title: 'Administer Lark Configuration'
-  description: 'Perform exports and imports of Lark entities.'
+  description: 'Configure Lark for the export and import of entities.'
   restrict access: true
 
 lark export entity:

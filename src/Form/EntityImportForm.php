@@ -34,7 +34,7 @@ class EntityImportForm extends EntityBaseForm {
     // Get a list of sources where this entity may be exported.
     $import_source_options = [];
     /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->sourceUtility->loadByProperties([
+    $sources = $this->sourceManager->loadByProperties([
       'status' => 1,
     ]);
     foreach ($sources as $source) {

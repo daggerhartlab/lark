@@ -3,6 +3,7 @@
 namespace Drupal\lark\Service;
 
 use Drupal\lark\Entity\LarkSourceInterface;
+use Drupal\lark\Model\ExportCollection;
 
 /**
  * Import entities and their dependencies.
@@ -63,14 +64,14 @@ interface ImporterInterface {
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   The source plugin.
    *
-   * @return \Drupal\lark\Model\ExportArray[]
+   * @return \Drupal\lark\Model\ExportCollection
    *   Array of exports and dependencies found in this source directory.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function discoverSourceExports(LarkSourceInterface $source): array;
+  public function discoverSourceExports(LarkSourceInterface $source): ExportCollection;
 
   /**
    * Discover a single exportable and its dependencies in this source.
@@ -80,9 +81,9 @@ interface ImporterInterface {
    * @param string $uuid
    *   The UUID of the exportable to discover.
    *
-   * @return \Drupal\lark\Model\ExportArray[]
+   * @return \Drupal\lark\Model\ExportCollection
    *   Array of export and dependencies found in this source directory.
    */
-  public function discoverSourceExport(LarkSourceInterface $source, string $uuid): array;
+  public function discoverSourceExport(LarkSourceInterface $source, string $uuid): ExportCollection;
 
 }

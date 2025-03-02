@@ -8,7 +8,7 @@ use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Service\ImporterInterface;
+use Drupal\lark\Service\LarkSourceManager;
 
 /**
  * Used to determine the status of an exportable entity and prepare exports for
@@ -19,16 +19,13 @@ class StatusResolver {
   /**
    * StatusResolver constructor.
    *
-   * @param \Drupal\lark\Service\Utility\SourceResolver $sourceResolver
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
    *   The source resolver.
-   * @param \Drupal\lark\Service\ImporterInterface $importer
-   *   The importer.
    * @param \Drupal\lark\Model\LarkSettings $larkSettings
    *   The lark settings.
    */
   public function __construct(
-    protected SourceResolver $sourceResolver,
-    protected ImporterInterface $importer,
+    protected LarkSourceManager $sourceManager,
     protected LarkSettings $larkSettings,
   ) {}
 
@@ -47,7 +44,7 @@ class StatusResolver {
    */
   public function resolveStatus(ExportableInterface $exportable, ?ExportArray $sourceExportArray = NULL): ExportableStatus {
     $entity = $exportable->entity();
-    $source = $this->sourceResolver->resolveSource($exportable);
+    $source = $this->sourceManager->resolveSource($exportable);
 
     if (!$source) {
       return ExportableStatus::NotExported;
@@ -116,7 +113,7 @@ class StatusResolver {
    * @return array
    *   The processed export array.
    */
-  public function processExportArrayForComparison(array $array): array {
+  protected function processExportArrayForComparison(array $array): array {
     $this->deepUnsetAll($array, $this->larkSettings->ignoredComparisonKeysArray());
     return $array;
   }

@@ -32,10 +32,10 @@ class ExportablesTableBuilder {
    *   Module handler.
    */
   public function __construct(
-    protected ExportablesStatusBuilder   $statusBuilder,
-    protected MetaOptionManager          $metaOptionManager,
+    protected ExportablesStatusBuilder $statusBuilder,
+    protected MetaOptionManager $metaOptionManager,
     protected ExportableFactoryInterface $exportableFactory,
-    protected ModuleHandlerInterface     $moduleHandler,
+    protected ModuleHandlerInterface $moduleHandler,
   ) {}
 
   /**

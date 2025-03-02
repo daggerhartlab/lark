@@ -51,17 +51,6 @@ instances:
       requirements:
         _permission: 'lark import entity'
 
-  lark_download:
-    link:
-      label: 'Download'
-    route:
-      path: '/lark/download/__ENTITY_TYPE_ID__'
-      defaults:
-        _title: 'Lark Download'
-        _form: '\Drupal\lark\Form\EntityDownloadForm'
-      requirements:
-        _permission: 'lark export entity'
-
   lark_diff:
     link:
       label: 'Diff'

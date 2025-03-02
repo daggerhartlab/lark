@@ -124,6 +124,7 @@ class ExportablesStatusBuilder {
   public function getExportablesSummary(array $exportables): array {
     $summary = [
       '#theme' => 'table',
+      '#responsive' => FALSE,
       '#header' => [
         'heading' => [
           'colspan' => 2,

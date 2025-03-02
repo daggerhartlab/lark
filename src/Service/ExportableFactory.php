@@ -13,8 +13,7 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\Utility\EntityUtility;
-use Drupal\lark\Service\Utility\SourceResolver;
-use Drupal\lark\Service\Utility\SourceUtility;
+use Drupal\lark\Service\LarkSourceManager;
 use Drupal\lark\Service\Utility\StatusResolver;
 
 /**
@@ -51,9 +50,7 @@ class ExportableFactory implements ExportableFactoryInterface {
    *   Importer service.
    * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
    *   Meta option manager.
-   * @param \Drupal\lark\Service\Utility\SourceResolver $sourceResolver
-   *   Source resolver.
-   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
    *   Source utility service.
    * @param \Drupal\lark\Service\Utility\StatusResolver $statusResolver
    *   Status resolver.
@@ -65,8 +62,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     protected FileSystemInterface $fileSystem,
     protected ImporterInterface $importer,
     protected MetaOptionManager $metaOptionManager,
-    protected SourceResolver $sourceResolver,
-    protected SourceUtility $sourceUtility,
+    protected LarkSourceManager $sourceManager,
     protected StatusResolver $statusResolver,
   ) {}
 
@@ -88,7 +84,8 @@ class ExportableFactory implements ExportableFactoryInterface {
    * {@inheritdoc}
    */
   public function createFromEntityWithDependencies(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): array {
-    $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($entity_id);
+    $entity = $this->entityTypeManager->getStorage($entity_type_id)
+      ->load($entity_id);
     if (!$entity) {
       throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} not found.");
     }
@@ -135,10 +132,10 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->sourceUtility->load($source_id);
-    $exports = $this->importer->discoverSourceExport($source, $root_uuid);
+    $source = $this->sourceManager->load($source_id);
+    $collection = $this->importer->discoverSourceExport($source, $root_uuid);
     $exportables = [];
-    foreach ($exports as $uuid => $export) {
+    foreach ($collection as $uuid => $export) {
       $exportables[$uuid] = $this->createFromExportArray($export, $source);
     };
 
@@ -153,7 +150,8 @@ class ExportableFactory implements ExportableFactoryInterface {
     $entity = $this->entityRepository->loadEntityByUuid($export->entityTypeId(), $export->uuid());
 
     if (!$entity) {
-      $entity = $this->entityTypeManager->getStorage($export->entityTypeId())->create($export->fields('default'));
+      $entity = $this->entityTypeManager->getStorage($export->entityTypeId())
+        ->create($export->fields('default'));
     }
 
     $exportable = new Exportable($entity);
@@ -183,9 +181,10 @@ class ExportableFactory implements ExportableFactoryInterface {
         continue;
       }
 
-      $found = $this->entityTypeManager->getStorage($entity_type->id())->loadByProperties([
-        'uuid' => $uuid,
-      ]);
+      $found = $this->entityTypeManager->getStorage($entity_type->id())
+        ->loadByProperties([
+          'uuid' => $uuid,
+        ]);
       if ($found) {
         $found = reset($found);
         break;
@@ -198,7 +197,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     /** @var \Drupal\lark\Entity\LarkSourceInterface[] $sources */
-    $sources = $this->sourceUtility->loadByProperties([
+    $sources = $this->sourceManager->loadByProperties([
       'status' => 1,
     ]);
     foreach ($sources as $source) {
@@ -234,12 +233,12 @@ class ExportableFactory implements ExportableFactoryInterface {
 
     // If no source is set, attempt to find it amongst all sources.
     if (!$source) {
-      $source = $this->sourceResolver->resolveSource($exportable);
+      $source = $this->sourceManager->resolveSource($exportable);
     }
 
     // If no source found, use the default source.
     if (!$source) {
-      $source = $this->sourceResolver->defaultSource();
+      $source = $this->sourceManager->getDefaultSource();
     }
 
     // Set status once we have a source.

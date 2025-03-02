@@ -7,9 +7,10 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
+use Drupal\lark\Model\ExportCollection;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\Utility\SourceUtility;
+use Drupal\lark\Service\LarkSourceManager;
 
 /**
  * Build the render array for a Source's root-level Exports.
@@ -29,15 +30,15 @@ class SourceRootsViewBuilder {
    *   Exportable status builder.
    * @param \Drupal\lark\Service\ImporterInterface $importer
    *   The importer.
-   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
    *   Source utility.
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ExportableFactoryInterface $exportableFactory,
-    protected ExportablesStatusBuilder   $statusBuilder,
-    protected ImporterInterface          $importer,
-    protected SourceUtility              $sourceUtility,
+    protected ExportablesStatusBuilder $statusBuilder,
+    protected ImporterInterface $importer,
+    protected LarkSourceManager $sourceManager,
   ) {}
 
   /**
@@ -84,21 +85,15 @@ class SourceRootsViewBuilder {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function getRootDependencyExportables(LarkSourceInterface $source, string $root_uuid): array {
-    $dependency_exports = $this->importer->discoverSourceExport($source, $root_uuid);
-    $dependency_exports = array_reverse($dependency_exports);
-    $dependency_exportables = [];
-    foreach ($dependency_exports as $dependency_uuid => $dependency_export) {
-      if ($dependency_uuid === $root_uuid) {
-        continue;
-      }
+    $collection = $this->importer->discoverSourceExport($source, $root_uuid)
+      ->getWithDependencies($root_uuid)
+      ->reverse();
 
-      $dependency_exportable = $this->exportableFactory->createFromSource($source->id(), $dependency_uuid);
-      if ($dependency_exportable) {
-        $dependency_exportables[] = $dependency_exportable;
-      }
-    }
+    $collection->remove($root_uuid);
 
-    return $dependency_exportables;
+    return array_map(function($dependency_export) use ($source) {
+      return $this->exportableFactory->createFromExportArray($dependency_export, $source);
+    }, $collection->getArrayCopy());
   }
 
   /**
@@ -211,7 +206,7 @@ class SourceRootsViewBuilder {
       'operations' => [
         'data' => [
           '#type' => 'operations',
-          '#links' => $this->sourceUtility->getExportableOperations($source, $exportable),
+          '#links' => $this->sourceManager->getExportableOperations($source, $exportable),
         ],
       ],
     ];

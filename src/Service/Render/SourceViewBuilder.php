@@ -2,6 +2,7 @@
 
 namespace Drupal\lark\Service\Render;
 
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Link;
@@ -12,8 +13,7 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\Utility\ExportUtility;
-use Drupal\lark\Service\Utility\SourceUtility;
+use Drupal\lark\Service\LarkSourceManager;
 
 /**
  * Build the render array for a single Source.
@@ -29,8 +29,6 @@ class SourceViewBuilder {
    *   Entity type manager.
    * @param \Drupal\lark\Service\ImporterInterface $importer
    *   The importer.
-   * @param \Drupal\lark\Service\Utility\ExportUtility $exportUtility
-   *   Export utility.
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   Exportable factory.
    * @param \Drupal\lark\Service\Render\ExportablesStatusBuilder $statusBuilder
@@ -39,18 +37,18 @@ class SourceViewBuilder {
    *   Module handler.
    * @param \Drupal\lark\Service\Render\SourceRootsViewBuilder $rootsViewBuilder
    *   Source roots view builder.
-   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
    *   Source utility.
    */
   public function __construct(
+    protected EntityTypeBundleInfoInterface $bundleInfo,
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected ExportUtility $exportUtility,
     protected ExportableFactoryInterface $exportableFactory,
     protected ExportablesStatusBuilder $statusBuilder,
     protected ImporterInterface $importer,
     protected ModuleHandlerInterface $moduleHandler,
     protected SourceRootsViewBuilder $rootsViewBuilder,
-    protected SourceUtility $sourceUtility,
+    protected LarkSourceManager $sourceManager,
   ) {}
 
   /**
@@ -77,13 +75,27 @@ class SourceViewBuilder {
     ])->toRenderable();
     $download_link['#attributes']['class'][] = 'button';
 
+    $prune_link = Link::createFromRoute('Prune All', 'entity.lark_source.prune_confirm_form', [
+      'lark_source' => $source->id(),
+      'prune_target' => 'all',
+    ])->toRenderable();
+    $prune_link['#attributes']['class'][] = 'button';
+
     $build = [
-      'details' => $this->sourceDetails($source),
+      'summary' => [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['lark-flex-break'],
+        ],
+        'details' => $this->sourceDetails($source),
+        'status' => $this->sourceStatusSummary($source),
+        'contents' => $this->sourceContentSummary($source),
+      ],
       'actions' => [
         'import' => $import_link,
         'download' => $download_link,
+        'prune' => $prune_link,
       ],
-      'summary' => $this->sourceSummary($source),
       'table' => $this->table($source),
     ];
 
@@ -102,6 +114,7 @@ class SourceViewBuilder {
   public function sourceDetails(LarkSourceInterface $source): array {
     return [
       '#type' => 'table',
+      '#responsive' => FALSE,
       '#header' => [
         'heading' => [
           'colspan' => 2,
@@ -140,6 +153,7 @@ class SourceViewBuilder {
       '#attributes' => [
         'class' => ['lark-source-view-summary'],
       ],
+      '#attached' => ['library' => ['lark/admin']],
     ];
   }
 
@@ -152,14 +166,97 @@ class SourceViewBuilder {
    * @return array
    *   Summary array.
    */
-  public function sourceSummary(LarkSourceInterface $source): array {
-    $exports = $this->importer->discoverSourceExports($source);
+  public function sourceStatusSummary(LarkSourceInterface $source): array {
+    $collection = $this->importer->discoverSourceExports($source);
 
     $exportables = array_map(function($export) use ($source) {
       return $this->exportableFactory->createFromExportArray($export, $source);
-    }, $exports);
+    }, $collection->getArrayCopy());
 
     return $this->statusBuilder->getExportablesSummary($exportables);
+  }
+
+  /**
+   * Build the contents summary for a single Source.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *
+   * @return array
+   *   Summary table.
+   */
+  public function sourceContentSummary(LarkSourceInterface $source): array {
+    $collection = $this->importer->discoverSourceExports($source);
+    $counts = [];
+    $assets = 0;
+    $files = 0;
+    foreach ($collection->reverse() as $export) {
+      /** @var \Drupal\lark\Model\ExportArray $export */
+      $entity_type_id = $export->entityTypeId();
+      $bundle = $export->bundle();
+
+      if ($entity_type_id === 'file') {
+        $files += 1;
+        if ($export->fileAssetIsExported()) {
+          $assets += 1;
+        }
+        continue;
+      }
+
+      $counts[$entity_type_id][$bundle] = $counts[$entity_type_id][$bundle] ?? 0;
+      $counts[$entity_type_id][$bundle] += 1;
+    }
+
+    $rows = [];
+    foreach ($counts as $entity_type_id => $bundles) {
+      foreach ($bundles as $bundle => $count) {
+        $bundle_info = $this->bundleInfo->getBundleInfo($entity_type_id);
+        $rows[] = [
+          'bundle' => [
+            'header' => TRUE,
+            'data' => ($bundle == $entity_type_id) ?
+              $bundle_info[$bundle]['label'] :
+              "{$entity_type_id} : {$bundle_info[$bundle]['label']}",
+          ],
+          'count' => $count,
+        ];
+      }
+    }
+    $rows[] = [
+      'bundle' => [
+        'header' => TRUE,
+        'data' => $this->t("File"),
+      ],
+      'count' => $files,
+    ];
+    $rows[] = [
+      'bundle' => [
+        'header' => TRUE,
+        'data' => Markup::create("<em>File Assets</em>"),
+      ],
+      'count' => $assets,
+    ];
+
+    return [
+      '#type' => 'table',
+      '#responsive' => FALSE,
+      '#header' => [
+        'heading' => [
+          'colspan' => 2,
+          'class' => ['summary-heading'],
+          'data' => [
+            '#type' => 'html_tag',
+            '#tag' => 'span',
+            '#value' => $this->t('Contents Summary', [
+              '%label' => $source->label(),
+            ]),
+          ],
+        ],
+      ],
+      '#rows' => $rows,
+      '#attributes' => [
+        'class' => ['lark-source-view-summary'],
+      ],
+    ];
   }
 
   /**
@@ -181,9 +278,10 @@ class SourceViewBuilder {
       '#rows' => $this->rows($source),
       '#attributes' => ['class' => ['lark-source-table']],
       '#attached' => ['library' => ['lark/admin']],
+      '#empty' => $this->t('No exports found in this source.'),
       '#toggle_handle_open' => [
         '#theme' => 'image',
-        '#alt' => 'Toggle row',
+        '#alt' => $this->t('Toggle row'),
         '#attributes' => [
           'src' => Url::fromUri("base:/{$path}/assets/icons/folder-closed.png")->toString(),
           'width' => '35',
@@ -192,7 +290,7 @@ class SourceViewBuilder {
       ],
       '#toggle_handle_close' => [
         '#theme' => 'image',
-        '#alt' => 'Toggle row',
+        '#alt' => $this->t('Toggle row'),
         '#attributes' => [
           'src' => Url::fromUri("base:/{$path}/assets/icons/folder-open.png")->toString(),
           'width' => '35',
@@ -249,13 +347,11 @@ class SourceViewBuilder {
    *   Rows array.
    */
   protected function rows(LarkSourceInterface $source): array {
-    $exports = $this->importer->discoverSourceExports($source);
-    $exports = array_reverse($exports);
-    $source_root_exports = $this->exportUtility->getRootLevelExports($exports);
+    $collection = $this->importer->discoverSourceExports($source)->reverse();
 
-    // The root export is a top-level table row
+    // Root exports are top-level table rows.
     $rows = [];
-    foreach ($source_root_exports as $root_uuid => $root_export) {
+    foreach ($collection->getRootLevel() as $root_uuid => $root_export) {
       // Get the root_export's Exportable along with dependencies.
       $root_exportable = $this->exportableFactory->createFromSource($source->id(), $root_uuid);
       if (!$root_exportable) {
@@ -306,7 +402,7 @@ class SourceViewBuilder {
       'operations' => [
         'data' => [
           '#type' => 'operations',
-          '#links' => $this->sourceUtility->getExportableOperations($source, $exportable),
+          '#links' => $this->sourceManager->getExportableOperations($source, $exportable),
         ],
       ],
       'details' => [

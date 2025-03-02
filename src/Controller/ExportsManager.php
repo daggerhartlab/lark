@@ -9,7 +9,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\Render\SourceViewBuilder;
-use Drupal\lark\Service\Utility\SourceUtility;
+use Drupal\lark\Service\LarkSourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -25,13 +25,13 @@ class ExportsManager extends ControllerBase {
    * @param \Drupal\lark\Controller\DownloadController $downloadController
    * @param \Drupal\lark\Service\ImporterInterface $importer
    *   The entity importer service.
-   * @param \Drupal\lark\Service\Utility\SourceUtility $sourceUtility
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
    * @param \Drupal\lark\Service\Render\SourceViewBuilder $sourceViewBuilder
    */
   public function __construct(
     protected DownloadController $downloadController,
     protected ImporterInterface $importer,
-    protected SourceUtility $sourceUtility,
+    protected LarkSourceManager $sourceManager,
     protected SourceViewBuilder $sourceViewBuilder,
   ) {}
 
@@ -42,7 +42,7 @@ class ExportsManager extends ControllerBase {
     return new static(
       DownloadController::create($container),
       $container->get(ImporterInterface::class),
-      $container->get(SourceUtility::class),
+      $container->get(LarkSourceManager::class),
       $container->get(SourceViewBuilder::class),
     );
   }
@@ -95,7 +95,7 @@ class ExportsManager extends ControllerBase {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function viewSourceTitle(string $lark_source): string {
-    $source = $this->sourceUtility->load($lark_source);
+    $source = $this->sourceManager->load($lark_source);
 
     return strtr('Source: %label', [
       '%label' => $source->label(),
@@ -112,7 +112,7 @@ class ExportsManager extends ControllerBase {
    */
   public function viewSource(string $lark_source): array {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
-    $source = $this->sourceUtility->load($lark_source);
+    $source = $this->sourceManager->load($lark_source);
     return $this->sourceViewBuilder->view($source);
   }
 

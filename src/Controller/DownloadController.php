@@ -12,7 +12,7 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\MetaOptionManager;
-use Drupal\lark\Service\Utility\SourceResolver;
+use Drupal\lark\Service\LarkSourceManager;
 use Drupal\system\FileDownloadController;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -26,7 +26,7 @@ class DownloadController extends ControllerBase {
     protected ExportableFactoryInterface $exportableFactory,
     protected MetaOptionManager $metaOptionManager,
     protected ImporterInterface $importer,
-    protected SourceResolver $sourceResolver,
+    protected LarkSourceManager $sourceManager,
     EntityTypeManagerInterface $entityTypeManager,
   ) {
     $this->entityTypeManager = $entityTypeManager;
@@ -39,7 +39,7 @@ class DownloadController extends ControllerBase {
       $container->get(ExportableFactoryInterface::class),
       $container->get(MetaOptionManager::class),
       $container->get(ImporterInterface::class),
-      $container->get(SourceResolver::class),
+      $container->get(LarkSourceManager::class),
       $container->get(EntityTypeManagerInterface::class),
     );
   }
@@ -62,9 +62,7 @@ class DownloadController extends ControllerBase {
    */
   public function downloadExportResponse(string $entity_type_id, int|string $entity_id, array $meta_option_overrides = []): BinaryFileResponse {
     // Make a source that acts in place of a filesystem source.
-    /** @var \Drupal\lark\Entity\LarkSourceInterface $download_source */
-    $download_source = $this->sourceResolver->getTmpSource();
-
+    $download_source = $this->sourceManager->getTmpSource();
     $exportables = $this->exportableFactory->createFromEntityWithDependencies(
       $entity_type_id,
       (int) $entity_id,
@@ -96,27 +94,14 @@ class DownloadController extends ControllerBase {
    */
   public function downloadSourceResponse(LarkSourceInterface $source, array $meta_option_overrides = []): BinaryFileResponse {
     // Make a source that acts in place of a filesystem source.
-    /** @var \Drupal\lark\Entity\LarkSourceInterface $download_source */
-    $download_source = $this->sourceResolver->getTmpSource();
-
+    $download_source = $this->sourceManager->getTmpSource();
     $archive = $this->newArchive($download_source->directoryProcessed() . '/lark-source.tar.gz');
 
     // Load the source's exports as a list of uuids to download.
     $exports = $this->importer->discoverSourceExports($source);
 
-    // If we export root level items, we'll get their dependencies.
-    $root_level_exports = array_filter($exports, function ($export, $uuid) use ($exports) {
-      foreach ($exports as $other_export) {
-        if ($other_export->hasDependency($uuid)) {
-          return FALSE;
-        }
-      }
-
-      return TRUE;
-    }, ARRAY_FILTER_USE_BOTH);
-
     // Loop through each root-level export and add its entity to the archive.
-    foreach ($root_level_exports as $uuid => $export) {
+    foreach ($exports->getRootLevel() as $uuid => $export) {
       // Get the entity's id by its uuid.
       $entity_type_id = $export->entityTypeId();
       $entity = $this->entityTypeManager->getStorage($entity_type_id)->loadByProperties([

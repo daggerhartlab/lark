@@ -78,6 +78,18 @@ entity.lark_source.canonical:
       lark_source:
         type: machine_name
 
+entity.lark_source.prune_confirm_form:
+  path: '/admin/lark/source/{lark_source}/prune/{prune_target}/confirm'
+  defaults:
+    _form: '\Drupal\lark\Form\PruneConfirmForm'
+    _title: 'Confirm Deletion'
+  requirements:
+    _permission: 'lark administer configuration'
+  options:
+    parameters:
+      lark_source:
+        type: entity:lark_source
+
 entity.lark_source.add_form:
   path: '/admin/lark/source/add'
   defaults:
