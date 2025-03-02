@@ -23,10 +23,3 @@ entity.lark_source.canonical:
   route_name: entity.lark_source.canonical
   title: 'Source'
   description: 'View'
-
-# Lark source entity "Prune" menu item
-entity.lark_source.prune:
-  parent: entity.lark_source.edit_form
-  route_name: entity.lark_source.prune
-  title: 'Prune'
-  description: 'Prune source exports'
