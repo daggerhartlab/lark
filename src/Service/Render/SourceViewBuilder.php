@@ -75,6 +75,12 @@ class SourceViewBuilder {
     ])->toRenderable();
     $download_link['#attributes']['class'][] = 'button';
 
+    $prune_link = Link::createFromRoute('Prune All', 'entity.lark_source.prune_confirm_form', [
+      'lark_source' => $source->id(),
+      'prune_target' => 'all',
+    ])->toRenderable();
+    $prune_link['#attributes']['class'][] = 'button';
+
     $build = [
       'summary' => [
         '#type' => 'container',
@@ -88,6 +94,7 @@ class SourceViewBuilder {
       'actions' => [
         'import' => $import_link,
         'download' => $download_link,
+        'prune' => $prune_link,
       ],
       'table' => $this->table($source),
     ];
@@ -271,9 +278,10 @@ class SourceViewBuilder {
       '#rows' => $this->rows($source),
       '#attributes' => ['class' => ['lark-source-table']],
       '#attached' => ['library' => ['lark/admin']],
+      '#empty' => $this->t('No exports found in this source.'),
       '#toggle_handle_open' => [
         '#theme' => 'image',
-        '#alt' => 'Toggle row',
+        '#alt' => $this->t('Toggle row'),
         '#attributes' => [
           'src' => Url::fromUri("base:/{$path}/assets/icons/folder-closed.png")->toString(),
           'width' => '35',
@@ -282,7 +290,7 @@ class SourceViewBuilder {
       ],
       '#toggle_handle_close' => [
         '#theme' => 'image',
-        '#alt' => 'Toggle row',
+        '#alt' => $this->t('Toggle row'),
         '#attributes' => [
           'src' => Url::fromUri("base:/{$path}/assets/icons/folder-open.png")->toString(),
           'width' => '35',

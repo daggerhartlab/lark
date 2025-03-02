@@ -81,10 +81,11 @@ class ExportFileManager {
    * @param string $uuid
    *   The UUID of the export to remove.
    */
-  public function removeExportWithDependencies(string $directory, string $uuid) {
+  public function removeExportWithDependencies(string $directory, string $uuid): int {
+    $removed = 0;
     $collection = $this->discoverExports($directory);
     if (!$collection->has($uuid)) {
-      return;
+      return $removed;
     }
 
     $removal_candidates = $collection->getWithDependencies($uuid);
@@ -108,16 +109,20 @@ class ExportFileManager {
     // If the item we want to remove is not in the "safe" array, we can't remove
     // it, and don't want to remove its dependencies either.
     if (!$removal_safe->has($uuid)) {
-      return;
+      return $removed;
     }
 
     foreach ($removal_safe as $export) {
       \unlink($export->path());
+      $removed += 1;
 
       if ($export->isFile() && $export->fileAssetIsExported(\dirname($export->path()))) {
         \unlink(\dirname($export->path()) . DIRECTORY_SEPARATOR . $export->fileAssetFilename());
+        $removed += 1;
       }
     }
+
+    return $removed;
   }
 
 }
