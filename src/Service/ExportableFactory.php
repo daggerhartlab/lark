@@ -163,7 +163,7 @@ class ExportableFactory implements ExportableFactoryInterface {
       ->setOptions($export->options());
 
     // Set status in comparison to the sourceExportArray.
-    $exportable->setStatus($this->statusResolver->resolveStatus($exportable, $export));
+    $exportable->setStatus($this->statusResolver->resolveStatus($exportable));
     return $exportable;
   }
 

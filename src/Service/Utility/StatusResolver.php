@@ -42,7 +42,7 @@ class StatusResolver {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function resolveStatus(ExportableInterface $exportable, ?ExportArray $sourceExportArray = NULL): ExportableStatus {
+  public function resolveStatus(ExportableInterface $exportable): ExportableStatus {
     $entity = $exportable->entity();
     $source = $this->sourceManager->resolveSource($exportable);
 
@@ -60,16 +60,12 @@ class StatusResolver {
       return ExportableStatus::NotImported;
     }
 
-    // If we don't have an export array but the export has a source, then we can
-    // load it for comparison.
-    if (!$sourceExportArray && $exportable->getSourceExportArray()) {
-      $sourceExportArray = $exportable->getSourceExportArray();
+    $sourceExportArray = $exportable->getSourceExportArray();
 
-      // The database doesn't store our meta options, and during a diff they
-      // wouldn't have changed.
-      if ($sourceExportArray->options()) {
-        $exportable->setOptions($sourceExportArray->options());
-      }
+    // The database doesn't store our meta options, and during a diff they
+    // wouldn't have changed.
+    if ($sourceExportArray->options()) {
+      $exportable->setOptions($sourceExportArray->options());
     }
 
     $left = $sourceExportArray->cleanArray();
