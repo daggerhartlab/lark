@@ -8,8 +8,9 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\StatusResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class DiffViewer extends ControllerBase {
+class EntityController extends ControllerBase {
 
   public function __construct(
     protected ExportableFactoryInterface $exportableFactory,
@@ -29,6 +30,33 @@ class DiffViewer extends ControllerBase {
     );
   }
 
+
+  /**
+   * Negotiate which  tab the user should be on based on permissions.
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   Redirect.
+   */
+  public function larkLoad(RouteMatchInterface $routeMatch): RedirectResponse {
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    $entity_type_id = $routeMatch->getRouteObject()->getOption('_lark_entity_type_id');
+    $entity = $routeMatch->getParameter($entity_type_id);
+
+    // Remove destination query parameter otherwise user will be redirected to
+    // the destination instead of the entity page.
+    \Drupal::request()->query->remove('destination');
+
+    if ($this->currentUser()->hasPermission('lark export entity')) {
+      return new RedirectResponse($entity->toUrl('lark-export')->toString());
+    }
+
+    if ($this->currentUser()->hasPermission('lark import entity')) {
+      return new RedirectResponse($entity->toUrl('lark-import')->toString());
+    }
+
+    return new RedirectResponse($entity->toUrl()->toString());
+  }
+
   /**
    * Display diff between exported and current entity.
    *
@@ -37,7 +65,7 @@ class DiffViewer extends ControllerBase {
    * @return array
    *   Render array.
    */
-  public function build(RouteMatchInterface $routeMatch): array {
+  public function viewDiff(RouteMatchInterface $routeMatch): array {
     $entity_type_id = $routeMatch->getRouteObject()->getOption('_lark_entity_type_id');
     $entity = $routeMatch->getParameter($entity_type_id);
     $exportable = $this->exportableFactory->createFromEntity($entity);

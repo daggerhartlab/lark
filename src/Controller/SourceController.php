@@ -127,30 +127,4 @@ class SourceController extends ControllerBase {
     return $this->downloadController->downloadSourceResponse($lark_source);
   }
 
-  /**
-   * Negotiate which  tab the user should be on based on permissions.
-   *
-   * @return \Symfony\Component\HttpFoundation\RedirectResponse
-   *   Redirect.
-   */
-  public function larkLoad(RouteMatchInterface $routeMatch): RedirectResponse {
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
-    $entity_type_id = $routeMatch->getRouteObject()->getOption('_lark_entity_type_id');
-    $entity = $routeMatch->getParameter($entity_type_id);
-
-    // Remove destination query parameter otherwise user will be redirected to
-    // the destination instead of the entity page.
-    \Drupal::request()->query->remove('destination');
-
-    if ($this->currentUser()->hasPermission('lark export entity')) {
-      return new RedirectResponse($entity->toUrl('lark-export')->toString());
-    }
-
-    if ($this->currentUser()->hasPermission('lark import entity')) {
-      return new RedirectResponse($entity->toUrl('lark-import')->toString());
-    }
-
-    return new RedirectResponse($entity->toUrl()->toString());
-  }
-
 }

@@ -24,7 +24,7 @@ instances:
       path: '/lark/__ENTITY_TYPE_ID__'
       defaults:
         _title: 'Lark'
-        _controller: '\Drupal\lark\Controller\SourceController::larkLoad'
+        _controller: '\Drupal\lark\Controller\EntityController::larkLoad'
       requirements:
         _permission: 'lark export entity,lark import entity'
 
@@ -58,6 +58,6 @@ instances:
       path: '/lark/diff/__ENTITY_TYPE_ID__'
       defaults:
         _title: 'Lark Diff'
-        _controller: '\Drupal\lark\Controller\DiffViewer::build'
+        _controller: '\Drupal\lark\Controller\EntityController::viewDiff'
       requirements:
         _permission: 'lark export entity'
