@@ -32,6 +32,12 @@ entity.lark_source.edit_form:
   title: 'Edit'
   weight: 1
 
+entity.lark_source.upload_form:
+  route_name: entity.lark_source.upload_form
+  base_route: entity.lark_source.edit_form
+  title: 'Upload'
+  weight: 2
+
 entity.lark_source.delete_form:
   route_name: entity.lark_source.delete_form
   base_route: entity.lark_source.edit_form

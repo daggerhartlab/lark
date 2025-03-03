@@ -8,7 +8,7 @@ use Drupal\lark\Service\ExportFileManager;
 use Drupal\lark\Service\ImporterInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class PruneConfirmForm extends ConfirmFormBase {
+class LarkSourcePruneConfirmForm extends ConfirmFormBase {
 
   public function __construct(
     private ImporterInterface $importer,

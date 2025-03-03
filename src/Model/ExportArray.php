@@ -77,7 +77,7 @@ class ExportArray extends \ArrayObject {
     $export
       ->setEntityTypeId($entity->getEntityTypeId())
       ->setBundle($entity->bundle())
-      ->setEntityId($entity->id())
+      ->setEntityId($entity->id() ?? 0)
       ->setLabel($entity->label())
       // ->setPath('') // Can't know the path yet.
       ->setUuid($entity->uuid())
