@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 /**
  * Entity exports controller.
  */
-class ExportsManager extends ControllerBase {
+class SourceController extends ControllerBase {
 
   /**
    * The controller constructor.
@@ -134,9 +134,13 @@ class ExportsManager extends ControllerBase {
    *   Redirect.
    */
   public function larkLoad(RouteMatchInterface $routeMatch): RedirectResponse {
-    $entity_type_id = $routeMatch->getRouteObject()->getOption('_lark_entity_type_id');
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
+    $entity_type_id = $routeMatch->getRouteObject()->getOption('_lark_entity_type_id');
     $entity = $routeMatch->getParameter($entity_type_id);
+
+    // Remove destination query parameter otherwise user will be redirected to
+    // the destination instead of the entity page.
+    \Drupal::request()->query->remove('destination');
 
     if ($this->currentUser()->hasPermission('lark export entity')) {
       return new RedirectResponse($entity->toUrl('lark-export')->toString());

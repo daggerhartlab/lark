@@ -18,7 +18,7 @@ lark.action_import_source:
   path: '/admin/lark/action/import-source/{lark_source}'
   defaults:
     _title: 'Import Source'
-    _controller: '\Drupal\lark\Controller\ExportsManager::importSource'
+    _controller: '\Drupal\lark\Controller\SourceController::importSource'
   options:
     _admin_route: TRUE
     parameters:
@@ -31,7 +31,7 @@ lark.action_import_source_entity:
   path: '/admin/lark/action/import-source-entity/{lark_source}/{uuid}'
   defaults:
     _title: 'Import Source Entity'
-    _controller: '\Drupal\lark\Controller\ExportsManager::importEntity'
+    _controller: '\Drupal\lark\Controller\SourceController::importEntity'
   options:
     _admin_route: TRUE
     parameters:
@@ -46,7 +46,7 @@ lark.action_download_source:
   path: '/admin/lark/action/download-source/{lark_source}'
   defaults:
     _title: 'Download Source Archive'
-    _controller: '\Drupal\lark\Controller\ExportsManager::downloadSource'
+    _controller: '\Drupal\lark\Controller\SourceController::downloadSource'
   options:
     _admin_route: TRUE
     parameters:
@@ -68,9 +68,9 @@ entity.lark_source.collection:
 entity.lark_source.canonical:
   path: '/admin/lark/source/{lark_source}'
   defaults:
-    _controller: '\Drupal\lark\Controller\ExportsManager::viewSource'
+    _controller: '\Drupal\lark\Controller\SourceController::viewSource'
     _title: 'View Source'
-    _title_callback: '\Drupal\lark\Controller\ExportsManager::viewSourceTitle'
+    _title_callback: '\Drupal\lark\Controller\SourceController::viewSourceTitle'
   requirements:
     _permission: 'lark administer configuration'
   options:

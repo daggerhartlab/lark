@@ -24,7 +24,7 @@ instances:
       path: '/lark/__ENTITY_TYPE_ID__'
       defaults:
         _title: 'Lark'
-        _controller: '\Drupal\lark\Controller\ExportsManager::larkLoad'
+        _controller: '\Drupal\lark\Controller\SourceController::larkLoad'
       requirements:
         _permission: 'lark export entity,lark import entity'
 
