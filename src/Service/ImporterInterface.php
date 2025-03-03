@@ -59,6 +59,18 @@ interface ImporterInterface {
   public function importSource(string $source_id, bool $show_messages = TRUE): void;
 
   /**
+   * Import an archive of exported entities.
+   *
+   * @param string $path_to_archive
+   *   Path to the archive.
+   * @param bool $show_messages
+   *   Whether to show messages.
+   *
+   * @return void
+   */
+  public function importArchive(string $path_to_archive, bool $show_messages = TRUE): void;
+
+  /**
    * Discover this source's exportables and dependencies.
    *
    * @param \Drupal\lark\Entity\LarkSourceInterface $source

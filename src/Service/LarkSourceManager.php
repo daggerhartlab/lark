@@ -159,6 +159,7 @@ class LarkSourceManager {
     $source = $this->create([
       'id' => '_tmp',
       'label' => 'Temporary Storage',
+      'description' => 'This is used internal for some operations. It gets created as needed, and can be deleted if found in the list of Lark Sources.',
       'directory' => $this->fileSystem->getTempDirectory(),
       'status' => 0,
     ]);

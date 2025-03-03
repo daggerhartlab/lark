@@ -39,6 +39,16 @@ interface LarkSourceInterface extends ConfigEntityInterface {
   public function directory(): string;
 
   /**
+   * Set the directory where the source is located.
+   *
+   * @param string $directory
+   *   The directory where the source is located.
+   *
+   * @return void
+   */
+  public function setDirectory(string $directory): void;
+
+  /**
    * Returns the directory where the source is located.
    *
    * @param bool $absolute

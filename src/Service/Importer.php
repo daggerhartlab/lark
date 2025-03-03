@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Service;
 
+use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileExists;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Installer\InstallerKernel;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
@@ -16,7 +19,6 @@ use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportCollection;
 use Drupal\lark\Routing\EntityTypeInfo;
-use Drupal\lark\Service\LarkSourceManager;
 
 /**
  * Import entities and their dependencies.
@@ -33,26 +35,33 @@ class Importer implements ImporterInterface {
   /**
    * LarkEntityImporter constructor.
    *
-   * @param \Drupal\lark\Service\EntityUpdaterInterface $upserter
-   *   Service for upserting entities.
-   * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
-   *   Meta options manager.
-   * @param \Drupal\lark\Service\FieldTypeHandlerManagerInterface $fieldTypeManager
-   *   The lark field type handler plugin manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
+   * @param \Drupal\lark\Service\EntityUpdaterInterface $upserter
+   *   Service for upserting entities.
+   * @param \Drupal\lark\Service\ExportFileManager $exportFileManager
+   *   Service for discovering exports.
+   * @param \Drupal\lark\Service\FieldTypeHandlerManagerInterface $fieldTypeManager
+   *   The lark field type handler plugin manager.
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   The file system service.
    * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager service.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger service.
+   * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
+   *   Meta options manager.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
+   *   The source manager service.
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected EntityUpdaterInterface $upserter,
     protected ExportFileManager $exportFileManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeManager,
+    protected FileSystemInterface $fileSystem,
     protected LanguageManagerInterface $languageManager,
     protected LoggerChannelInterface $logger,
     protected MetaOptionManager $metaOptionManager,
@@ -92,6 +101,37 @@ class Importer implements ImporterInterface {
       }
       $this->logger->error($exception->getMessage());
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function importArchive(string $path_to_archive, bool $show_messages = TRUE): void {
+    // Create a temporary source to extract the archive to.
+    $source = $this->sourceManager->getTmpSource();
+    $source->setDirectory($source->directory() . DIRECTORY_SEPARATOR . 'lark-archive');
+    $source->save();
+
+    // Move the archive to the temporary source directory and extract it.
+    try {
+      $directory = $source->directoryProcessed();
+      $this->fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+      $this->fileSystem->copy($path_to_archive, $directory, FileExists::Replace);
+      $path_to_archive = $directory . DIRECTORY_SEPARATOR . basename($path_to_archive);
+      $archive = new ArchiveTar($path_to_archive);
+      $archive->extract($directory);
+      $this->importSource($source->id(), $show_messages);
+    }
+    catch (\Exception $exception) {
+      if ($show_messages) {
+        $this->messenger->addError($exception->getMessage());
+      }
+      $this->logger->error($exception->getMessage());
+    }
+
+    // Remove our temporary source.
+    $this->fileSystem->deleteRecursive($source->directoryProcessed());
+    $source->delete();
   }
 
   /**

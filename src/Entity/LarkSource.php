@@ -112,6 +112,13 @@ final class LarkSource extends ConfigEntityBase implements LarkSourceInterface {
   /**
    * {@inheritdoc}
    */
+  public function setDirectory(string $directory): void {
+    $this->directory = $directory;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function directoryProcessed(bool $absolute = TRUE): string {
     $directory = $this->directory();
     $directory = preg_replace_callback('/\[\w+]/', function(array $matches) {

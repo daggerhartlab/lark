@@ -64,7 +64,7 @@ entity.lark_source.collection:
   requirements:
     _permission: 'lark administer configuration'
 
-# Provide a canonical route so we can easily view the source.
+# Provide a canonical route so that we can easily view the source.
 entity.lark_source.canonical:
   path: '/admin/lark/source/{lark_source}'
   defaults:
@@ -77,18 +77,6 @@ entity.lark_source.canonical:
     parameters:
       lark_source:
         type: machine_name
-
-entity.lark_source.prune_confirm_form:
-  path: '/admin/lark/source/{lark_source}/prune/{prune_target}/confirm'
-  defaults:
-    _form: '\Drupal\lark\Form\PruneConfirmForm'
-    _title: 'Confirm Deletion'
-  requirements:
-    _permission: 'lark administer configuration'
-  options:
-    parameters:
-      lark_source:
-        type: entity:lark_source
 
 entity.lark_source.add_form:
   path: '/admin/lark/source/add'
@@ -113,3 +101,27 @@ entity.lark_source.delete_form:
     _title: 'Delete a source'
   requirements:
     _permission: 'lark administer configuration'
+
+entity.lark_source.prune_confirm_form:
+  path: '/admin/lark/source/{lark_source}/prune/{prune_target}/confirm'
+  defaults:
+    _form: '\Drupal\lark\Form\PruneConfirmForm'
+    _title: 'Confirm Deletion'
+  requirements:
+    _permission: 'lark administer configuration'
+  options:
+    parameters:
+      lark_source:
+        type: entity:lark_source
+
+entity.lark_source.upload_form:
+  path: '/admin/lark/source/{lark_source}/upload'
+  defaults:
+    _form: '\Drupal\lark\Form\LarkSourceUploadForm'
+    _title: 'Upload Archive'
+  requirements:
+    _permission: 'lark administer configuration'
+  options:
+    parameters:
+      lark_source:
+        type: entity:lark_source
