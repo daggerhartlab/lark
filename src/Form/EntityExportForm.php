@@ -40,14 +40,7 @@ class EntityExportForm extends EntityBaseForm {
     $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
-    $form['source'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Export Source'),
-      '#options' => $this->sourceManager->sourcesAsOptions(),
-      '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->larkSettings->defaultSource(),
-      '#required' => TRUE,
-      '#weight' => -101,
-    ];
+    $form['#attributes']['class'][] = 'lark-export-form';
     $form['entity_type_id'] = [
       '#type' => 'value',
       '#value' => $entity_type_id,
@@ -56,16 +49,29 @@ class EntityExportForm extends EntityBaseForm {
       '#type' => 'value',
       '#value' => $entity->id(),
     ];
-    $form['actions'] = [
-      '#type' => 'actions',
-      '#weight' => -100,
-      'export' => [
-        '#type' => 'submit',
-        '#value' => $this->t('Export'),
+    $form['flex'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['lark-flex-break', 'export-to-source-wrapper'],
       ],
-      'download' => [
-        '#type' => 'submit',
-        '#value' => $this->t('Download'),
+      '#weight' => -101,
+      'source' => [
+        '#type' => 'select',
+        '#title' => $this->t('Export Source'),
+        '#options' => $this->sourceManager->sourcesAsOptions(),
+        '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->larkSettings->defaultSource(),
+        '#required' => TRUE,
+      ],
+      'actions' => [
+        '#type' => 'container',
+        'export' => [
+          '#type' => 'submit',
+          '#value' => $this->t('Export to Source'),
+        ],
+        'download' => [
+          '#type' => 'submit',
+          '#value' => $this->t('Download'),
+        ],
       ],
     ];
 

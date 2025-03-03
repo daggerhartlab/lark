@@ -51,25 +51,30 @@ class EntityImportForm extends EntityBaseForm {
     $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity->id());
     $exportable = $exportables[$entity->uuid()];
 
-    $form['source_id'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Import Source'),
-      '#options' => $import_source_options,
-      '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->larkSettings->defaultSource(),
-      '#required' => TRUE,
-      '#weight' => -101,
-    ];
     $form['entity_uuid'] = [
       '#type' => 'value',
       '#value' => $entity->uuid(),
     ];
-
-    $form['actions'] = [
-      '#type' => 'actions',
-      '#weight' => -100,
-      'submit' => [
-        '#type' => 'submit',
-        '#value' => $this->t('Import with Dependencies'),
+    $form['flex'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['lark-flex-break', 'export-to-source-wrapper'],
+      ],
+      '#weight' => -101,
+      'source' => [
+        '#type' => 'select',
+        '#title' => $this->t('Import Source'),
+        '#options' => $import_source_options,
+        '#default_value' => $exportable->getSource() ? $exportable->getSource()->id() : $this->larkSettings->defaultSource(),
+        '#required' => TRUE,
+        '#weight' => -101,
+      ],
+      'actions' => [
+        '#type' => 'container',
+        'import' => [
+          '#type' => 'submit',
+          '#value' => $this->t('Import from Source'),
+        ],
       ],
     ];
 

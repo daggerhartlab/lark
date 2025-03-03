@@ -7,29 +7,9 @@
   }
 }
 
-.lark-exports-table th.status,
-.lark-exports-table td.status {
-  max-width: 80px;
-  font-size: small;
-  text-align: center;
-}
-
-.lark-exports-row {}
-.lark-exports-row--in-sync {}
-.lark-exports-row--not-imported {
-  color: dimgray;
-}
-.lark-exports-row--out-of-sync {
-  background-color: #fffdf8;
-  color: #8a6200;
-  border-color: #8a6200;
-}
-.lark-exports-row--not-exported {
-  background-color: #fff6f6;
-  color: darkred;
-  border-color: darkred;
-}
-
+/*
+ * Asset container.
+ */
 .lark-asset-details-container {
   margin: 1em;
   padding: 1em;
@@ -41,12 +21,18 @@ img.lark-asset-thumbnail-image {
   height: auto;
 }
 
+/*
+ * Diff viewer.
+ */
 table.lark-diff-table td {
   height: unset;
   font-family: monospace;
   white-space: pre;
 }
 
+/*
+ * YAML format.
+ */
 .lark-yaml-export-pre {
   font-size: 0.9em;
   white-space: pre;
@@ -130,4 +116,17 @@ td.directory {
 }
 th.summary-heading {
   background: #eeeeee;
+}
+
+.export-to-source-wrapper {
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.export-to-source-wrapper *,
+.export-to-source-wrapper .form-item,
+.export-to-source-wrapper .button {
+  margin-block: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
