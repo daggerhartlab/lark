@@ -105,7 +105,7 @@ entity.lark_source.delete_form:
 entity.lark_source.prune_confirm_form:
   path: '/admin/lark/source/{lark_source}/prune/{prune_target}/confirm'
   defaults:
-    _form: '\Drupal\lark\Form\PruneConfirmForm'
+    _form: '\Drupal\lark\Form\LarkSourcePruneConfirmForm'
     _title: 'Confirm Deletion'
   requirements:
     _permission: 'lark administer configuration'
