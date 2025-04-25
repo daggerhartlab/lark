@@ -118,11 +118,12 @@ class LarkSourcePruneConfirmForm extends ConfirmFormBase {
    * @inheritDoc
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->getRequest()->attributes->get('lark_source');
     $prune_items = $form_state->getValue('items') ?? [];
     $removed = 0;
     foreach ($prune_items as $uuid) {
-      $removed += $this->exportFileManager->removeExportWithDependencies($source->directory(), $uuid);
+      $removed += $this->exportFileManager->removeExportWithDependencies($source->directoryProcessed(), $uuid);
     }
 
     $this->messenger()->addStatus($this->t('Removed @count exports.', [
