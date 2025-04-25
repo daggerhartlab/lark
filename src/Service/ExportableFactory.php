@@ -95,7 +95,8 @@ class ExportableFactory implements ExportableFactoryInterface {
     }
 
     // Don't return cache if we're overriding meta_options.
-    if (array_key_exists($entity->uuid(), $this->collectionsCache) && (empty($source) || empty($meta_option_overrides))) {
+    $has_meta_overrides = !empty($meta_option_overrides);
+    if (array_key_exists($entity->uuid(), $this->collectionsCache) && !$has_meta_overrides && empty($source)) {
       return $this->collectionsCache[$entity->uuid()];
     }
 
