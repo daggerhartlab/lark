@@ -95,7 +95,7 @@ class EntityImportForm extends EntityBaseForm {
    * @inheritDoc
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $source_id = $form_state->getValue('source_id');
+    $source_id = $form_state->getValue('source');
     $uuid = $form_state->getValue('entity_uuid');
     $this->importer->importSourceExport($source_id, $uuid);
   }
