@@ -54,6 +54,10 @@ class EntityUtility {
       return [];
     }
 
+    if (array_key_exists($entity->uuid(), $found) && !is_null($found[$entity->uuid()])) {
+      return $found;
+    }
+
     $entity->getFieldDefinitions();
 
     foreach ($entity->getFields() as $field) {
@@ -68,6 +72,7 @@ class EntityUtility {
             continue;
           }
 
+          $found[$referenced_entity->uuid()] = NULL;
           $found += $this->getEntityUuidEntityTypePairs($referenced_entity, $found);
         }
       }
