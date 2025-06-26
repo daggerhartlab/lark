@@ -124,10 +124,26 @@ class EntityUpdater implements EntityUpdaterInterface {
    */
   public function setFieldValues(ContentEntityInterface $entity, string $field_name, array $values): void {
     $property_names = $entity->getFieldDefinition($field_name)->getFieldStorageDefinition()->getPropertyNames();
+    $langcode_fields = [
+      $entity->getEntityType()->getKey('langcode'),
+      $entity->getEntityType()->getKey('default_langcode'),
+    ];
+
+    // In case there are fewer new values than already set on the field, we need
+    // to clear existing field values first.
+    if (
+      !$entity->isNew() &&
+      !$entity->get($field_name)->isEmpty() &&
+      !in_array($field_name, $langcode_fields)
+    ) {
+      $entity->set($field_name, []);
+    }
+
     foreach ($values as $delta => $item_value) {
       if (!$entity->get($field_name)->get($delta)) {
         $entity->get($field_name)->appendItem();
       }
+
       /** @var \Drupal\Core\Field\FieldItemInterface $item */
       $item = $entity->get($field_name)->get($delta);
 
