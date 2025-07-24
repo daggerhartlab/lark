@@ -94,7 +94,7 @@ class ExportableFactory implements ExportableFactoryInterface {
       throw new LarkEntityNotFoundException("Entity of type {$entity_type_id} and ID {$entity_id} is not a content entity.");
     }
 
-    // Don't return cache if we're overriding meta_options.
+    // Only return cache if we're not overriding any export options.
     $has_meta_overrides = !empty($meta_option_overrides);
     if (array_key_exists($entity->uuid(), $this->collectionsCache) && !$has_meta_overrides && empty($source)) {
       return $this->collectionsCache[$entity->uuid()];

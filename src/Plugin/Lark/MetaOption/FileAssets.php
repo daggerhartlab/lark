@@ -152,8 +152,6 @@ final class FileAssets extends MetaOptionBase {
    */
   public function preExportDownload(ArchiveTar $archive, ExportableInterface $exportable): void {
     // If it's a file, export the file alongside the yaml.
-    /** @var FileInterface $file */
-    $file = $exportable->entity();
     // Default to settings. Then, if an export override exists let it make the
     // decision about exporting.
     $should_export = $this->larkSettings->shouldExportAssets();
@@ -174,9 +172,6 @@ final class FileAssets extends MetaOptionBase {
    */
   public function preExportWrite(ExportableInterface $exportable): void {
     // If it's a file, export the file alongside the yaml.
-    /** @var FileInterface $entity */
-    $entity = $exportable->entity();
-
     // Default to settings. Then, if an export override exists let it make the
     // decision about exporting.
     $should_export = $this->larkSettings->shouldExportAssets();
