@@ -60,20 +60,23 @@ class EntityUtility {
 
     $entity->getFieldDefinitions();
 
-    foreach ($entity->getFields() as $field) {
-      if ($field instanceof EntityReferenceFieldItemListInterface) {
-        foreach ($field->referencedEntities() as $referenced_entity) {
-          if (!$referenced_entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
-            continue;
-          }
+    foreach ($entity->getTranslationLanguages() as $language) {
+      $entity = $entity->getTranslation($language->getId());
+      foreach ($entity->getFields() as $field) {
+        if ($field instanceof EntityReferenceFieldItemListInterface) {
+          foreach ($field->referencedEntities() as $referenced_entity) {
+            if (!$referenced_entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
+              continue;
+            }
 
-          // If the referenced entity is already processing, do nothing.
-          if (array_key_exists($referenced_entity->uuid(), $found)) {
-            continue;
-          }
+            // If the referenced entity is already processing, do nothing.
+            if (array_key_exists($referenced_entity->uuid(), $found)) {
+              continue;
+            }
 
-          $found[$referenced_entity->uuid()] = NULL;
-          $found += $this->getEntityUuidEntityTypePairs($referenced_entity, $found);
+            $found[$referenced_entity->uuid()] = NULL;
+            $found += $this->getEntityUuidEntityTypePairs($referenced_entity, $found);
+          }
         }
       }
     }
