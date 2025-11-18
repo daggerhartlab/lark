@@ -176,7 +176,7 @@ final class FileAssets extends MetaOptionBase {
     // decision about exporting.
     $should_export = $this->larkSettings->shouldExportAssets();
     $export_override = $exportable->getOption($this->id())['should_export'] ?? NULL;
-    $export_override_exists = !is_null($exportable);
+    $export_override_exists = !is_null($export_override);
     if ($export_override_exists) {
       $should_export = (bool) $export_override;
     }
