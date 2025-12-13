@@ -67,7 +67,7 @@ class ExportArray extends \ArrayObject {
    * @return static
    */
   public static function createFromEntity(ContentEntityInterface $entity): static {
-    $default_translation = $entity->getTranslation(\Drupal::languageManager()->getDefaultLanguage()->getId());
+    $default_translation = $entity->getUntranslated();
     $export = new static();
 
     /** @var \Drupal\lark\Service\Utility\EntityUtility $entity_utility */
