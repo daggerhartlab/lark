@@ -270,9 +270,6 @@ class Importer implements ImporterInterface {
       }
       */
       $entity->save();
-      foreach ($entity->getTranslationLanguages(FALSE) as $language) {
-        $entity->getTranslation($language->getId())->save();
-      }
     }
   }
 
