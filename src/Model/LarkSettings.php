@@ -64,7 +64,7 @@ class LarkSettings {
    */
   public function ignoredComparisonKeysArray(): array {
     $ignored_keys = array_filter(preg_split("/[\r\n]+/", $this->ignoredComparisonKeys()));
-    array_walk($ignored_keys, 'trim');
+    $ignored_keys = array_map('trim', $ignored_keys);
 
     // Ignore 'original_values' key added by the EntityReferenceUuidHandler.
     // @todo - convert to hook.

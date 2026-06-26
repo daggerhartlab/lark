@@ -1,0 +1,14 @@
+_meta:
+  entity_type: node
+  bundle: article
+  entity_id: '1'
+  label: 'Dependency Node'
+  path: ''
+  uuid: uuid-dep-0000-0000-000000000001
+  default_langcode: en
+  depends: {}
+default:
+  title:
+    - value: 'Dependency Node'
+  status:
+    - value: 1

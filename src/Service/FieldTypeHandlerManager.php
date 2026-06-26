@@ -40,7 +40,7 @@ final class FieldTypeHandlerManager extends DefaultPluginManager implements Fiel
 
     // Sort by weight.
     uasort($definitions, function($a, $b) {
-      return $a['weight'] ?? 0 <=> $b['weight'] ?? 0;
+      return ($a['weight'] ?? 0) <=> ($b['weight'] ?? 0);
     });
 
     return $definitions;

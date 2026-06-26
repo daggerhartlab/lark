@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Service;
 
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -35,6 +36,7 @@ class Exporter implements ExporterInterface {
     protected MetaOptionManager $metaOptionManager,
     protected MessengerInterface $messenger,
     protected LarkSourceManager $sourceManager,
+    protected ModuleHandlerInterface $moduleHandler,
   ) {}
 
   /**
@@ -45,6 +47,12 @@ class Exporter implements ExporterInterface {
     $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity_id, $source, $meta_options_overrides);
 
     foreach ($exportables as $exportable) {
+      // Allow modules to veto exporting this entity.
+      $results = $this->moduleHandler->invokeAll('lark_should_export_entity', [$exportable->entity()]);
+      if (in_array(FALSE, $results, TRUE)) {
+        continue;
+      }
+
       // Allow meta option plugins to perform last minute changes or actions.
       foreach ($this->metaOptionManager->getInstances() as $meta_option) {
         if ($meta_option->applies($exportable->entity())) {

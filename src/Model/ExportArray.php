@@ -497,13 +497,10 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
-   * Check if a translation exists.
+   * Remove a translation from the export data.
    *
    * @param string $langcode
    *   Langcode.
-   *
-   * @return bool
-   *   Exists.
    */
   public function unsetTranslation(string $langcode): void {
     $translations = $this->translations();
