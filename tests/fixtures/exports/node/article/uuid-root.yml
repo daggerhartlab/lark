@@ -1,0 +1,15 @@
+_meta:
+  entity_type: node
+  bundle: article
+  entity_id: '2'
+  label: 'Root Node'
+  path: ''
+  uuid: uuid-root-0000-0000-000000000002
+  default_langcode: en
+  depends:
+    uuid-dep-0000-0000-000000000001: node
+default:
+  title:
+    - value: 'Root Node'
+  status:
+    - value: 1
