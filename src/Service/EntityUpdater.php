@@ -49,7 +49,7 @@ class EntityUpdater implements EntityUpdaterInterface {
     string $entity_type_id,
     string $bundle,
     string $default_langcode,
-    string $label = NULL
+    ?string $label = NULL
   ): ContentEntityInterface {
     // Check if the entity already exists.
     $entity = $this->entityRepository->loadEntityByUuid($entity_type_id, $uuid);

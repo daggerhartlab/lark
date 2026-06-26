@@ -95,13 +95,12 @@ final class FileAssets extends MetaOptionBase {
     // Should import.
     $should_import_value = $this->larkSettings->shouldImportAssets();
     if (isset($meta_option['should_import'])) {
-      $should_import_value = $meta_option['should_export'];
+      $should_import_value = $meta_option['should_import'];
     }
 
     $element['should_import'] = $this->fixNestedRadios($form, $render_parents, 'should_import', [
       '#type' => 'radios',
       '#title' => $this->t('Asset Import'),
-      '#description' => $this->t('HEREHRE'),
       '#default_value' => (int) $should_import_value,
       '#disabled' => $disabled,
       '#options' => [

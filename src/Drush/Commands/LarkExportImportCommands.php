@@ -72,7 +72,7 @@ class LarkExportImportCommands extends DrushCommands {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  #[CLI\Command(name: 'lark:import-source', aliases: ['limpe'])]
+  #[CLI\Command(name: 'lark:import-source', aliases: ['limps'])]
   #[CLI\Argument(name: 'source_id', description: 'Source id.')]
   #[CLI\Usage(name: 'lark:import-source source_id', description: 'Import all entities within a given source.')]
   public function importSource(string $source_id): void {
