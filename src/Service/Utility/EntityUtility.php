@@ -60,9 +60,12 @@ class EntityUtility {
 
     $entity->getFieldDefinitions();
 
-    foreach ($entity->getTranslationLanguages() as $language) {
-      $entity = $entity->getTranslation($language->getId());
-      foreach ($entity->getFields() as $field) {
+    $translated_entities = $entity->getEntityType()->isTranslatable()
+      ? array_map(fn ($language) => $entity->getTranslation($language->getId()), $entity->getTranslationLanguages())
+      : [$entity];
+
+    foreach ($translated_entities as $translated_entity) {
+      foreach ($translated_entity->getFields() as $field) {
         if ($field instanceof EntityReferenceFieldItemListInterface) {
           foreach ($field->referencedEntities() as $referenced_entity) {
             if (!$referenced_entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {

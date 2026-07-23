@@ -3,6 +3,7 @@
 namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\file\FileInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
 
@@ -67,7 +68,8 @@ class ExportArray extends \ArrayObject {
    * @return static
    */
   public static function createFromEntity(ContentEntityInterface $entity): static {
-    $default_translation = $entity->getUntranslated();
+    $is_translatable = $entity->getEntityType()->isTranslatable();
+    $default_translation = $is_translatable ? $entity->getUntranslated() : $entity;
     $export = new static();
 
     /** @var \Drupal\lark\Service\Utility\EntityUtility $entity_utility */
@@ -81,13 +83,15 @@ class ExportArray extends \ArrayObject {
       ->setLabel($entity->label())
       // ->setPath('') // Can't know the path yet.
       ->setUuid($entity->uuid())
-      ->setDefaultLangcode($default_translation->language()->getId())
+      ->setDefaultLangcode($is_translatable ? $default_translation->language()->getId() : LanguageInterface::LANGCODE_NOT_SPECIFIED)
       ->setDependencies($dependencies)
       // ->setOptions([]) // Can't know about meta options yet.
       ->setFields($entity_utility->getEntityArray($default_translation));
 
-    foreach ($entity->getTranslationLanguages(FALSE) as $langcode => $language) {
-      $export->setFields($entity_utility->getEntityArray($entity->getTranslation($langcode)), $langcode);
+    if ($is_translatable) {
+      foreach ($entity->getTranslationLanguages(FALSE) as $langcode => $language) {
+        $export->setFields($entity_utility->getEntityArray($entity->getTranslation($langcode)), $langcode);
+      }
     }
 
     return $export;
