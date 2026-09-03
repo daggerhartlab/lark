@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Drupal\lark\Plugin\Lark\FieldTypeHandler;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\lark\Attribute\LarkFieldTypeHandler;
 use Drupal\lark\Plugin\Lark\FieldTypeHandlerBase;
 use Drupal\lark\Routing\EntityTypeInfo;
+use Drupal\path_alias\AliasManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Makes link field URIs portable across environments.
@@ -29,6 +34,37 @@ use Drupal\lark\Routing\EntityTypeInfo;
   fieldTypes: ['link'],
 )]
 class LinkHandler extends FieldTypeHandlerBase {
+
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    EntityTypeManagerInterface $entityTypeManager,
+    EntityRepositoryInterface $entityRepository,
+    LoggerChannelFactoryInterface $loggerFactory,
+    protected ?AliasManagerInterface $aliasManager = NULL,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $entityTypeManager, $entityRepository, $loggerFactory);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('entity_type.manager'),
+      $container->get('entity.repository'),
+      $container->get(LoggerChannelFactoryInterface::class),
+      // path_alias is an optional core module, while this handler runs wherever
+      // the 'link' field type exists. Without it there are no aliases to
+      // resolve, so alias reference recording simply does not happen - the rest
+      // of the handler is unaffected.
+      $container->has(AliasManagerInterface::class) ? $container->get(AliasManagerInterface::class) : NULL,
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -104,9 +140,12 @@ class LinkHandler extends FieldTypeHandlerBase {
    * {@inheritdoc}
    */
   public function getFieldReferences(FieldItemListInterface $field): array {
+    $langcode = $field->getEntity()->language()->getId();
+
     $references = [];
     foreach ($field as $item) {
-      $parsed = $this->parseUri((string) ($item->uri ?? ''));
+      $uri = (string) ($item->uri ?? '');
+      $parsed = $this->parseUri($uri) ?? $this->parseAliasUri($uri, $langcode);
       if (!$parsed) {
         continue;
       }
@@ -118,6 +157,69 @@ class LinkHandler extends FieldTypeHandlerBase {
     }
 
     return $references;
+  }
+
+  /**
+   * Resolve an alias-based internal URI to an entity, for reference recording.
+   *
+   * An 'internal:/faqs' link is already portable: PathHandler exports a node's
+   * path alias keyed by the path_alias entity's UUID and recreates it on
+   * import, so the alias travels with the content. Entity IDs, by contrast,
+   * are auto-increment and diverge between environments - which makes an alias
+   * link *more* portable than 'entity:node/762', not less.
+   *
+   * What an alias link lacks is a recorded reference. Without one, a menu's
+   * content dependencies are invisible in its export, a missing target imports
+   * as a silent dead link rather than a logged warning, and the prune warning
+   * cannot see the link at all. This method closes that gap by resolving the
+   * alias purely to identify the target.
+   *
+   * The stored URI is deliberately never rewritten - see that this is called
+   * only from getFieldReferences(), never from alterExportValue(). The editor
+   * wrote an alias because they meant an alias.
+   *
+   * @param string $uri
+   *   The stored URI.
+   * @param string $langcode
+   *   Language of the entity holding the field, so a translation resolves
+   *   against its own language's aliases.
+   *
+   * @return array|null
+   *   A parsed target in the same shape parseUri() returns, or NULL when the
+   *   URI is not an alias, the alias does not resolve, or it resolves to
+   *   something that is not a single-segment entity path.
+   */
+  protected function parseAliasUri(string $uri, string $langcode): ?array {
+    // path_alias is optional; with no alias manager there is nothing to resolve.
+    if (!$this->aliasManager) {
+      return NULL;
+    }
+
+    if (!str_starts_with($uri, 'internal:/') || $uri === 'internal:/') {
+      return NULL;
+    }
+
+    $path = substr($uri, strlen('internal:'));
+
+    // Strip any query string or fragment before resolving; '/faqs?x=1#y' is
+    // still the /faqs alias.
+    $path = preg_replace('/[?#].*$/', '', $path);
+    if ($path === '' || $path === '/') {
+      return NULL;
+    }
+
+    $internal_path = $this->aliasManager->getPathByAlias($path, $langcode);
+    if ($internal_path === $path) {
+      // No alias matched. Either a real internal path we already handle, or a
+      // dead link - either way there is nothing new to resolve.
+      return NULL;
+    }
+
+    // Re-use the existing, tested matcher on the resolved path. Multi-segment
+    // canonical paths such as '/taxonomy/term/5' do not match, exactly as
+    // 'internal:/taxonomy/term/5' does not match today - consistent rather
+    // than surprising.
+    return $this->parseUri('internal:' . $internal_path);
   }
 
   /**
