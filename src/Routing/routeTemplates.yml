@@ -26,7 +26,10 @@ instances:
         _title: 'Lark'
         _controller: '\Drupal\lark\Controller\EntityController::larkLoad'
       requirements:
-        _permission: 'lark export entity,lark import entity'
+        # '+' is OR, ',' is AND. This tab must be reachable by a user holding
+        # either permission alone - EntityController::larkLoad() redirects to
+        # whichever sub-tab they can use.
+        _permission: 'lark export entity+lark import entity'
 
   # These are sub-tabs of lark_load.
   lark_export:
