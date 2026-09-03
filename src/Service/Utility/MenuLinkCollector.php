@@ -104,7 +104,8 @@ class MenuLinkCollector {
         continue;
       }
 
-      $menu_name = $export->getField('menu_name')[0]['value'] ?? NULL;
+      $menu_name_field = $export->getField('menu_name');
+      $menu_name = is_array($menu_name_field) ? ($menu_name_field[0]['value'] ?? NULL) : NULL;
       if ($menu_name === $menu->id()) {
         $uuids[] = $uuid;
       }
