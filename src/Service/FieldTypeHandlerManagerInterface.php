@@ -68,4 +68,30 @@ interface FieldTypeHandlerManagerInterface {
    */
   public function alterImportValues(array $values, FieldItemListInterface $field): array;
 
+  /**
+   * Collect hard dependencies from every handler for this field's type.
+   *
+   * @param \Drupal\Core\Field\FieldItemListInterface $field
+   *   The field to inspect.
+   *
+   * @return array
+   *   UUID : entity_type_id pairs.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   */
+  public function getFieldDependencies(FieldItemListInterface $field): array;
+
+  /**
+   * Collect soft references from every handler for this field's type.
+   *
+   * @param \Drupal\Core\Field\FieldItemListInterface $field
+   *   The field to inspect.
+   *
+   * @return array
+   *   UUID : entity_type_id pairs.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   */
+  public function getFieldReferences(FieldItemListInterface $field): array;
+
 }

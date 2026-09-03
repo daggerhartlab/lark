@@ -3,6 +3,7 @@
 namespace Drupal\lark\Service\Utility;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\lark\Routing\EntityTypeInfo;
@@ -16,6 +17,7 @@ class EntityUtility {
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected FieldTypeHandlerManagerInterface $fieldTypeHandlerManager,
+    protected EntityRepositoryInterface $entityRepository,
   ) {}
 
   /**
@@ -36,6 +38,53 @@ class EntityUtility {
     }
 
     return $dependencies;
+  }
+
+  /**
+   * Get soft references as uuid -> entity type id pairs for the entity.
+   *
+   * Unlike dependencies, references are not recursed into and never widen an
+   * export set. They record what an entity points at so that a portable value
+   * - a link field URI, for example - can be resolved back to a local ID on
+   * import.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   Entity.
+   *
+   * @return array
+   *   Uuid and entity_type_id pairs.
+   */
+  public function getEntityExportReferences(ContentEntityInterface $entity): array {
+    if (!$entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
+      return [];
+    }
+
+    $references = [];
+    $translated_entities = $entity->getEntityType()->isTranslatable()
+      ? array_map(fn ($language) => $entity->getTranslation($language->getId()), $entity->getTranslationLanguages())
+      : [$entity];
+
+    foreach ($translated_entities as $translated_entity) {
+      foreach ($translated_entity->getFields() as $field) {
+        $references += $this->fieldTypeHandlerManager->getFieldReferences($field);
+      }
+    }
+
+    // The dependency path filters referenced entities by
+    // EntityTypeInfo::IS_EXPORTABLE. Apply the same filter here rather than
+    // relying on individual handlers to do it themselves - LinkHandler does
+    // today, but the contract should not depend on every future handler
+    // getting that right on its own.
+    foreach ($references as $uuid => $entity_type_id) {
+      if (!$this->entityTypeManager->hasDefinition($entity_type_id) || !$this->entityTypeManager->getDefinition($entity_type_id)->get(EntityTypeInfo::IS_EXPORTABLE)) {
+        unset($references[$uuid]);
+      }
+    }
+
+    // An entity that points at itself is not a reference worth recording.
+    unset($references[$entity->uuid()]);
+
+    return $references;
   }
 
   /**
@@ -66,20 +115,33 @@ class EntityUtility {
 
     foreach ($translated_entities as $translated_entity) {
       foreach ($translated_entity->getFields() as $field) {
+        $referenced_entities = [];
+
         if ($field instanceof EntityReferenceFieldItemListInterface) {
-          foreach ($field->referencedEntities() as $referenced_entity) {
-            if (!$referenced_entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
-              continue;
-            }
+          $referenced_entities = $field->referencedEntities();
+        }
 
-            // If the referenced entity is already processing, do nothing.
-            if (array_key_exists($referenced_entity->uuid(), $found)) {
-              continue;
-            }
-
-            $found[$referenced_entity->uuid()] = NULL;
-            $found += $this->getEntityUuidEntityTypePairs($referenced_entity, $found);
+        // Field type handlers may contribute hard dependencies that are not
+        // entity reference fields - a menu link's parent, for example.
+        foreach ($this->fieldTypeHandlerManager->getFieldDependencies($field) as $dependency_uuid => $dependency_entity_type_id) {
+          $dependency = $this->entityRepository->loadEntityByUuid($dependency_entity_type_id, $dependency_uuid);
+          if ($dependency instanceof ContentEntityInterface) {
+            $referenced_entities[] = $dependency;
           }
+        }
+
+        foreach ($referenced_entities as $referenced_entity) {
+          if (!$referenced_entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
+            continue;
+          }
+
+          // If the referenced entity is already processing, do nothing.
+          if (array_key_exists($referenced_entity->uuid(), $found)) {
+            continue;
+          }
+
+          $found[$referenced_entity->uuid()] = NULL;
+          $found += $this->getEntityUuidEntityTypePairs($referenced_entity, $found);
         }
       }
     }

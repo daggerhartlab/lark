@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\lark\Kernel\Service;
 
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
 use Drupal\lark\Service\ExporterInterface;
@@ -133,6 +134,64 @@ class ImporterTest extends KernelTestBase {
 
     $reimported = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['uuid' => $node->uuid()]);
     $this->assertSame('Original Title', reset($reimported)->label());
+  }
+
+  public function testImportSourceExportsImportsEveryUuid(): void {
+    /** @var \Drupal\lark\Service\ExporterInterface $exporter */
+    $exporter = $this->container->get(ExporterInterface::class);
+    /** @var \Drupal\lark\Service\ImporterInterface $importer */
+    $importer = $this->container->get(ImporterInterface::class);
+
+    $one = Node::create(['type' => 'article', 'title' => 'One']);
+    $one->save();
+    $two = Node::create(['type' => 'article', 'title' => 'Two']);
+    $two->save();
+    $one_uuid = $one->uuid();
+    $two_uuid = $two->uuid();
+
+    $exporter->exportEntities('test_source', [$one, $two], FALSE);
+    $one->delete();
+    $two->delete();
+
+    $importer->importSourceExports('test_source', [$one_uuid, $two_uuid], FALSE);
+
+    $repository = $this->container->get('entity.repository');
+    $this->assertNotNull($repository->loadEntityByUuid('node', $one_uuid));
+    $this->assertNotNull($repository->loadEntityByUuid('node', $two_uuid));
+  }
+
+  public function testImportSourceExportsSkipsUuidsAbsentFromTheSource(): void {
+    /** @var \Drupal\lark\Service\ImporterInterface $importer */
+    $importer = $this->container->get(ImporterInterface::class);
+
+    // A UUID that was never exported must be reported and skipped, not fatal.
+    $missing_uuid = '11111111-2222-3333-4444-555555555555';
+    $importer->importSourceExports('test_source', [$missing_uuid], TRUE);
+
+    $warnings = \Drupal::messenger()->messagesByType(MessengerInterface::TYPE_WARNING);
+    $this->assertNotEmpty($warnings, 'A warning must be raised for a UUID absent from the source.');
+    $this->assertStringContainsString(
+      $missing_uuid,
+      (string) reset($warnings),
+      'The warning must name the missing UUID.'
+    );
+
+    $this->assertNull(
+      \Drupal::service('entity.repository')->loadEntityByUuid('node', $missing_uuid),
+      'A missing UUID must be skipped, not fatal, and nothing is created for it.'
+    );
+  }
+
+  public function testImportSourceExportsAcceptsAnEmptyList(): void {
+    /** @var \Drupal\lark\Service\ImporterInterface $importer */
+    $importer = $this->container->get(ImporterInterface::class);
+
+    $importer->importSourceExports('test_source', [], TRUE);
+
+    // An empty UUID list must be a silent no-op: no warnings, errors, or
+    // bulk summary message - verifying this catches a regression where a
+    // "Imported 0 entities" summary is emitted unconditionally.
+    $this->assertSame([], \Drupal::messenger()->all());
   }
 
 }

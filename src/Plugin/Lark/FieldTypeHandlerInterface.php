@@ -71,4 +71,35 @@ interface FieldTypeHandlerInterface extends PluginInspectionInterface, Derivativ
    */
   public function alterImportValue(array $values, FieldItemListInterface $field): array;
 
+  /**
+   * Hard dependencies this field contributes.
+   *
+   * A hard dependency travels with the entity: it is traversed during export
+   * discovery, written to '_meta.depends', and imported before the entity that
+   * needs it. Return targets the entity is incomplete or broken without.
+   *
+   * @param \Drupal\Core\Field\FieldItemListInterface $field
+   *   The field to inspect.
+   *
+   * @return array
+   *   UUID : entity_type_id pairs.
+   */
+  public function getFieldDependencies(FieldItemListInterface $field): array;
+
+  /**
+   * Soft references this field contributes.
+   *
+   * A soft reference is recorded to '_meta.references' so a portable value can
+   * be resolved back to a local ID on import, but it is never traversed and
+   * never pulls another entity into an export set. Return targets the entity
+   * merely points at - a link, for instance - and remains valid without.
+   *
+   * @param \Drupal\Core\Field\FieldItemListInterface $field
+   *   The field to inspect.
+   *
+   * @return array
+   *   UUID : entity_type_id pairs.
+   */
+  public function getFieldReferences(FieldItemListInterface $field): array;
+
 }

@@ -125,3 +125,47 @@ entity.lark_source.upload_form:
     parameters:
       lark_source:
         type: entity:lark_source
+
+# Menu Lark tab. The 'menu' entity type is provided by system, so these routes
+# are always valid. No _module_dependencies requirement on menu_ui: removing
+# the routes would leave the local task definitions pointing at routes that do
+# not exist. With menu_ui disabled the tabs simply never render.
+lark.menu:
+  path: '/admin/structure/menu/manage/{menu}/lark'
+  defaults:
+    _title: 'Lark'
+    _controller: '\Drupal\lark\Controller\MenuController::larkLoad'
+  options:
+    _admin_route: TRUE
+    parameters:
+      menu:
+        type: 'entity:menu'
+  requirements:
+    # '+' is OR in Drupal's _permission requirement syntax; ',' would be AND.
+    _permission: 'lark export entity+lark import entity'
+
+lark.menu_export:
+  path: '/admin/structure/menu/manage/{menu}/lark/export'
+  defaults:
+    _title: 'Lark Export'
+    _form: '\Drupal\lark\Form\MenuExportForm'
+  options:
+    _admin_route: TRUE
+    parameters:
+      menu:
+        type: 'entity:menu'
+  requirements:
+    _permission: 'lark export entity'
+
+lark.menu_import:
+  path: '/admin/structure/menu/manage/{menu}/lark/import'
+  defaults:
+    _title: 'Lark Import'
+    _form: '\Drupal\lark\Form\MenuImportForm'
+  options:
+    _admin_route: TRUE
+    parameters:
+      menu:
+        type: 'entity:menu'
+  requirements:
+    _permission: 'lark import entity'

@@ -103,4 +103,29 @@ class ExporterTest extends KernelTestBase {
     $this->assertArrayNotHasKey('nid', $content['default'] ?? []);
   }
 
+  public function testExportEntitiesWritesEveryEntityInTheSet(): void {
+    /** @var \Drupal\lark\Service\ExporterInterface $exporter */
+    $exporter = $this->container->get(ExporterInterface::class);
+
+    $one = Node::create(['type' => 'article', 'title' => 'One']);
+    $one->save();
+    $two = Node::create(['type' => 'article', 'title' => 'Two']);
+    $two->save();
+
+    $exporter->exportEntities('test_source', [$one, $two], FALSE);
+
+    $this->assertFileExists($this->exportDir . '/node/article/' . $one->uuid() . '.yml');
+    $this->assertFileExists($this->exportDir . '/node/article/' . $two->uuid() . '.yml');
+  }
+
+  public function testExportEntitiesAcceptsAnEmptySet(): void {
+    /** @var \Drupal\lark\Service\ExporterInterface $exporter */
+    $exporter = $this->container->get(ExporterInterface::class);
+
+    $exporter->exportEntities('test_source', [], FALSE);
+
+    // No exception, and nothing written.
+    $this->assertDirectoryDoesNotExist($this->exportDir . '/node');
+  }
+
 }

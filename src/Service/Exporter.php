@@ -45,6 +45,42 @@ class Exporter implements ExporterInterface {
   public function exportEntity(string $source_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $meta_options_overrides = []): void {
     $source = $this->sourceManager->load($source_id);
     $exportables = $this->exportableFactory->createFromEntityWithDependencies($entity_type_id, $entity_id, $source, $meta_options_overrides);
+    $this->exportExportables($exportables, $show_messages);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function exportEntities(string $source_id, array $entities, bool $show_messages = TRUE, array $meta_options_overrides = []): void {
+    if (!$entities) {
+      return;
+    }
+
+    $source = $this->sourceManager->load($source_id);
+    $exportables = $this->exportableFactory->createFromEntitiesWithDependencies($entities, $source, $meta_options_overrides);
+    $this->exportExportables($exportables, $show_messages, TRUE, $source->label());
+  }
+
+  /**
+   * Write a prepared set of exportables to their source.
+   *
+   * @param \Drupal\lark\Model\ExportableInterface[] $exportables
+   *   Exportables to write, in dependency order.
+   * @param bool $show_messages
+   *   Whether to show messages.
+   * @param bool $bulk
+   *   Whether this is a bulk export (multiple starting entities, such as a
+   *   menu's links). When TRUE, per-entity messenger output is replaced with
+   *   a single summary message and per-entity logging drops to debug level,
+   *   so exporting hundreds of entities from one button press does not flood
+   *   the messages area and watchdog. Single-entity exports keep their
+   *   existing per-entity messenger and logger output.
+   * @param string|null $source_label
+   *   The source label to use in the bulk summary message.
+   */
+  protected function exportExportables(array $exportables, bool $show_messages, bool $bulk = FALSE, ?string $source_label = NULL): void {
+    $exported_count = 0;
+    $failures = [];
 
     foreach ($exportables as $exportable) {
       // Allow modules to veto exporting this entity.
@@ -67,10 +103,16 @@ class Exporter implements ExporterInterface {
           '@label' => $exportable->entity()->label(),
         ]);
 
-        if ($show_messages) {
-          $this->messenger->addStatus($message);
+        $exported_count++;
+        if ($bulk) {
+          $this->logger->debug($message);
         }
-        $this->logger->notice($message);
+        else {
+          if ($show_messages) {
+            $this->messenger->addStatus($message);
+          }
+          $this->logger->notice($message);
+        }
       }
       else {
         $message = $this->t('Failed to export @entity_type_id : @entity_id : @label', [
@@ -78,11 +120,48 @@ class Exporter implements ExporterInterface {
           '@entity_id' => $exportable->entity()->id(),
           '@label' => $exportable->entity()->label(),
         ]);
-        if ($show_messages) {
-          $this->messenger->addError($message);
+
+        if ($bulk) {
+          $failures[] = $message;
+          $this->logger->debug($message);
         }
-        $this->logger->error($message);
+        else {
+          if ($show_messages) {
+            $this->messenger->addError($message);
+          }
+          $this->logger->error($message);
+        }
       }
+    }
+
+    if (!$bulk) {
+      return;
+    }
+
+    if ($exported_count > 0) {
+      $summary = $this->formatPlural(
+        $exported_count,
+        'Exported 1 entity to @source.',
+        'Exported @count entities to @source.',
+        ['@source' => $source_label ?? '']
+      );
+      if ($show_messages) {
+        $this->messenger->addStatus($summary);
+      }
+      $this->logger->notice($summary);
+    }
+
+    if ($failures) {
+      $error_summary = $this->formatPlural(
+        count($failures),
+        '1 entity failed to export to @source.',
+        '@count entities failed to export to @source.',
+        ['@source' => $source_label ?? '']
+      );
+      if ($show_messages) {
+        $this->messenger->addError($error_summary);
+      }
+      $this->logger->error($error_summary . ' ' . implode(' ', $failures));
     }
   }
 

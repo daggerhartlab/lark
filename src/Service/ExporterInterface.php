@@ -29,4 +29,26 @@ interface ExporterInterface {
    */
   public function exportEntity(string $source_id, string $entity_type_id, int $entity_id, bool $show_messages = TRUE, array $meta_options_overrides = []): void;
 
+  /**
+   * Export a set of entities and their dependencies in one pass.
+   *
+   * A dependency shared by several of the given entities is written once.
+   *
+   * @param string $source_id
+   *   Source id.
+   * @param \Drupal\Core\Entity\ContentEntityInterface[] $entities
+   *   Entities to export.
+   * @param bool $show_messages
+   *   Whether to show messages.
+   * @param array $meta_options_overrides
+   *   An array of values for the export _meta array, keyed by entity uuid.
+   *
+   * @return void
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\lark\Exception\LarkEntityNotFoundException
+   */
+  public function exportEntities(string $source_id, array $entities, bool $show_messages = TRUE, array $meta_options_overrides = []): void;
+
 }

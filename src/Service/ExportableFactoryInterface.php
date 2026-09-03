@@ -45,6 +45,29 @@ interface ExportableFactoryInterface {
   public function createFromEntityWithDependencies(string $entity_type_id, int $entity_id, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): array;
 
   /**
+   * Create an exportables collection for a set of entities and their deps.
+   *
+   * Results are keyed by UUID, so a dependency shared by several of the given
+   * entities appears once. Ordering follows the same rule as the single-entity
+   * method: dependencies before the entities that need them.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface[] $entities
+   *   Entities to build exportables for.
+   * @param \Drupal\lark\Entity\LarkSourceInterface|null $source
+   *   Source to prepare these exportables for if known.
+   * @param array $meta_option_overrides
+   *   Override values for exportable options, keyed by UUID.
+   *
+   * @return \Drupal\lark\Model\ExportableInterface[]
+   *   Exportables collection keyed by UUID.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function createFromEntitiesWithDependencies(array $entities, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): array;
+
+  /**
    * Create an exportable instance from the source export.
    *
    * @param string $source_id

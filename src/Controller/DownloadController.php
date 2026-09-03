@@ -78,6 +78,36 @@ class DownloadController extends ControllerBase {
   }
 
   /**
+   * Archive a set of entities and return a download response.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface[] $entities
+   *   Entities to archive.
+   * @param array $meta_option_overrides
+   *   Meta option overrides.
+   *
+   * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+   *   File download response.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function downloadEntitiesResponse(array $entities, array $meta_option_overrides = []): BinaryFileResponse {
+    // Make a source that acts in place of a filesystem source.
+    $download_source = $this->sourceManager->getTmpSource();
+    $exportables = $this->exportableFactory->createFromEntitiesWithDependencies(
+      $entities,
+      $download_source,
+      $meta_option_overrides,
+    );
+
+    $archive = $this->newArchive($download_source->directoryProcessed() . '/lark-export.tar.gz');
+    $this->addExportablesToArchive($archive, $exportables);
+
+    $request = new Request(['file' => 'lark-export.tar.gz']);
+    return $this->fileDownloadController->download($request, 'temporary');
+  }
+
+  /**
    * Archive a source and return a download response.
    *
    * @param \Drupal\lark\Entity\LarkSourceInterface $source

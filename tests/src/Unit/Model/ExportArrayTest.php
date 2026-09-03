@@ -79,4 +79,52 @@ class ExportArrayTest extends TestCase {
     $this->assertSame('abc-123--image.jpg', $export->fileAssetFilename());
   }
 
+  public function testEmptyExportHasNoReferences(): void {
+    $export = new ExportArray();
+    $this->assertSame([], $export->references());
+  }
+
+  public function testSetAndReadReferences(): void {
+    $export = new ExportArray();
+    $export->setReferences(['uuid-a' => 'node']);
+
+    $this->assertSame(['uuid-a' => 'node'], $export->references());
+    $this->assertTrue($export->hasReference('uuid-a'));
+    $this->assertFalse($export->hasReference('uuid-b'));
+    $this->assertSame('node', $export->getReferenceEntityTypeId('uuid-a'));
+    $this->assertNull($export->getReferenceEntityTypeId('uuid-b'));
+  }
+
+  public function testAddAndRemoveReference(): void {
+    $export = new ExportArray();
+    $this->assertSame($export, $export->addReference('uuid-a', 'node'));
+    $export->addReference('uuid-b', 'media');
+    $this->assertSame(['uuid-a' => 'node', 'uuid-b' => 'media'], $export->references());
+
+    $export->removeReference('uuid-a');
+    $this->assertSame(['uuid-b' => 'media'], $export->references());
+  }
+
+  public function testReferencesAreSeparateFromDependencies(): void {
+    $export = new ExportArray();
+    $export->setDependencies(['dep-uuid' => 'paragraph']);
+    $export->setReferences(['ref-uuid' => 'node']);
+
+    $this->assertSame(['dep-uuid' => 'paragraph'], $export->dependencies());
+    $this->assertSame(['ref-uuid' => 'node'], $export->references());
+    $this->assertFalse($export->hasDependency('ref-uuid'));
+    $this->assertFalse($export->hasReference('dep-uuid'));
+  }
+
+  public function testCleanArrayDropsEmptyReferences(): void {
+    $export = new ExportArray();
+    $this->assertArrayNotHasKey('references', $export->cleanArray()['_meta']);
+  }
+
+  public function testCleanArrayKeepsPopulatedReferences(): void {
+    $export = new ExportArray();
+    $export->addReference('uuid-a', 'node');
+    $this->assertSame(['uuid-a' => 'node'], $export->cleanArray()['_meta']['references']);
+  }
+
 }

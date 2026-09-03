@@ -29,6 +29,31 @@ interface ImporterInterface {
   public function importSourceExport(string $source_id, string $uuid, bool $show_messages = TRUE): void;
 
   /**
+   * Import a set of entities by UUID in one pass.
+   *
+   * Dependencies are resolved across the whole set before anything is written,
+   * so ordering holds between the given entities - a child link imported after
+   * its parent, for instance - rather than only within each one.
+   *
+   * UUIDs absent from the source are reported and skipped; the rest still
+   * import.
+   *
+   * @param string $source_id
+   *   The Source id.
+   * @param string[] $uuids
+   *   UUIDs of the entities to import.
+   * @param bool $show_messages
+   *   Whether to show messages.
+   *
+   * @return void
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   */
+  public function importSourceExports(string $source_id, array $uuids, bool $show_messages = TRUE): void;
+
+  /**
    * Import all lark exported content.
    *
    * @param bool $show_messages
