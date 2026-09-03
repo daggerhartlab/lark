@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\lark\Form;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\lark\Controller\DownloadController;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ExporterInterface;
@@ -24,6 +27,7 @@ abstract class MenuBaseForm extends FormBase {
   use ExportablesOverridesTrait;
 
   public function __construct(
+    protected DownloadController $downloadController,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ExportableFactoryInterface $exportableFactory,
     protected ExportablesStatusBuilder $statusBuilder,
@@ -41,6 +45,7 @@ abstract class MenuBaseForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      DownloadController::create($container),
       $container->get(EntityTypeManagerInterface::class),
       $container->get(ExportableFactoryInterface::class),
       $container->get(ExportablesStatusBuilder::class),

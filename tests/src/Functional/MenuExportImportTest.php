@@ -125,6 +125,31 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->buttonNotExists('Export to Source');
   }
 
+  public function testDownloadButtonExistsOnTheExportTab(): void {
+    $this->createLink('First');
+
+    $this->drupalLogin($this->drupalCreateUser([
+      'administer menu', 'lark export entity',
+    ]));
+
+    $this->drupalGet('/admin/structure/menu/manage/test-menu/lark/export');
+    $this->assertSession()->buttonExists('Download');
+  }
+
+  public function testDownloadButtonReturnsAFileResponse(): void {
+    $this->createLink('First');
+
+    $this->drupalLogin($this->drupalCreateUser([
+      'administer menu', 'lark export entity',
+    ]));
+
+    $this->drupalGet('/admin/structure/menu/manage/test-menu/lark/export');
+    $this->submitForm([], 'Download');
+
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->responseHeaderContains('Content-Disposition', 'attachment');
+  }
+
   public function testDeletedChildLinkIsRecreatedWithItsParentIntact(): void {
     $this->drupalLogin($this->drupalCreateUser([
       'administer menu', 'lark export entity', 'lark import entity',

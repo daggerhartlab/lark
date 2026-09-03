@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\lark\Form;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -51,6 +53,10 @@ class MenuExportForm extends MenuBaseForm {
           '#type' => 'submit',
           '#value' => $this->t('Export to Source'),
         ],
+        'download' => [
+          '#type' => 'submit',
+          '#value' => $this->t('Download'),
+        ],
       ],
     ];
 
@@ -65,13 +71,28 @@ class MenuExportForm extends MenuBaseForm {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $menu = $this->getMenu();
     $links = $this->menuLinkCollector->getMenuLinks($menu);
+    $action = str_replace('edit-', '', $form_state->getTriggeringElement()['#id']);
+    $meta_option_overrides = $this->getSubmittedOverrides('export_form_values', $form_state);
 
-    $this->exporter->exportEntities(
-      $form_state->getValue('source'),
-      $links,
-      TRUE,
-      $this->getSubmittedOverrides('export_form_values', $form_state),
-    );
+    switch ($action) {
+      case 'export':
+        $this->exporter->exportEntities(
+          $form_state->getValue('source'),
+          $links,
+          TRUE,
+          $meta_option_overrides,
+        );
+        return;
+
+      case 'download':
+        $response = $this->downloadController->downloadEntitiesResponse(
+          $links,
+          $meta_option_overrides,
+        );
+
+        $form_state->setResponse($response);
+        break;
+    }
   }
 
 }
