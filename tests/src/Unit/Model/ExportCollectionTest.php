@@ -79,4 +79,45 @@ class ExportCollectionTest extends TestCase {
     $this->assertFalse($roots->has('uuid-dep'));
   }
 
+  public function testGetWithDependenciesIgnoresReferences(): void {
+    $root = $this->makeExport('root-uuid');
+    $root->addReference('referenced-uuid', 'node');
+    $referenced = $this->makeExport('referenced-uuid');
+
+    $collection = new ExportCollection();
+    $collection->add($root);
+    $collection->add($referenced);
+
+    $result = $collection->getWithDependencies('root-uuid');
+
+    $this->assertTrue($result->has('root-uuid'));
+    $this->assertFalse(
+      $result->has('referenced-uuid'),
+      'A soft reference must never pull another export into the set.'
+    );
+  }
+
+  public function testGetWithDependenciesOrdersAncestorsFirst(): void {
+    // grandparent <- parent <- child, the shape a nested menu produces.
+    $grandparent = $this->makeExport('gp-uuid');
+    $parent = $this->makeExport('parent-uuid', ['gp-uuid' => 'menu_link_content']);
+    $child = $this->makeExport('child-uuid', [
+      'parent-uuid' => 'menu_link_content',
+      'gp-uuid' => 'menu_link_content',
+    ]);
+
+    $collection = new ExportCollection();
+    $collection->add($child);
+    $collection->add($parent);
+    $collection->add($grandparent);
+
+    $order = array_keys($collection->getWithDependencies('child-uuid')->getArrayCopy());
+
+    $this->assertSame(
+      ['gp-uuid', 'parent-uuid', 'child-uuid'],
+      $order,
+      'Import order must create an ancestor before any descendant that depends on it.'
+    );
+  }
+
 }

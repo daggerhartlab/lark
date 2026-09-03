@@ -34,6 +34,12 @@ class ExportArray extends \ArrayObject {
       'default_langcode' => '',
       // Array of UUID : entity_type_id pairs.
       'depends' => [],
+      // Array of UUID : entity_type_id pairs for entities this export points
+      // at but does not own. Records what the entity points at - the actual
+      // URI rewriting is done by the per-item target_uuid/target_entity_type
+      // annotations - and participates in the in-sync comparison; never
+      // traversed and never added to an export set.
+      'references' => [],
       // Array of lark options for this export.
       'options' => [],
     ],
@@ -75,6 +81,7 @@ class ExportArray extends \ArrayObject {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $entity_utility */
     $entity_utility = \Drupal::service(EntityUtility::class);
     $dependencies = $entity_utility->getEntityExportDependencies($entity);
+    $references = $entity_utility->getEntityExportReferences($entity);
 
     $export
       ->setEntityTypeId($entity->getEntityTypeId())
@@ -85,6 +92,7 @@ class ExportArray extends \ArrayObject {
       ->setUuid($entity->uuid())
       ->setDefaultLangcode($is_translatable ? $default_translation->language()->getId() : LanguageInterface::LANGCODE_NOT_SPECIFIED)
       ->setDependencies($dependencies)
+      ->setReferences($references)
       // ->setOptions([]) // Can't know about meta options yet.
       ->setFields($entity_utility->getEntityArray($default_translation));
 
@@ -413,6 +421,93 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
+   * Get the soft references for this export.
+   *
+   * Unlike dependencies, references are never traversed and never pull other
+   * entities into an export set. A reference records what this entity points
+   * at without owning it - the target's UUID and entity type, for a link
+   * field, for example - and participates in the in-sync comparison so a
+   * changed reference is visible as out-of-sync. It does not itself make a
+   * value portable: that is done by per-item annotations such as
+   * target_uuid/target_entity_type, which are what get resolved back to a
+   * local ID on import.
+   *
+   * @return array
+   *   UUID : entity_type_id pairs.
+   */
+  public function references(): array {
+    return $this->getMeta('references') ?? [];
+  }
+
+  /**
+   * Check if a reference exists.
+   *
+   * @param string $uuid
+   *   UUID.
+   *
+   * @return bool
+   *   Exists.
+   */
+  public function hasReference(string $uuid): bool {
+    return array_key_exists($uuid, $this->references());
+  }
+
+  /**
+   * Get the entity type ID for a reference.
+   *
+   * @param string $uuid
+   *   UUID.
+   *
+   * @return string|null
+   *   Entity type ID.
+   */
+  public function getReferenceEntityTypeId(string $uuid): ?string {
+    return $this->references()[$uuid] ?? NULL;
+  }
+
+  /**
+   * Set the references.
+   *
+   * @param array $references
+   *   UUID : entity_type_id pairs.
+   *
+   * @return static
+   */
+  public function setReferences(array $references): self {
+    $this->setMeta('references', $references);
+    return $this;
+  }
+
+  /**
+   * Add a reference.
+   *
+   * @param string $uuid
+   *   UUID.
+   * @param string $entity_type_id
+   *   Entity type ID.
+   *
+   * @return static
+   */
+  public function addReference(string $uuid, string $entity_type_id): self {
+    $references = $this->references();
+    $references[$uuid] = $entity_type_id;
+    $this->setMeta('references', $references);
+    return $this;
+  }
+
+  /**
+   * Remove a reference.
+   *
+   * @param string $uuid
+   *   UUID.
+   */
+  public function removeReference(string $uuid): void {
+    $references = $this->references();
+    unset($references[$uuid]);
+    $this->setMeta('references', $references);
+  }
+
+  /**
    * Get the options for this export.
    *
    * @return array
@@ -679,6 +774,13 @@ class ExportArray extends \ArrayObject {
     $array = $this->getArrayCopy();
     if (!$this->options()) {
       unset($array['_meta']['options']);
+    }
+
+    // Unlike 'depends', an empty 'references' key is omitted entirely. Most
+    // entities have no soft references, and emitting the key would turn every
+    // existing export out-of-sync for no gain.
+    if (!$this->references()) {
+      unset($array['_meta']['references']);
     }
 
     if (!$this->translations()) {

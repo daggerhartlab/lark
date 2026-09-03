@@ -75,6 +75,21 @@ class Exportable implements ExportableInterface {
   /**
    * {@inheritdoc}
    */
+  public function getReferences(): array {
+    return $this->entityExportArray->references();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setReferences(array $references): self {
+    $this->entityExportArray->setReferences($references);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getOptions(): array {
     return $this->entityExportArray->options();
   }

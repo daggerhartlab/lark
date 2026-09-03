@@ -87,4 +87,18 @@ abstract class FieldTypeHandlerBase extends PluginBase implements FieldTypeHandl
     return $values;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldDependencies(FieldItemListInterface $field): array {
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldReferences(FieldItemListInterface $field): array {
+    return [];
+  }
+
 }

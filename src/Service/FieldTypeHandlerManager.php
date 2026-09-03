@@ -112,4 +112,28 @@ final class FieldTypeHandlerManager extends DefaultPluginManager implements Fiel
     return $processed_field_values;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldDependencies(FieldItemListInterface $field): array {
+    $dependencies = [];
+    foreach ($this->getInstancesByFieldType($field->getFieldDefinition()->getType()) as $instance) {
+      $dependencies += $instance->getFieldDependencies($field);
+    }
+
+    return $dependencies;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFieldReferences(FieldItemListInterface $field): array {
+    $references = [];
+    foreach ($this->getInstancesByFieldType($field->getFieldDefinition()->getType()) as $instance) {
+      $references += $instance->getFieldReferences($field);
+    }
+
+    return $references;
+  }
+
 }

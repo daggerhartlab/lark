@@ -40,6 +40,24 @@ interface ExportableInterface {
   public function setDependencies(array $dependencies): self;
 
   /**
+   * Get the export's soft references.
+   *
+   * @return array
+   *   UUID : entity_type_id pairs.
+   */
+  public function getReferences(): array;
+
+  /**
+   * Set the export's soft references.
+   *
+   * @param array $references
+   *   UUID : entity_type_id pairs.
+   *
+   * @return static
+   */
+  public function setReferences(array $references): self;
+
+  /**
    * Get of export array 'options'.
    *
    * @return array
