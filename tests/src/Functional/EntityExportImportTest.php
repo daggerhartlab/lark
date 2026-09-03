@@ -94,4 +94,50 @@ class EntityExportImportTest extends BrowserTestBase {
     $this->assertSession()->statusCodeEquals(403);
   }
 
+  /**
+   * Either Lark permission alone must reach the parent tab.
+   *
+   * The route requirement uses '+' (OR). With ',' (AND) - which is what it
+   * said until this test was written - a user holding only one of the two
+   * permissions got a 403 here, and EntityController::larkLoad()'s import
+   * branch was unreachable.
+   */
+  public function testLarkTabReachableWithOnlyTheExportPermission(): void {
+    $this->drupalLogout();
+    $this->drupalLogin($this->drupalCreateUser([
+      'access content',
+      'lark export entity',
+    ]));
+
+    $node = $this->drupalCreateNode(['type' => 'article', 'title' => 'Export Only']);
+    $this->drupalGet('/lark/node/' . $node->id());
+
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->addressEquals('/lark/export/node/' . $node->id());
+  }
+
+  public function testLarkTabReachableWithOnlyTheImportPermission(): void {
+    $this->drupalLogout();
+    $this->drupalLogin($this->drupalCreateUser([
+      'access content',
+      'lark import entity',
+    ]));
+
+    $node = $this->drupalCreateNode(['type' => 'article', 'title' => 'Import Only']);
+    $this->drupalGet('/lark/node/' . $node->id());
+
+    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->addressEquals('/lark/import/node/' . $node->id());
+  }
+
+  public function testLarkTabDeniedWithNeitherPermission(): void {
+    $this->drupalLogout();
+    $this->drupalLogin($this->drupalCreateUser(['access content']));
+
+    $node = $this->drupalCreateNode(['type' => 'article', 'title' => 'No Lark']);
+    $this->drupalGet('/lark/node/' . $node->id());
+
+    $this->assertSession()->statusCodeEquals(403);
+  }
+
 }
