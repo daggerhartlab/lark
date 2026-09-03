@@ -125,4 +125,34 @@ class ExportFileManager {
     return $removed;
   }
 
+  /**
+   * Find exports that would be left with a dangling soft reference.
+   *
+   * A soft reference is never traversed, so removing its target does not
+   * widen or block a prune - it only leaves the referencing export's
+   * `target_uuid` unresolvable. This method does not decide whether a prune
+   * proceeds; it only reports what would break so the caller can warn.
+   *
+   * @param \Drupal\lark\Model\ExportCollection $all_exports
+   *   The full set of exports discovered for a source.
+   * @param \Drupal\lark\Model\ExportCollection $removal_candidates
+   *   The exports that would be removed.
+   *
+   * @return \Drupal\lark\Model\ExportCollection
+   *   Exports outside the removal set that reference one of its members.
+   */
+  public function findExportsReferencingRemovalSet(ExportCollection $all_exports, ExportCollection $removal_candidates): ExportCollection {
+    $remaining = $all_exports->diff($removal_candidates);
+
+    return $remaining->filter(function (ExportArray $export) use ($removal_candidates) {
+      foreach ($removal_candidates as $candidate) {
+        if ($export->hasReference($candidate->uuid())) {
+          return TRUE;
+        }
+      }
+
+      return FALSE;
+    });
+  }
+
 }

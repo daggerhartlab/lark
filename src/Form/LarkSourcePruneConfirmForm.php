@@ -4,6 +4,7 @@ namespace Drupal\lark\Form;
 
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Service\ExportFileManager;
 use Drupal\lark\Service\ImporterInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -88,6 +89,34 @@ class LarkSourcePruneConfirmForm extends ConfirmFormBase {
       $form['items'][$uuid] = [
         '#type' => 'value',
         '#value' => $uuid,
+      ];
+    }
+
+    $broken_references = $this->exportFileManager->findExportsReferencingRemovalSet(
+      $this->importer->discoverSourceExports($source),
+      $collection,
+    );
+
+    if ($broken_references->count()) {
+      $form['broken_references_warning'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['messages', 'messages--warning'],
+        ],
+        '#weight' => -10,
+        'heading' => [
+          '#markup' => '<p>' . $this->t('The following exports reference content being removed. Their links will not resolve after this prune, unless the target is re-imported later:') . '</p>',
+        ],
+        'list' => [
+          '#theme' => 'item_list',
+          '#items' => $broken_references->map(function (ExportArray $export) {
+            return $this->t('@type: @label (@uuid)', [
+              '@type' => $export->entityTypeId(),
+              '@label' => $export->label(),
+              '@uuid' => $export->uuid(),
+            ]);
+          }),
+        ],
       ];
     }
 
