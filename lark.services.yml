@@ -89,6 +89,10 @@ services:
     class: Drupal\lark\Service\Utility\EntityUtility
     autowire: true
 
+  Drupal\lark\Service\Utility\MenuLinkCollector:
+    class: Drupal\lark\Service\Utility\MenuLinkCollector
+    autowire: true
+
   Drupal\lark\Service\Utility\StatusResolver:
     class: Drupal\lark\Service\Utility\StatusResolver
     autowire: true

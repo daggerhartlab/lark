@@ -20,8 +20,7 @@ use Drupal\lark\Routing\EntityTypeInfo;
  *
  * The target is recorded as a *soft reference*, never a dependency. A node
  * whose link points at a page absent from this environment is still a complete,
- * valid node, so the target must not be dragged into the export set. See
- * docs/superpowers/specs/2026-09-02-lark-menu-export-design.md.
+ * valid node, so the target must not be dragged into the export set.
  */
 #[LarkFieldTypeHandler(
   id: 'link_handler',
