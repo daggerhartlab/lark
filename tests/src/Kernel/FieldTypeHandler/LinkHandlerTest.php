@@ -21,7 +21,7 @@ class LinkHandlerTest extends KernelTestBase {
 
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
-    'link', 'menu_link_content',
+    'link', 'menu_link_content', 'path_alias',
   ];
 
   protected function setUp(): void {
@@ -29,6 +29,7 @@ class LinkHandlerTest extends KernelTestBase {
     $this->installEntitySchema('node');
     $this->installEntitySchema('user');
     $this->installEntitySchema('menu_link_content');
+    $this->installEntitySchema('path_alias');
     $this->installConfig(['node', 'filter']);
     NodeType::create(['type' => 'article', 'name' => 'Article'])->save();
     $this->installSchema('node', ['node_access']);
@@ -293,6 +294,132 @@ class LinkHandlerTest extends KernelTestBase {
     $link->save();
 
     $this->assertSame('entity:node/' . $node->id(), $link->get('link')->first()->uri);
+  }
+
+
+  /**
+   * Create a path alias pointing at an entity's canonical path.
+   */
+  private function createAlias(string $alias, string $system_path, string $langcode = 'en'): void {
+    \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+      'path' => $system_path,
+      'alias' => $alias,
+      'langcode' => $langcode,
+    ])->save();
+  }
+
+  public function testAliasLinkContributesAReference(): void {
+    /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
+    $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
+
+    $node = $this->createNode();
+    $this->createAlias('/faqs', '/node/' . $node->id());
+    $link = $this->createLink('internal:/faqs');
+
+    $this->assertSame(
+      [$node->uuid() => 'node'],
+      $manager->getFieldReferences($link->get('link')),
+      'An alias-form link must record its target as a soft reference.'
+    );
+  }
+
+  public function testAliasLinkUriIsNeverRewrittenOnExport(): void {
+    $node = $this->createNode();
+    $this->createAlias('/faqs', '/node/' . $node->id());
+    $link = $this->createLink('internal:/faqs');
+
+    $item = $this->exportedLinkItem($link);
+
+    $this->assertSame(
+      'internal:/faqs',
+      $item['uri'],
+      'The editor wrote an alias; the export must preserve it verbatim.'
+    );
+    $this->assertArrayNotHasKey('target_uuid', $item);
+    $this->assertArrayNotHasKey('target_entity_type', $item);
+  }
+
+  public function testAliasLinkStillContributesNoDependency(): void {
+    /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
+    $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
+
+    $node = $this->createNode();
+    $this->createAlias('/faqs', '/node/' . $node->id());
+    $link = $this->createLink('internal:/faqs');
+
+    $this->assertSame([], $manager->getFieldDependencies($link->get('link')));
+  }
+
+  public function testAliasTargetIsNotPulledIntoTheExportSet(): void {
+    /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
+    $utility = $this->container->get(EntityUtility::class);
+
+    $node = $this->createNode();
+    $this->createAlias('/faqs', '/node/' . $node->id());
+    $link = $this->createLink('internal:/faqs');
+
+    $found = [];
+    $pairs = $utility->getEntityUuidEntityTypePairs($link, $found);
+
+    $this->assertArrayHasKey($link->uuid(), $pairs);
+    $this->assertArrayNotHasKey(
+      $node->uuid(),
+      $pairs,
+      'An alias reference must never widen the export set.'
+    );
+  }
+
+  public function testUnresolvableAliasContributesNothing(): void {
+    /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
+    $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
+
+    $link = $this->createLink('internal:/no-such-page');
+
+    $this->assertSame([], $manager->getFieldReferences($link->get('link')));
+  }
+
+  public function testAliasWithQueryStringOrFragmentStillResolves(): void {
+    /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
+    $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
+
+    $node = $this->createNode();
+    $this->createAlias('/faqs', '/node/' . $node->id());
+
+    foreach (['internal:/faqs?utm=1', 'internal:/faqs#section'] as $uri) {
+      $link = $this->createLink($uri);
+      $this->assertSame(
+        [$node->uuid() => 'node'],
+        $manager->getFieldReferences($link->get('link')),
+        "URI '$uri' must resolve to the /faqs alias target."
+      );
+    }
+  }
+
+  public function testAliasResolutionUsesTheEntityLanguage(): void {
+    /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
+    $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
+
+    $english_target = $this->createNode('English target');
+    $this->createAlias('/shared-alias', '/node/' . $english_target->id(), 'en');
+
+    $link = $this->createLink('internal:/shared-alias');
+
+    // The link entity is English, so the English alias must be the one used.
+    $this->assertSame(
+      [$english_target->uuid() => 'node'],
+      $manager->getFieldReferences($link->get('link'))
+    );
+  }
+
+  public function testAliasPointingAtANonExportableTypeContributesNothing(): void {
+    /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
+    $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
+
+    // Users are excluded from export by EntityTypeInfo.
+    $this->createAlias('/me', '/user/1');
+    $link = $this->createLink('internal:/me');
+
+    $this->assertSame([], $manager->getFieldReferences($link->get('link')));
   }
 
 }
