@@ -167,6 +167,57 @@ class Importer implements ImporterInterface {
   /**
    * {@inheritdoc}
    */
+  public function importSourceExports(string $source_id, array $uuids, bool $show_messages = TRUE): void {
+    if (!$uuids) {
+      return;
+    }
+
+    $source = $this->sourceManager->load($source_id);
+    $collection = new ExportCollection();
+    $missing = [];
+
+    foreach ($uuids as $uuid) {
+      $discovered = $this->discoverSourceExport($source, $uuid);
+      if (!$discovered->has($uuid)) {
+        $missing[] = $uuid;
+        continue;
+      }
+
+      // merge() preserves the position an export already holds, so a
+      // dependency placed by an earlier UUID is not pushed later by this one.
+      $collection->merge($discovered);
+    }
+
+    if ($missing) {
+      $message = $this->t('No export found in source @source for: @uuids', [
+        '@source' => $source->id(),
+        '@uuids' => implode(', ', $missing),
+      ]);
+      if ($show_messages) {
+        $this->messenger->addWarning($message);
+      }
+      $this->logger->warning($message);
+    }
+
+    if (count($collection) === 0) {
+      return;
+    }
+
+    try {
+      $this->upsertEntities($collection);
+      $this->validateImportResults($collection, $show_messages, TRUE, $source->label());
+    }
+    catch (\Exception $exception) {
+      if ($show_messages) {
+        $this->messenger->addError($exception->getMessage());
+      }
+      $this->logger->error($exception->getMessage());
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function discoverSourceExports(LarkSourceInterface $source): ExportCollection {
     if (array_key_exists($source->id(), $this->discoveryCache)) {
       return $this->discoveryCache[$source->id()];
@@ -190,13 +241,25 @@ class Importer implements ImporterInterface {
    *   Lark source exports data.
    * @param bool $show_messages
    *   Whether to show messages.
+   * @param bool $bulk
+   *   Whether this is a bulk import (multiple starting UUIDs, such as a
+   *   menu's links). When TRUE, per-entity messenger output is replaced with
+   *   a single summary message and per-entity logging drops to debug level,
+   *   so importing hundreds of entities from one button press does not
+   *   flood the messages area and watchdog. Single-entity imports keep their
+   *   existing per-entity messenger and logger output.
+   * @param string|null $source_label
+   *   The source label to use in the bulk summary message.
    *
    * @return void
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function validateImportResults(ExportCollection $collection, bool $show_messages): void {
+  protected function validateImportResults(ExportCollection $collection, bool $show_messages, bool $bulk = FALSE, ?string $source_label = NULL): void {
+    $imported_count = 0;
+    $failures = [];
+
     foreach ($collection as $uuid => $export) {
       $entity_type = $export->entityTypeId();
       $entity = $this->entityTypeManager->getStorage($entity_type)->loadByProperties(['uuid' => $uuid]);
@@ -207,21 +270,65 @@ class Importer implements ImporterInterface {
           '@label' => $entity->label(),
           '@entity_id' => $entity->id(),
         ]);
-        if ($show_messages) {
-          $this->messenger->addMessage($message);
+
+        $imported_count++;
+        if ($bulk) {
+          $this->logger->debug($message);
         }
-        $this->logger->notice($message);
+        else {
+          if ($show_messages) {
+            $this->messenger->addMessage($message);
+          }
+          $this->logger->notice($message);
+        }
       }
       else {
         $message = $this->t('Failed to import @entity_type with UUID @uuid.', [
           '@entity_type' => $entity_type,
           '@uuid' => $uuid,
         ]);
-        if ($show_messages) {
-          $this->messenger->addError($message);
+
+        if ($bulk) {
+          $failures[] = $message;
+          $this->logger->debug($message);
         }
-        $this->logger->error($message);
+        else {
+          if ($show_messages) {
+            $this->messenger->addError($message);
+          }
+          $this->logger->error($message);
+        }
       }
+    }
+
+    if (!$bulk) {
+      return;
+    }
+
+    if ($imported_count > 0) {
+      $summary = $this->formatPlural(
+        $imported_count,
+        'Imported 1 entity from @source.',
+        'Imported @count entities from @source.',
+        ['@source' => $source_label ?? '']
+      );
+      if ($show_messages) {
+        $this->messenger->addStatus($summary);
+      }
+      $this->logger->notice($summary);
+    }
+
+    if ($failures) {
+      $error_summary = $this->formatPlural(
+        count($failures),
+        '1 entity failed to import from @source.',
+        '@count entities failed to import from @source.',
+        ['@source' => $source_label ?? '']
+      );
+      if ($show_messages) {
+        $this->messenger->addError($error_summary);
+      }
+      $this->logger->error($error_summary . ' ' . implode(' ', $failures));
     }
   }
 

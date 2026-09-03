@@ -119,6 +119,25 @@ class ExportableFactory implements ExportableFactoryInterface {
   /**
    * {@inheritdoc}
    */
+  public function createFromEntitiesWithDependencies(array $entities, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): array {
+    $exportables = [];
+    foreach ($entities as $entity) {
+      // Later entities must not displace an already-positioned dependency, so
+      // merge with the union operator rather than array_merge().
+      $exportables += $this->createFromEntityWithDependencies(
+        $entity->getEntityTypeId(),
+        (int) $entity->id(),
+        $source,
+        $meta_option_overrides,
+      );
+    }
+
+    return $exportables;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function createFromSource(string $source_id, string $uuid): ?ExportableInterface {
     $exportables = $this->createFromSourceWithDependencies($source_id, $uuid);
     return $exportables[$uuid] ?? NULL;
