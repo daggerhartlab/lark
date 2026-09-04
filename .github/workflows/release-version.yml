@@ -1,0 +1,33 @@
+name: Stamp Release Version
+
+# Gives this module a version number in Drupal. Extensions installed straight
+# from git carry no version, because the version key is written at packaging
+# time rather than committed. On a version tag this stamps the version and
+# datestamp into the info file and moves the tag onto the resulting commit, so
+# a Composer install of that tag reports a version. `main` stays unversioned.
+#
+# All the logic lives in the shared action; see its README for the gotchas:
+# https://github.com/daggerhartlab/devops-shared-actions#drupal-module-version
+
+on:
+  push:
+    tags:
+      - '**'
+
+permissions:
+  contents: write
+
+jobs:
+  stamp:
+    name: Stamp Version And Datestamp
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Tagged Commit
+        uses: actions/checkout@v7
+        with:
+          # Required: the action pushes the moved tag, and a shallow clone
+          # cannot be pushed from.
+          fetch-depth: 0
+
+      - name: Stamp Version
+        uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-version@v1
