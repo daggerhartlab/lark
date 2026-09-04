@@ -33,7 +33,7 @@ interface EntityUpdaterInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function getOrCreateEntity(string $uuid, string $entity_type_id, string $bundle, string $default_langcode, string $label = NULL): ContentEntityInterface;
+  public function getOrCreateEntity(string $uuid, string $entity_type_id, string $bundle, string $default_langcode, ?string $label = NULL): ContentEntityInterface;
 
   /**
    * Ensure that the entity is not owned by the anonymous user.

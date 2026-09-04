@@ -759,7 +759,7 @@ class ExportArray extends \ArrayObject {
    *
    * @return bool
    */
-  public function fileAssetIsExported(string $destination = NULL): bool {
+  public function fileAssetIsExported(?string $destination = NULL): bool {
     $destination = \rtrim($destination ?? $this->path(), DIRECTORY_SEPARATOR);
     return \file_exists($destination . DIRECTORY_SEPARATOR . $this->fileAssetFilename());
   }

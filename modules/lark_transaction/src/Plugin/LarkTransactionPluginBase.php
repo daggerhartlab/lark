@@ -256,7 +256,7 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function sideLoadFile(string $source_file, string $destination_directory = 'public://content-imported', int $owner_user_id = NULL): FileInterface {
+  protected function sideLoadFile(string $source_file, string $destination_directory = 'public://content-imported', ?int $owner_user_id = NULL): FileInterface {
     $owner_user_id = $owner_user_id ?? (int) $this->currentUser->id() ?: 1;
     $filename = basename($source_file);
     $destination_file = "{$destination_directory}/{$filename}";
@@ -309,7 +309,7 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
     string $alt_text,
     string $source_file,
     string $destination_directory = 'public://content-imported',
-    int $owner_user_id = NULL,
+    ?int $owner_user_id = NULL,
   ): MediaInterface {
     $owner_user_id = $owner_user_id ?? (int) $this->currentUser->id() ?: 1;
     $file_entity = $this->sideLoadFile($source_file, $destination_directory, $owner_user_id);
