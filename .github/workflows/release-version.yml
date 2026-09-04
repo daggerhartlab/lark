@@ -3,11 +3,20 @@ name: Stamp Release Version
 # Gives this module a version number in Drupal. Extensions installed straight
 # from git carry no version, because the version key is written at packaging
 # time rather than committed. On a version tag this stamps the version and
-# datestamp into the info file and moves the tag onto the resulting commit, so
-# a Composer install of that tag reports a version. `main` stays unversioned.
+# datestamp into every info file and moves the tag onto the resulting commit,
+# so an install of that tag reports a version. `main` stays unversioned.
 #
-# All the logic lives in the shared action; see its README for the gotchas:
-# https://github.com/daggerhartlab/devops-shared-actions#drupal-module-version
+# NOTE: this is a deliberate copy of the `drupal-module-version` action in
+# daggerhartlab/devops-shared-actions, NOT a candidate for replacing with a
+# `uses:` reference to it. That repository is private, and GitHub does not
+# allow a public repository to consume an action from a private one - there is
+# no setting that permits it. If devops-shared-actions is ever made public, or
+# the generic actions are split into a public repository, this file can be
+# replaced by:
+#
+#   - uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-version@v1
+#
+# Until then, changes made to the shared action need mirroring here by hand.
 
 on:
   push:
@@ -25,9 +34,168 @@ jobs:
       - name: Checkout Tagged Commit
         uses: actions/checkout@v7
         with:
-          # Required: the action pushes the moved tag, and a shallow clone
-          # cannot be pushed from.
+          # Full history: the tag is moved to a new commit at the end, and a
+          # shallow clone cannot be pushed from.
           fetch-depth: 0
 
-      - name: Stamp Version
-        uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-version@v1
+      - name: Resolve Version From Tag
+        id: resolve
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+
+          # Only version-shaped tags get stamped, so a tag such as "latest" or
+          # "deploy-2026" is never written in as a version string.
+          case "$version" in
+            [0-9]*.[0-9]*) ;;
+            *)
+              echo "Tag '$tag' is not version-shaped - nothing to stamp."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+          esac
+
+          {
+            echo "tag=$tag"
+            echo "version=$version"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved version '$version' from tag '$tag'."
+
+      - name: Stamp Info Files
+        id: stamp
+        if: steps.resolve.outputs.skip != 'true'
+        env:
+          VERSION: ${{ steps.resolve.outputs.version }}
+        run: |
+          datestamp="$(date -u +%s)"
+          today="$(date -u +%Y-%m-%d)"
+
+          # A read loop rather than mapfile, which is a bash 4 builtin. Note
+          # git's pathspec glob crosses directory separators, so submodules
+          # under modules/ are included too - they take the project version,
+          # the same way drupal.org packages them.
+          files=()
+          while IFS= read -r file; do
+            [ -n "$file" ] && files+=("$file")
+          done < <(git ls-files -- '*.info.yml')
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::No tracked *.info.yml in this repository."
+            exit 1
+          fi
+
+          # Idempotency. A push made with GITHUB_TOKEN does not re-trigger
+          # workflows, so the tag move below cannot loop on its own; this guard
+          # keeps that true if the push is ever switched to a PAT.
+          needs_work=false
+          for file in "${files[@]}"; do
+            grep -qxF "version: '${VERSION}'" "$file" || needs_work=true
+          done
+
+          if [ "$needs_work" = false ]; then
+            echo "Every info file already carries version '${VERSION}' - nothing to do."
+            echo "stamped=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          for file in "${files[@]}"; do
+            # Remove any previous stamp first, so a re-run replaces the block
+            # instead of appending a second one. Perl rather than sed because
+            # sed's in-place flag differs between GNU and BSD.
+            #
+            # "project" is never added: a project key marks an extension as
+            # contrib, which would send fleet tooling to drupal.org to resolve
+            # a module that is not published there.
+            perl -ni -e 'print unless
+              m{^\# Information added by the release workflow on } ||
+              m{^version:} ||
+              m{^datestamp:}' "$file"
+
+            # Collapse trailing newlines to exactly one before appending.
+            perl -0pi -e 's/\n+\z/\n/' "$file"
+
+            {
+              echo ""
+              echo "# Information added by the release workflow on ${today}"
+              echo "version: '${VERSION}'"
+              echo "datestamp: ${datestamp}"
+            } >> "$file"
+
+            echo "::group::${file}"
+            cat "$file"
+            echo "::endgroup::"
+          done
+
+          {
+            echo "stamped=true"
+            echo "datestamp=${datestamp}"
+            echo "files<<INFO_FILES"
+            printf '%s\n' "${files[@]}"
+            echo "INFO_FILES"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Commit And Move Tag
+        id: commit
+        if: steps.stamp.outputs.stamped == 'true'
+        env:
+          ACTOR: ${{ github.actor }}
+          ACTOR_ID: ${{ github.actor_id }}
+          TAG: ${{ steps.resolve.outputs.tag }}
+          VERSION: ${{ steps.resolve.outputs.version }}
+        run: |
+          # The <id>+<login>@users.noreply.github.com form links the commit
+          # back to a GitHub profile, so the packaging commit is attributed to
+          # whoever pushed the tag.
+          git config user.name "$ACTOR"
+          git config user.email "${ACTOR_ID}+${ACTOR}@users.noreply.github.com"
+
+          git add -- '*.info.yml'
+
+          if git diff --cached --quiet; then
+            echo "::error::Info files were rewritten but staged identically - refusing to commit."
+            exit 1
+          fi
+
+          echo "staged: $(git diff --cached --shortstat)"
+          git commit -m "Set version ${VERSION} for release"
+
+          # Move the tag onto the packaging commit. The commit that was
+          # originally tagged stays reachable through its branch, so nothing
+          # pinning it is orphaned.
+          git tag -f "$TAG"
+          git push --force origin "refs/tags/${TAG}"
+
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "Tag '${TAG}' now points at $(git rev-parse HEAD)."
+
+      - name: Summary
+        if: always()
+        env:
+          STAMPED: ${{ steps.stamp.outputs.stamped }}
+          VERSION: ${{ steps.resolve.outputs.version }}
+          DATESTAMP: ${{ steps.stamp.outputs.datestamp }}
+          FILES: ${{ steps.stamp.outputs.files }}
+          COMMIT: ${{ steps.commit.outputs.commit }}
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: |
+          {
+            echo "### Drupal module version"
+            echo ""
+            if [ "$STAMPED" != "true" ]; then
+              if [ -z "$VERSION" ]; then
+                echo "Tag \`${GITHUB_REF_NAME}\` is not version-shaped - nothing stamped."
+              else
+                echo "Version \`${VERSION}\` was already stamped - nothing to do."
+              fi
+            else
+              echo "| | |"
+              echo "|---|---|"
+              echo "| Version | \`${VERSION}\` |"
+              echo "| Datestamp | \`${DATESTAMP}\` |"
+              echo "| Tag | \`${TAG}\` |"
+              echo "| Tag now at | \`${COMMIT}\` |"
+              echo ""
+              echo "Files stamped:"
+              printf '%s\n' "$FILES" | sed 's/^/- `/; s/$/`/'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
