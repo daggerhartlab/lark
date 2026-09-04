@@ -5,3 +5,7 @@ package: Development
 core_version_requirement: ^10 || ^11
 dependencies:
   - lark:lark
+
+# Information added by the release workflow on 2026-09-04
+version: '2.1.2'
+datestamp: 1788541607
