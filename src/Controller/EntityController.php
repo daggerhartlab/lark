@@ -5,6 +5,7 @@ namespace Drupal\lark\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Diff\DiffFormatter;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\StatusResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -46,12 +47,17 @@ class EntityController extends ControllerBase {
     // the destination instead of the entity page.
     \Drupal::request()->query->remove('destination');
 
+    // Build sub-tab urls from their routes rather than $entity->toUrl(), since
+    // some entity types (e.g. config_pages) override toUrl() and ignore $rel.
+    // The sub-tab routes share this route's parameters.
+    $route_parameters = $routeMatch->getRawParameters()->all();
+
     if ($this->currentUser()->hasPermission('lark export entity')) {
-      return new RedirectResponse($entity->toUrl('lark-export')->toString());
+      return new RedirectResponse(Url::fromRoute("entity.$entity_type_id.lark_export", $route_parameters)->toString());
     }
 
     if ($this->currentUser()->hasPermission('lark import entity')) {
-      return new RedirectResponse($entity->toUrl('lark-import')->toString());
+      return new RedirectResponse(Url::fromRoute("entity.$entity_type_id.lark_import", $route_parameters)->toString());
     }
 
     return new RedirectResponse($entity->toUrl()->toString());
