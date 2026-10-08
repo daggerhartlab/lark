@@ -1,0 +1,25 @@
+name: Release Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, e.g. 1.2.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Required — the action pushes, and a shallow clone cannot be
+          # pushed from. The action fails fast if you forget.
+          fetch-depth: 0
+
+      - uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-version@v1
+        with:
+          version: ${{ inputs.version }}
