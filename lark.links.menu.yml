@@ -16,16 +16,3 @@ lark.settings:
   title: 'Settings'
   description: 'Lark configuration settings.'
   weight: 10
-
-# Lark source entity "View" menu item
-entity.lark_source.canonical:
-  parent: entity.lark_source.edit_form
-  route_name: entity.lark_source.canonical
-  title: 'Source'
-  description: 'View'
-
-entity.lark_source.upload_form:
-  parent: entity.lark_source.edit_form
-  route_name: entity.lark_source.upload_form
-  title: 'Upload'
-  description: 'Upload an archive of exports to a Source.'
