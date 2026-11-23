@@ -11,5 +11,8 @@
     ],
     "require": {
         "league/commonmark" : "^2.6"
+    },
+    "require-dev": {
+        "drupal/paragraphs": "^1.23"
     }
 }
