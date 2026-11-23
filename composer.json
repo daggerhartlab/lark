@@ -13,6 +13,7 @@
         "league/commonmark" : "^2.6"
     },
     "require-dev": {
-        "drupal/paragraphs": "^1.23"
+        "drupal/paragraphs": "^1.23",
+        "drush/drush": "^13"
     }
 }
