@@ -105,6 +105,18 @@ class EditorFileHandlerTest extends KernelTestBase {
   }
 
   /**
+   * Attributes written outside the editor, single-quoted or spaced, match.
+   */
+  public function testUnusuallyQuotedAttributesBecomeDependency(): void {
+    $host = $this->createNode("<img src='/x.png' data-entity-type = 'file' data-entity-uuid='" . $this->file->uuid() . "'>");
+
+    $this->assertSame(
+      [$this->file->uuid() => 'file'],
+      $this->manager()->getFieldDependencies($host->get('field_text_long'))
+    );
+  }
+
+  /**
    * Elements typed as something other than file are ignored.
    */
   public function testNonFileEntityTypeIsIgnored(): void {

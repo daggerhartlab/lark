@@ -26,7 +26,7 @@ class EditorFileHandler extends TextEmbedHandlerBase {
    * {@inheritdoc}
    */
   protected function needle(): string {
-    return 'data-entity-type="file"';
+    return 'data-entity-type';
   }
 
   /**

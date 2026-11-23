@@ -29,6 +29,7 @@ class EntityEmbedHandlerTest extends KernelTestBase {
    */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
+    'entity_test',
   ];
 
   /**
@@ -107,6 +108,16 @@ class EntityEmbedHandlerTest extends KernelTestBase {
    */
   public function testUnknownEntityTypeIsIgnored(): void {
     $host = $this->createNode($this->embed('not_a_type', (new PhpUuid())->generate()));
+
+    $this->assertSame([], $this->manager()->getFieldDependencies($host->get('field_text_long')));
+    $this->assertSame([], $this->container->get(EntityUtility::class)->getEntityExportDependencies($host));
+  }
+
+  /**
+   * Entity types without UUIDs are ignored and don't break export.
+   */
+  public function testEntityTypeWithoutUuidIsIgnored(): void {
+    $host = $this->createNode($this->embed('entity_test_no_uuid', (new PhpUuid())->generate()));
 
     $this->assertSame([], $this->manager()->getFieldDependencies($host->get('field_text_long')));
     $this->assertSame([], $this->container->get(EntityUtility::class)->getEntityExportDependencies($host));

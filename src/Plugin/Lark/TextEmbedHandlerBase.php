@@ -64,9 +64,10 @@ abstract class TextEmbedHandlerBase extends FieldTypeHandlerBase {
         continue;
       }
 
-      // Markup can name entity types this site doesn't have, which would
-      // fail when the dependency is loaded.
-      if (!$this->entityTypeManager->hasDefinition($entity_type_id)) {
+      // Markup can name entity types this site doesn't have, or that can't be
+      // loaded by UUID, either of which would fail when the dependency loads.
+      $definition = $this->entityTypeManager->getDefinition($entity_type_id, FALSE);
+      if (!$definition?->hasKey('uuid')) {
         continue;
       }
 
