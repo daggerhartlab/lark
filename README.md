@@ -30,6 +30,20 @@ To export an entity using drush, the following command can be used:
 drush lark:export-entity <source id> <entity type> <entity id>
 ```
 
+### Embedded entities
+
+Entities embedded in formatted text fields are exported as dependencies of the
+entity that embeds them:
+
+* Media embeds: `<drupal-media data-entity-uuid="…">`
+* Entity Embed module embeds: `<drupal-entity data-entity-type="…" data-entity-uuid="…">`
+* Files uploaded through the editor: `<img data-entity-type="file" data-entity-uuid="…">`
+
+Embeds reference entities by UUID, so the text itself is not changed on export
+or import. Editor-uploaded images also hard-code the file's URL in `src`, which
+only stays valid when the importing site uses the same public files path and
+the "asset import file exists" setting is `Replace` (the default).
+
 ## Importing Entities
 
 Exported entities can be imported using the Source's UI, located at
