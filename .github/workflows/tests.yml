@@ -55,7 +55,7 @@ jobs:
           simpletest_db: mysql://root:root@127.0.0.1:3306/drupal
 
   code-quality:
-    name: Code quality (report only)
+    name: Code quality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
