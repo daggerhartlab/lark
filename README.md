@@ -3,6 +3,11 @@
 Lark provides the functionality to export and import content entities along with
 their dependencies from one Drupal site to another.
 
+## Requirements
+
+- Drupal 11.3 or later, or Drupal 12
+- PHP 8.3 or later
+
 ## Setup
 
 Visit the Lark Sources page (`/admin/lark/source`), and create a new Source for

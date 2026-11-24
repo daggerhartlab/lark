@@ -12,6 +12,15 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 - Export media, files, and Entity Embed entities embedded in formatted text as
   dependencies (#60).
 
+### Changed
+
+- Require Drupal 11.3 or later and PHP 8.3 or later, and support Drupal 12
+  (#66).
+
+### Removed
+
+- Support for Drupal 10 and for Drupal 11 before 11.3 (#66).
+
 ## [2.1.5] - 2026-10-22
 
 ### Fixed
