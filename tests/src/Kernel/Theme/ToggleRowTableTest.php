@@ -3,13 +3,13 @@
 namespace Drupal\Tests\lark\Kernel\Theme;
 
 use Drupal\KernelTests\KernelTestBase;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the toggle_row_table theme hook.
- *
- * @group lark
  */
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class ToggleRowTableTest extends KernelTestBase {
 

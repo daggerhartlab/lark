@@ -5,15 +5,19 @@ namespace Drupal\Tests\lark\Kernel\Service;
 use Drupal\Component\Serialization\Yaml;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
+use Drupal\lark\Service\Exporter;
 use Drupal\lark\Service\ExporterInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Service\Exporter
- * @group lark
+ * Tests \Drupal\lark\Service\Exporter.
  */
+#[CoversClass(Exporter::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class ExporterTest extends KernelTestBase {
 

@@ -6,13 +6,13 @@ use Drupal\lark\Entity\LarkSource;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\system\Entity\Menu;
 use Drupal\Tests\BrowserTestBase;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the Lark tab on a menu.
- *
- * @group lark
  */
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class MenuExportImportTest extends BrowserTestBase {
 

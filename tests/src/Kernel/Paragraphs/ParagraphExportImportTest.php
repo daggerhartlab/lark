@@ -15,6 +15,7 @@ use Drupal\node\Entity\NodeType;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\paragraphs\Entity\ParagraphsType;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
@@ -23,9 +24,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * Explicitly covers the parent_id self-correction behavior: paragraphs are
  * exported with the source environment's parent_id, and entity_reference_revisions
  * corrects it when the host entity is saved during import.
- *
- * @group lark
  */
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class ParagraphExportImportTest extends KernelTestBase {
 

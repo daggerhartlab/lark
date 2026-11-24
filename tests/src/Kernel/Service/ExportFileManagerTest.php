@@ -6,12 +6,15 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\ExportCollection;
 use Drupal\lark\Service\ExportFileManager;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Service\ExportFileManager
- * @group lark
+ * Tests \Drupal\lark\Service\ExportFileManager.
  */
+#[CoversClass(ExportFileManager::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class ExportFileManagerTest extends KernelTestBase {
 
@@ -40,7 +43,7 @@ class ExportFileManagerTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::findExportsReferencingRemovalSet
+   * Only exports that reference the removal set are reported.
    */
   public function testFindExportsReferencingRemovalSetReportsOnlyReferencers(): void {
     /** @var \Drupal\lark\Service\ExportFileManager $manager */

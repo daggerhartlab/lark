@@ -6,6 +6,7 @@ namespace Drupal\Tests\lark\Kernel\FieldTypeHandler;
 
 use Drupal\Component\Uuid\Php as PhpUuid;
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\lark\Plugin\Lark\FieldTypeHandler\EntityEmbedHandler;
 use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\node\Entity\Node;
@@ -13,12 +14,15 @@ use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
 use Drupal\Tests\lark\Traits\TextFieldsTrait;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Plugin\Lark\FieldTypeHandler\EntityEmbedHandler
- * @group lark
+ * Tests \Drupal\lark\Plugin\Lark\FieldTypeHandler\EntityEmbedHandler.
  */
+#[CoversClass(EntityEmbedHandler::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class EntityEmbedHandlerTest extends KernelTestBase {
 

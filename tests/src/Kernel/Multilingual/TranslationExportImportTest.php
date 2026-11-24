@@ -11,13 +11,13 @@ use Drupal\lark\Service\ImporterInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests that translated entities export and import correctly.
- *
- * @group lark
  */
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class TranslationExportImportTest extends KernelTestBase {
 

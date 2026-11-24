@@ -5,10 +5,13 @@ namespace Drupal\Tests\lark\Kernel\Service;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
 use Drupal\lark\Service\ExporterInterface;
+use Drupal\lark\Service\Importer;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\system\Entity\Menu;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
@@ -26,10 +29,9 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  *
  * The order is forced hostile: importSourceExports() is handed the child's
  * UUID first. Only the parent-as-dependency mechanism can correct that.
- *
- * @coversDefaultClass \Drupal\lark\Service\Importer
- * @group lark
  */
+#[CoversClass(Importer::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class MenuLinkImportOrderTest extends KernelTestBase {
 

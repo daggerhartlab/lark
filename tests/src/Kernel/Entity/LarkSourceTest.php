@@ -4,12 +4,15 @@ namespace Drupal\Tests\lark\Kernel\Entity;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Entity\LarkSource
- * @group lark
+ * Tests \Drupal\lark\Entity\LarkSource.
  */
+#[CoversClass(LarkSource::class)]
+#[Group('lark')]
 // Required by Drupal 11.3.0+: kernel tests must isolate to avoid state leaks.
 // Will become a hard requirement in Drupal 12.0.0.
 #[RunTestsInSeparateProcesses]

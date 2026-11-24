@@ -9,18 +9,22 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
+use Drupal\lark\Plugin\Lark\FieldTypeHandler\EditorFileHandler;
 use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
 use Drupal\Tests\lark\Traits\TextFieldsTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Plugin\Lark\FieldTypeHandler\EditorFileHandler
- * @group lark
+ * Tests \Drupal\lark\Plugin\Lark\FieldTypeHandler\EditorFileHandler.
  */
+#[CoversClass(EditorFileHandler::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class EditorFileHandlerTest extends KernelTestBase {
 

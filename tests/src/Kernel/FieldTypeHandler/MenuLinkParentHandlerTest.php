@@ -3,17 +3,21 @@
 namespace Drupal\Tests\lark\Kernel\FieldTypeHandler;
 
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\lark\Plugin\Lark\FieldTypeHandler\MenuLinkParentHandler;
 use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\system\Entity\Menu;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Plugin\Lark\FieldTypeHandler\MenuLinkParentHandler
- * @group lark
+ * Tests \Drupal\lark\Plugin\Lark\FieldTypeHandler\MenuLinkParentHandler.
  */
+#[CoversClass(MenuLinkParentHandler::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class MenuLinkParentHandlerTest extends KernelTestBase {
 

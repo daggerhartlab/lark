@@ -7,6 +7,7 @@ namespace Drupal\Tests\lark\Kernel\FieldTypeHandler;
 use Drupal\Component\Uuid\Php as PhpUuid;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\file\Entity\File;
+use Drupal\lark\Plugin\Lark\FieldTypeHandler\MediaEmbedHandler;
 use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\media\Entity\Media;
@@ -17,12 +18,15 @@ use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
 use Drupal\Tests\lark\Traits\TextFieldsTrait;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Plugin\Lark\FieldTypeHandler\MediaEmbedHandler
- * @group lark
+ * Tests \Drupal\lark\Plugin\Lark\FieldTypeHandler\MediaEmbedHandler.
  */
+#[CoversClass(MediaEmbedHandler::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class MediaEmbedHandlerTest extends KernelTestBase {
 

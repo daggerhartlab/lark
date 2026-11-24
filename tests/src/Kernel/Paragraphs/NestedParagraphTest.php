@@ -13,14 +13,14 @@ use Drupal\node\Entity\NodeType;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\paragraphs\Entity\ParagraphsType;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests that nested paragraphs (paragraph referencing paragraph) export and
  * import correctly, with correct parent_id at every level.
- *
- * @group lark
  */
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class NestedParagraphTest extends KernelTestBase {
 

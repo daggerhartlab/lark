@@ -4,18 +4,22 @@ namespace Drupal\Tests\lark\Kernel\FieldTypeHandler;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Model\ExportArray;
+use Drupal\lark\Plugin\Lark\FieldTypeHandler\LinkHandler;
 use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\system\Entity\Menu;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Plugin\Lark\FieldTypeHandler\LinkHandler
- * @group lark
+ * Tests \Drupal\lark\Plugin\Lark\FieldTypeHandler\LinkHandler.
  */
+#[CoversClass(LinkHandler::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class LinkHandlerTest extends KernelTestBase {
 

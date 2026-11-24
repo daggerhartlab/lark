@@ -3,12 +3,15 @@
 namespace Drupal\Tests\lark\Unit\Model;
 
 use Drupal\lark\Model\ExportArray;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass \Drupal\lark\Model\ExportArray
- * @group lark
+ * Tests \Drupal\lark\Model\ExportArray.
  */
+#[CoversClass(ExportArray::class)]
+#[Group('lark')]
 class ExportArrayTest extends TestCase {
 
   public function testEmptyExportFollowsSchema(): void {

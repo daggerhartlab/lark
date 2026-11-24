@@ -4,12 +4,15 @@ namespace Drupal\Tests\lark\Unit\Model;
 
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\ExportCollection;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass \Drupal\lark\Model\ExportCollection
- * @group lark
+ * Tests \Drupal\lark\Model\ExportCollection.
  */
+#[CoversClass(ExportCollection::class)]
+#[Group('lark')]
 class ExportCollectionTest extends TestCase {
 
   private function makeExport(string $uuid, array $deps = []): ExportArray {

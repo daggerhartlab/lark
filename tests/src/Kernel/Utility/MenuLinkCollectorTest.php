@@ -10,12 +10,15 @@ use Drupal\lark\Service\ExporterInterface;
 use Drupal\lark\Service\Utility\MenuLinkCollector;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\system\Entity\Menu;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Service\Utility\MenuLinkCollector
- * @group lark
+ * Tests \Drupal\lark\Service\Utility\MenuLinkCollector.
  */
+#[CoversClass(MenuLinkCollector::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class MenuLinkCollectorTest extends KernelTestBase {
 
