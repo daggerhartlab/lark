@@ -6,8 +6,7 @@ use Drupal\Core\Extension\ExtensionPathResolver;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManager;
-
-require_once __DIR__ . '/lark.theme.inc';
+use Drupal\lark\Service\Render\ToggleRowTablePreprocess;
 
 /**
  * Implements hook_help().
@@ -39,6 +38,7 @@ function lark_theme() {
         'toggle_handle_open' => NULL,
         'toggle_handle_close' => NULL,
       ],
+      'initial preprocess' => ToggleRowTablePreprocess::class . ':preprocess',
     ],
   ];
 }
