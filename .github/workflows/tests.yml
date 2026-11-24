@@ -24,19 +24,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - drupal: '^11'
-            php: '8.3'
-            stability: stable
-            experimental: false
-          - drupal: '^11'
-            php: '8.5'
-            stability: stable
-            experimental: false
-          - drupal: '11.x-dev'
-            php: '8.5'
-            stability: dev
-            experimental: true
-
+          - { drupal: '^11',      php: '8.3', stability: stable, experimental: false }
+          - { drupal: '^11',      php: '8.5', stability: stable, experimental: false }
+          - { drupal: '11.x-dev', php: '8.5', stability: dev,    experimental: true }
     services:
       mysql:
         image: mysql:8.0
@@ -50,113 +40,34 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=20
-
-    env:
-      SIMPLETEST_DB: mysql://root:root@127.0.0.1:3306/drupal
-      SIMPLETEST_BASE_URL: http://127.0.0.1:8080
-      BROWSERTEST_OUTPUT_DIRECTORY: ${{ github.workspace }}/drupal/web/sites/simpletest/browser_output
-      SYMFONY_DEPRECATIONS_HELPER: weak
-
     steps:
       - uses: actions/checkout@v7
+
+      - uses: daggerhartlab/devops-shared-actions/.github/actions/setup-runner@v1
         with:
-          path: module
+          php_version: ${{ matrix.php }}
+          php_extensions: gd, pdo_mysql
 
-      - uses: shivammathur/setup-php@v2
+      - uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-test@v1
         with:
-          php-version: ${{ matrix.php }}
-          extensions: gd, pdo_mysql
-          coverage: none
-          tools: composer:v2
-
-      - name: Composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config --global cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v5
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-${{ matrix.php }}-${{ matrix.drupal }}-${{ hashFiles('module/composer.json') }}
-          restore-keys: composer-${{ matrix.php }}-${{ matrix.drupal }}-
-
-      - name: Build Drupal
-        run: module/.github/scripts/build-drupal.sh module drupal '${{ matrix.drupal }}' ${{ matrix.stability }}
-
-      # The router must be given relative to the docroot.
-      - name: Start web server
-        working-directory: drupal/web
-        run: nohup php -S 127.0.0.1:8080 .ht.router.php > "$RUNNER_TEMP/php-server.log" 2>&1 &
-
-      - name: PHPUnit
-        working-directory: drupal
-        run: vendor/bin/phpunit -c web/core web/modules/contrib/lark
-
-      - name: Upload browser output
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: browser-output-drupal${{ matrix.drupal }}-php${{ matrix.php }}
-          path: |
-            drupal/web/sites/simpletest/browser_output
-            ${{ runner.temp }}/php-server.log
-          if-no-files-found: ignore
+          drupal: ${{ matrix.drupal }}
+          stability: ${{ matrix.stability }}
+          simpletest_db: mysql://root:root@127.0.0.1:3306/drupal
 
   code-quality:
     name: Code quality (report only)
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v7
+
+      - uses: daggerhartlab/devops-shared-actions/.github/actions/setup-runner@v1
         with:
-          path: module
-
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          coverage: none
-          tools: composer:v2
-
-      - name: Composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config --global cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v5
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-8.3-^11-${{ hashFiles('module/composer.json') }}
-          restore-keys: composer-8.3-^11-
-
-      - name: Build Drupal
-        run: module/.github/scripts/build-drupal.sh module drupal '^11'
+          php_version: '8.3'
 
       # Report-only until the existing errors are fixed (#67).
-      - name: PHPCS
-        working-directory: drupal
-        continue-on-error: true
-        run: |
-          status=0
-          vendor/bin/phpcs --standard=Drupal,DrupalPractice \
-            --extensions=php,module,inc,install,test,profile,theme,yml \
-            --ignore='*/node_modules/*,*/vendor/*' \
-            --no-colors -sp \
-            --report-full --report-summary="$RUNNER_TEMP/phpcs-summary.txt" \
-            web/modules/contrib/lark || status=$?
-          {
-            echo '### PHPCS'
-            echo '```'
-            cat "$RUNNER_TEMP/phpcs-summary.txt"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          exit $status
-
-      - name: PHPStan
-        working-directory: drupal
-        continue-on-error: true
-        run: |
-          cat > phpstan.neon <<'EOF'
-          parameters:
-            level: 2
-            paths:
-              - web/modules/contrib/lark
-          EOF
-          vendor/bin/phpstan analyse -c phpstan.neon --no-progress --memory-limit=-1 --error-format=github
+      - uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-test@v1
+        with:
+          phpunit: false
+          phpcs: true
+          phpstan: true
+          report_only: true
