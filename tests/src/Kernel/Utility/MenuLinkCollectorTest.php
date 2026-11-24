@@ -3,7 +3,7 @@
 namespace Drupal\Tests\lark\Kernel\Utility;
 
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
 use Drupal\lark\Service\ExporterInterface;

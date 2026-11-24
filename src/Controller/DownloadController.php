@@ -7,7 +7,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;

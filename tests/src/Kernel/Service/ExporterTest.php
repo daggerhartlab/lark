@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\lark\Kernel\Service;
 
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
 use Drupal\lark\Service\ExporterInterface;

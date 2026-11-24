@@ -3,7 +3,7 @@
 namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Entity\LarkSourceInterface;

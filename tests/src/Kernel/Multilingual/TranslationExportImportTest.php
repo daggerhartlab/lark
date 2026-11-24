@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\lark\Kernel\Multilingual;
 
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\lark\Entity\LarkSource;
