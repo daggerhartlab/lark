@@ -3,15 +3,19 @@
 namespace Drupal\Tests\lark\Kernel\Service;
 
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\lark\Service\FieldTypeHandlerManager;
 use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Service\FieldTypeHandlerManager
- * @group lark
+ * Tests \Drupal\lark\Service\FieldTypeHandlerManager.
  */
+#[CoversClass(FieldTypeHandlerManager::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class FieldTypeHandlerManagerTest extends KernelTestBase {
 

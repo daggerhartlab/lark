@@ -8,12 +8,15 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Plugin\Lark\FieldTypeHandler\EntityReferenceUuidHandler;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Plugin\Lark\FieldTypeHandler\EntityReferenceUuidHandler
- * @group lark
+ * Tests \Drupal\lark\Plugin\Lark\FieldTypeHandler\EntityReferenceUuidHandler.
  */
+#[CoversClass(EntityReferenceUuidHandler::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class EntityReferenceUuidHandlerTest extends KernelTestBase {
 

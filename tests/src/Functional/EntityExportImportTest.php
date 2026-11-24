@@ -5,13 +5,13 @@ namespace Drupal\Tests\lark\Functional;
 use Drupal\lark\Entity\LarkSource;
 use Drupal\node\Entity\NodeType;
 use Drupal\Tests\BrowserTestBase;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Test the export and import tab UI on content entities.
- *
- * @group lark
  */
+#[Group('lark')]
 // Required by Drupal 11.3.0+: BrowserTestBase tests must isolate to avoid state leaks.
 // Will become a hard requirement in Drupal 12.0.0.
 #[RunTestsInSeparateProcesses]

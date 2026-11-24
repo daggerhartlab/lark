@@ -6,16 +6,20 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
 use Drupal\lark\Service\ExporterInterface;
+use Drupal\lark\Service\Importer;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Service\Importer
- * @group lark
+ * Tests \Drupal\lark\Service\Importer.
  */
+#[CoversClass(Importer::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class ImporterTest extends KernelTestBase {
 

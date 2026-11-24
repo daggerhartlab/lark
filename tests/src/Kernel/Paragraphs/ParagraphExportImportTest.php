@@ -3,7 +3,7 @@
 namespace Drupal\Tests\lark\Kernel\Paragraphs;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\KernelTests\KernelTestBase;
@@ -15,6 +15,7 @@ use Drupal\node\Entity\NodeType;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\paragraphs\Entity\ParagraphsType;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
@@ -23,9 +24,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * Explicitly covers the parent_id self-correction behavior: paragraphs are
  * exported with the source environment's parent_id, and entity_reference_revisions
  * corrects it when the host entity is saved during import.
- *
- * @group lark
  */
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class ParagraphExportImportTest extends KernelTestBase {
 

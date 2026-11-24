@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\lark\Kernel\Service;
 
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
 use Drupal\lark\Service\ExporterInterface;
@@ -10,13 +10,13 @@ use Drupal\lark\Service\ImporterInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Documents and verifies revision behavior during import.
- *
- * @group lark
  */
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class RevisionBehaviorTest extends KernelTestBase {
 

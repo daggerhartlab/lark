@@ -85,6 +85,10 @@ services:
     class: Drupal\lark\Service\Render\SourceViewBuilder
     autowire: true
 
+  Drupal\lark\Service\Render\ToggleRowTablePreprocess:
+    class: Drupal\lark\Service\Render\ToggleRowTablePreprocess
+    autowire: true
+
   Drupal\lark\Service\Utility\EntityUtility:
     class: Drupal\lark\Service\Utility\EntityUtility
     autowire: true

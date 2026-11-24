@@ -19,12 +19,15 @@ use Drupal\lark\Service\Utility\StatusResolver;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Service\Utility\StatusResolver
- * @group lark
+ * Tests \Drupal\lark\Service\Utility\StatusResolver.
  */
+#[CoversClass(StatusResolver::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class StatusResolverTest extends KernelTestBase {
 

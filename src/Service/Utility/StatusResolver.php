@@ -3,7 +3,7 @@
 namespace Drupal\lark\Service\Utility;
 
 use Drupal\Component\Diff\Diff;
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\ExportArray;

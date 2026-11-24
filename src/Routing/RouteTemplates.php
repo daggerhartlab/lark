@@ -2,7 +2,7 @@
 
 namespace Drupal\lark\Routing;
 
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 
 class RouteTemplates {
 

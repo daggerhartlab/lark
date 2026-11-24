@@ -4,12 +4,15 @@ namespace Drupal\Tests\lark\Unit\Model;
 
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\lark\Model\LarkSettings;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass \Drupal\lark\Model\LarkSettings
- * @group lark
+ * Tests \Drupal\lark\Model\LarkSettings.
  */
+#[CoversClass(LarkSettings::class)]
+#[Group('lark')]
 class LarkSettingsTest extends TestCase {
 
   private function makeSettings(array $values): LarkSettings {

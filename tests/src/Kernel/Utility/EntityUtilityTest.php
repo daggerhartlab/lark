@@ -9,12 +9,15 @@ use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\system\Entity\Menu;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * @coversDefaultClass \Drupal\lark\Service\Utility\EntityUtility
- * @group lark
+ * Tests \Drupal\lark\Service\Utility\EntityUtility.
  */
+#[CoversClass(EntityUtility::class)]
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class EntityUtilityTest extends KernelTestBase {
 

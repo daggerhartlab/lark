@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\lark\Kernel\Multilingual;
 
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Component\Serialization\Yaml;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\lark\Entity\LarkSource;
@@ -11,13 +11,13 @@ use Drupal\lark\Service\ImporterInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests that translated entities export and import correctly.
- *
- * @group lark
  */
+#[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class TranslationExportImportTest extends KernelTestBase {
 
