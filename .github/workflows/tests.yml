@@ -24,6 +24,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Lowest supported minor.
+          - { drupal: '~11.3.0',  php: '8.3', stability: stable, experimental: false }
           - { drupal: '^11',      php: '8.3', stability: stable, experimental: false }
           - { drupal: '^11',      php: '8.5', stability: stable, experimental: false }
           - { drupal: '11.x-dev', php: '8.5', stability: dev,    experimental: true }
