@@ -48,7 +48,7 @@ jobs:
           php_version: ${{ matrix.php }}
           php_extensions: gd, pdo_mysql
 
-      - uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-test@drupal-module-test
+      - uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-test@v1
         with:
           drupal: ${{ matrix.drupal }}
           stability: ${{ matrix.stability }}
@@ -65,7 +65,7 @@ jobs:
           php_version: '8.3'
 
       # Report-only until the existing errors are fixed (#67).
-      - uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-test@drupal-module-test
+      - uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-test@v1
         with:
           phpunit: false
           phpcs: true
