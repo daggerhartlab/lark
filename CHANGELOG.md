@@ -16,10 +16,16 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 - Require Drupal 11.3 or later and PHP 8.3 or later, and support Drupal 12
   (#66).
+- Implement hooks in OOP hook classes, and remove `lark.module` (#73).
 
 ### Removed
 
 - Support for Drupal 10 and for Drupal 11 before 11.3 (#66).
+
+### Fixed
+
+- The Lark entity operation varies by the user's permissions in cached
+  operation lists (#73).
 
 ## [2.1.5] - 2026-10-22
 
