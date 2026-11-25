@@ -10,13 +10,13 @@ lark.settings:
       type: string
       label: 'Ignored Comparison Keys'
     should_export_assets:
-      type: string
+      type: boolean
       label: 'Default export action'
     asset_export_file_exists:
       type: string
       label: 'Default export conflict action'
     should_import_assets:
-      type: string
+      type: boolean
       label: 'Default import action'
     asset_import_file_exists:
       type: string
