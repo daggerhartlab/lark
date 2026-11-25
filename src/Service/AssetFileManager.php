@@ -97,10 +97,10 @@ class AssetFileManager {
       $destination_hash = hash_file('sha256', $destination_uri);
       assert(is_string($destination_hash));
 
-      if (hash_equals($source_hash, $destination_hash) && $this->entityTypeManager->getStorage('file')->loadByProperties(['uri' => $destination_uri]) === []) {
-        // If the file hashes match and the file is not already a managed file
-        // then do not copy a new version to the file system. This prevents
-        // re-installs during development from creating unnecessary duplicates.
+      // Reuse an identical file unless another file entity owns it.
+      $owners = $this->entityTypeManager->getStorage('file')->loadByProperties(['uri' => $destination_uri]);
+      $other_owners = array_filter($owners, fn (FileInterface $owner) => $owner->uuid() !== $entity->uuid());
+      if (hash_equals($source_hash, $destination_hash) && $other_owners === []) {
         $copy_file = FALSE;
       }
     }
