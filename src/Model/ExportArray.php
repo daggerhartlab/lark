@@ -603,7 +603,7 @@ class ExportArray extends \ArrayObject {
    */
   public function unsetTranslation(string $langcode): void {
     $translations = $this->translations();
-    \unset($translations[$langcode]);
+    unset($translations[$langcode]);
     $this->offsetSet('translations', $translations);
   }
 

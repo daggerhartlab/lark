@@ -28,6 +28,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Importing an entity whose default language is not on the site, but one of
+  its translations is, failed with a fatal error (#67).
 - The Lark entity operation varies by the user's permissions in cached
   operation lists (#73).
 
