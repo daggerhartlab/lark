@@ -2,6 +2,9 @@
 <ruleset name="lark">
   <description>Drupal coding standards for Lark.</description>
 
+  <!-- The file types CI checks. -->
+  <arg name="extensions" value="php,module,inc,install,test,profile,theme,yml"/>
+
   <!-- These require an @see link to a drupal.org change record; Lark is not on drupal.org. -->
   <rule ref="Drupal">
     <exclude name="Drupal.Commenting.Deprecated.DeprecatedMissingSeeTag"/>
