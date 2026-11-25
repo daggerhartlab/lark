@@ -119,8 +119,8 @@ class ExportablesStatusBuilder {
    * @param \Drupal\lark\Model\ExportableInterface[] $exportables
    *   All exportables for a root-level export.
    *
-   * @return \Drupal\Component\Render\MarkupInterface
-   *   Summary string.
+   * @return array
+   *   Summary table render array.
    */
   public function getExportablesSummary(array $exportables): array {
     $summary = [

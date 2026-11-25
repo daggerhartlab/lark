@@ -44,6 +44,7 @@ class AssetFileManager {
       return '';
     }
 
+    /** @var \Drupal\file\FileInterface $file */
     $file = $exportable->entity();
     $destination = \dirname($exportable->getFilepath());
     $destination = \rtrim($destination, DIRECTORY_SEPARATOR);

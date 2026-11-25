@@ -18,6 +18,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * entity must be resolved from the bundle. This deliberately references no
  * config_pages classes, so Lark does not depend on that module.
  *
+ * @phpstan-consistent-constructor
+ *
  * @see \Drupal\lark\Routing\LocalTasks::getConfigPagesDerivatives()
  */
 class ConfigPagesLocalTask extends LocalTaskDefault implements ContainerFactoryPluginInterface {

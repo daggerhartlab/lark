@@ -8,6 +8,8 @@ use Drupal\Core\File\FileExists;
 
 /**
  * Provides typed access to the lark.settings config.
+ *
+ * @phpstan-consistent-constructor
  */
 class LarkSettings {
 

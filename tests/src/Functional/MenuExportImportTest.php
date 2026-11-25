@@ -4,6 +4,7 @@ namespace Drupal\Tests\lark\Functional;
 
 use Drupal\lark\Entity\LarkSource;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
+use Drupal\menu_link_content\MenuLinkContentInterface;
 use Drupal\system\Entity\Menu;
 use Drupal\Tests\BrowserTestBase;
 use PHPUnit\Framework\Attributes\Group;
@@ -214,9 +215,8 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->drupalGet('/admin/structure/menu/manage/test-menu/lark/import');
     $this->submitForm([], 'Import from Source');
 
-    /** @var \Drupal\menu_link_content\MenuLinkContentInterface $restored */
     $restored = \Drupal::service('entity.repository')->loadEntityByUuid('menu_link_content', $child_uuid);
-    $this->assertNotNull($restored, 'The deleted child link was recreated from the source.');
+    $this->assertInstanceOf(MenuLinkContentInterface::class, $restored, 'The deleted child link was recreated from the source.');
     $this->assertSame('menu_link_content:' . $parent_uuid, $restored->getParentId());
 
     // The entity's own 'parent' field is copied verbatim from the YAML and

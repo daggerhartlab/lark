@@ -10,6 +10,8 @@ use Drupal\lark\Service\Utility\EntityUtility;
  * Holds the array of data exported to yaml.
  *
  * Ideally all knowledge of the yaml schema is contained in this class.
+ *
+ * @phpstan-consistent-constructor
  */
 class ExportArray extends \ArrayObject {
 
@@ -603,7 +605,7 @@ class ExportArray extends \ArrayObject {
    */
   public function unsetTranslation(string $langcode): void {
     $translations = $this->translations();
-    \unset($translations[$langcode]);
+    unset($translations[$langcode]);
     $this->offsetSet('translations', $translations);
   }
 

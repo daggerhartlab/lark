@@ -157,16 +157,4 @@ class SourceManager extends DefaultPluginManager implements SourceManagerInterfa
     return $plugin;
   }
 
-  /**
-   * Finds the source that contains an export with the given UUID.
-   *
-   * @param string $uuid
-   *   The export UUID.
-   */
-  public function findSourceByUuid(string $uuid): ?LarkSourceInterface {
-    foreach ($this->getInstances() as $instance) {
-      $instance->exportExistsInSource($uuid);
-    }
-  }
-
 }

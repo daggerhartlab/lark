@@ -22,6 +22,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base class for lark_entity_export_form plugins.
+ *
+ * @phpstan-consistent-constructor
  */
 abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface, ContainerFactoryPluginInterface {
 

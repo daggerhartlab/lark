@@ -11,12 +11,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Confirms deleting exports, or all content, from a lark source.
+ *
+ * @phpstan-consistent-constructor
  */
 class LarkSourcePruneConfirmForm extends ConfirmFormBase {
 
   public function __construct(
-    private ImporterInterface $importer,
-    private ExportFileManager $exportFileManager,
+    protected ImporterInterface $importer,
+    protected ExportFileManager $exportFileManager,
   ) {}
 
   /**

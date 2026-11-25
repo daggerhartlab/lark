@@ -20,28 +20,31 @@ final class LarkSourceForm extends EntityForm {
 
     $form = parent::form($form, $form_state);
 
+    /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
+    $source = $this->entity;
+
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
       '#maxlength' => 255,
-      '#default_value' => $this->entity->label(),
+      '#default_value' => $source->label(),
       '#required' => TRUE,
     ];
 
     $form['id'] = [
       '#type' => 'machine_name',
-      '#default_value' => $this->entity->id(),
+      '#default_value' => $source->id(),
       '#machine_name' => [
         'exists' => [LarkSource::class, 'load'],
       ],
-      '#disabled' => !$this->entity->isNew(),
+      '#disabled' => !$source->isNew(),
     ];
 
     $form['directory'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Directory'),
       '#maxlength' => 255,
-      '#default_value' => $this->entity->directory(),
+      '#default_value' => $source->directory(),
       '#required' => TRUE,
       '#attributes' => [
         'style' => 'white-space: pre;',
@@ -51,13 +54,13 @@ final class LarkSourceForm extends EntityForm {
     $form['description'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Description'),
-      '#default_value' => $this->entity->get('description'),
+      '#default_value' => $source->get('description'),
     ];
 
     $form['status'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enabled'),
-      '#default_value' => $this->entity->status(),
+      '#default_value' => $source->status(),
     ];
 
     return $form;

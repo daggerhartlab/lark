@@ -61,6 +61,20 @@ class ExportArrayTest extends TestCase {
   }
 
   /**
+   * Tests that removing a translation keeps the others.
+   */
+  public function testUnsetTranslation(): void {
+    $export = new ExportArray();
+    $export->setFields(['title' => [['value' => 'Bonjour']]], 'fr');
+    $export->setFields(['title' => [['value' => 'Hola']]], 'es');
+
+    $export->unsetTranslation('fr');
+
+    $this->assertSame(['es'], array_keys($export->translations()));
+    $this->assertSame([['value' => 'Hola']], $export->getField('title', 'es'));
+  }
+
+  /**
    * Tests adding, reading, and removing a dependency.
    */
   public function testDependencyManagement(): void {

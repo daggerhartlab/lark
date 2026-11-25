@@ -13,6 +13,8 @@ use Drupal\lark_transaction\Attribute\LarkTransaction;
  *
  * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. There is no
  *   replacement.
+ *
+ * @phpstan-ignore attribute.deprecated (The deprecated submodule uses its own attribute.)
  */
 #[LarkTransaction(
   id: 'examples',

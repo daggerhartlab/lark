@@ -10,6 +10,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Lark entity export and import commands.
+ *
+ * @phpstan-consistent-constructor
  */
 class LarkExportImportCommands extends DrushCommands {
 

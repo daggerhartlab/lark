@@ -109,6 +109,7 @@ class ImporterTest extends KernelTestBase {
     $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['uuid' => $original_uuid]);
     $this->assertNotEmpty($nodes, 'Node must be re-created by import');
     $reimported = reset($nodes);
+    $this->assertNotFalse($reimported);
     $this->assertSame('Roundtrip Node', $reimported->label());
   }
 

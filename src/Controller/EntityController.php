@@ -10,16 +10,32 @@ use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\Utility\StatusResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Provides the lark tab redirect and export diff pages for entities.
+ *
+ * @phpstan-consistent-constructor
  */
 class EntityController extends ControllerBase {
 
+  /**
+   * Constructs an EntityController.
+   *
+   * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
+   *   The exportable factory.
+   * @param \Drupal\Core\Diff\DiffFormatter $diffFormatter
+   *   The diff formatter.
+   * @param \Drupal\lark\Service\Utility\StatusResolver $statusResolver
+   *   The status resolver.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *   The request stack.
+   */
   public function __construct(
     protected ExportableFactoryInterface $exportableFactory,
     protected DiffFormatter $diffFormatter,
     protected StatusResolver $statusResolver,
+    protected RequestStack $requestStack,
   ) {
   }
 
@@ -31,6 +47,7 @@ class EntityController extends ControllerBase {
       $container->get(ExportableFactoryInterface::class),
       $container->get(DiffFormatter::class),
       $container->get(StatusResolver::class),
+      $container->get('request_stack'),
     );
   }
 
@@ -41,13 +58,13 @@ class EntityController extends ControllerBase {
    *   Redirect.
    */
   public function larkLoad(RouteMatchInterface $routeMatch): RedirectResponse {
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity_type_id = $routeMatch->getRouteObject()->getOption('_lark_entity_type_id');
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $routeMatch->getParameter($entity_type_id);
 
     // Remove destination query parameter otherwise user will be redirected to
     // the destination instead of the entity page.
-    \Drupal::request()->query->remove('destination');
+    $this->requestStack->getCurrentRequest()->query->remove('destination');
 
     // Build sub-tab urls from their routes rather than $entity->toUrl(), since
     // some entity types (e.g. config_pages) override toUrl() and ignore $rel.

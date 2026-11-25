@@ -25,9 +25,15 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ### Removed
 
 - Support for Drupal 10 and for Drupal 11 before 11.3 (#66).
+- `SourceManager::findSourceByUuid()`, which could not return a result and
+  failed on every call (#67).
 
 ### Fixed
 
+- Importing a path alias failed on sites without Pathauto when the export had
+  no Pathauto state (#67).
+- Importing an entity whose default language is not on the site, but one of
+  its translations is, failed with a fatal error (#67).
 - The Lark entity operation varies by the user's permissions in cached
   operation lists (#73).
 

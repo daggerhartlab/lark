@@ -4,6 +4,8 @@ namespace Drupal\lark\Model;
 
 /**
  * Holds a set of export arrays keyed by UUID.
+ *
+ * @phpstan-consistent-constructor
  */
 class ExportCollection extends \ArrayObject {
 
@@ -146,8 +148,8 @@ class ExportCollection extends \ArrayObject {
    * @param callable $callback
    *   The callback to apply to each item.
    *
-   * @return \Drupal\lark\Model\ExportCollection
-   *   The new collection.
+   * @return array
+   *   The callback results, keyed by UUID.
    */
   public function map(callable $callback): array {
     return array_map($callback, $this->getArrayCopy());

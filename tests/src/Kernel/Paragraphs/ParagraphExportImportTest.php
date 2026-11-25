@@ -168,6 +168,7 @@ class ParagraphExportImportTest extends KernelTestBase {
     // The paragraph must exist with content intact.
     $paragraphs = \Drupal::entityTypeManager()->getStorage('paragraph')->loadByProperties(['uuid' => $paragraph_uuid]);
     $this->assertNotEmpty($paragraphs, 'Paragraph must be re-created by import');
+    /** @var \Drupal\paragraphs\ParagraphInterface $reimported_paragraph */
     $reimported_paragraph = reset($paragraphs);
     $this->assertSame('Hello from paragraph', $reimported_paragraph->get('field_text')->value);
 
@@ -215,6 +216,7 @@ class ParagraphExportImportTest extends KernelTestBase {
     $importer->importSource('paragraph_test_source', FALSE);
 
     $paragraphs = \Drupal::entityTypeManager()->getStorage('paragraph')->loadByProperties(['uuid' => $paragraph->uuid()]);
+    /** @var \Drupal\paragraphs\ParagraphInterface $reimported_paragraph */
     $reimported_paragraph = reset($paragraphs);
 
     // The destination node might have a different ID, but parent_id should

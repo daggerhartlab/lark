@@ -9,7 +9,6 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\lark\Attribute\LarkFieldTypeHandler;
 use Drupal\path_alias\PathAliasInterface;
-use Drupal\pathauto\PathautoState;
 
 /**
  * Plugin implementation of the lark_field_type_handler.
@@ -44,6 +43,7 @@ class PathHandler extends DefaultHandler {
       // import can recreate the same behavior instead of assuming it was
       // always unchecked.
       if ($has_pathauto) {
+        // @phpstan-ignore property.notFound (Pathauto is an optional integration.)
         $values[$delta]['pathauto'] = (int) $field->get($delta)->pathauto;
       }
     }
@@ -60,8 +60,9 @@ class PathHandler extends DefaultHandler {
         // Respect the exported "Generate automatic URL alias" checkbox
         // state. If it wasn't exported (older export, or field doesn't
         // support pathauto), default to SKIP so the manual alias we're
-        // about to create below isn't immediately overwritten.
-        $pathauto_state = $value['pathauto'] ?? PathautoState::SKIP;
+        // about to create below isn't immediately overwritten. Zero is the
+        // value of \Drupal\pathauto\PathautoState::SKIP; Pathauto is optional.
+        $pathauto_state = $value['pathauto'] ?? 0;
 
         // We need the entity's id, so we must ensure the entity has been saved
         // before attempting to create a path alias.

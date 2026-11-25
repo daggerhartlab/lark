@@ -19,13 +19,6 @@ class LarkSourceManager {
   use StringTranslationTrait;
 
   /**
-   * Source storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected EntityStorageInterface $storage;
-
-  /**
    * Constructs a LarkSourceManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
@@ -39,9 +32,7 @@ class LarkSourceManager {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected FileSystemInterface $fileSystem,
     protected LarkSettings $larkSettings,
-  ) {
-    $this->storage = $this->entityTypeManager->getStorage('lark_source');
-  }
+  ) {}
 
   /**
    * Get source storage.
@@ -50,7 +41,7 @@ class LarkSourceManager {
    *   Source storage.
    */
   public function storage(): EntityStorageInterface {
-    return $this->storage;
+    return $this->entityTypeManager->getStorage('lark_source');
   }
 
   /**

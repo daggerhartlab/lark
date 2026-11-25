@@ -380,7 +380,7 @@ class LinkHandlerTest extends KernelTestBase {
     $link->set('link', $manager->alterImportValues($values, $link->get('link')));
     $link->save();
 
-    $this->assertSame('entity:node/' . $node->id(), $link->get('link')->first()->uri);
+    $this->assertSame('entity:node/' . $node->id(), $link->get('link')->first()->get('uri')->getValue());
   }
 
   /**
