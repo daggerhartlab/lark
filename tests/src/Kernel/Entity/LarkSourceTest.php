@@ -22,11 +22,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class LarkSourceTest extends KernelTestBase {
 
-  /**
-   * Lark.settings config stores boolean fields as integers; suppress strict schema check.
-   */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = ['lark', 'user', 'system'];
 
   protected function setUp(): void {

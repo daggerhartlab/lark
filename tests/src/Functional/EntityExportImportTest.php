@@ -20,11 +20,6 @@ class EntityExportImportTest extends BrowserTestBase {
   protected static $modules = ['lark', 'node', 'user', 'field', 'text', 'filter', 'block'];
   protected $defaultTheme = 'stark';
 
-  /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
-   */
-  protected $strictConfigSchema = FALSE;
-
   protected function setUp(): void {
     parent::setUp();
     NodeType::create(['type' => 'article', 'name' => 'Article'])->save();

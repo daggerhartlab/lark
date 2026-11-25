@@ -24,11 +24,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class NestedParagraphTest extends KernelTestBase {
 
-  /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
-   */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
     'paragraphs', 'entity_reference_revisions', 'file',

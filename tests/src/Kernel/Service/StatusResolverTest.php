@@ -31,11 +31,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class StatusResolverTest extends KernelTestBase {
 
-  /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
-   */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
   ];

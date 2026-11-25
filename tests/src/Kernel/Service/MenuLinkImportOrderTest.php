@@ -35,11 +35,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class MenuLinkImportOrderTest extends KernelTestBase {
 
-  /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
-   */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = [
     'lark', 'user', 'system', 'field', 'link', 'menu_link_content',
   ];

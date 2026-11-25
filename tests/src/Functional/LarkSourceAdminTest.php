@@ -18,11 +18,6 @@ class LarkSourceAdminTest extends BrowserTestBase {
   protected static $modules = ['lark', 'node', 'user'];
   protected $defaultTheme = 'stark';
 
-  /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
-   */
-  protected $strictConfigSchema = FALSE;
-
   protected function setUp(): void {
     parent::setUp();
     $admin = $this->drupalCreateUser([

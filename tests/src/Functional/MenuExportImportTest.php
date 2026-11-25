@@ -18,11 +18,6 @@ class MenuExportImportTest extends BrowserTestBase {
 
   protected $defaultTheme = 'stark';
 
-  /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
-   */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = [
     'lark', 'node', 'user', 'field', 'text', 'filter', 'block',
     'menu_ui', 'menu_link_content', 'link',
