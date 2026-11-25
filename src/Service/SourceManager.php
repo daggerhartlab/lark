@@ -22,8 +22,9 @@ use Drupal\lark\Entity\LarkSourceInterface;
  * Modules can define lark_sources in a MODULE_NAME.lark_sources.yml file contained
  * in the module's base directory. Each lark_source has the following structure:
  *
- * @deprecated
- *   Replaced by lark_source config entity.
+ * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. Use the
+ *   lark_source config entity, \Drupal\lark\Entity\LarkSourceInterface,
+ *   instead.
  *
  * @code
  *   MACHINE_NAME:

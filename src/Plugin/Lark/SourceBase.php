@@ -8,8 +8,9 @@ use Drupal\Core\Extension\ExtensionPathResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * @deprecated
- *   Replaced by lark_source config entity.
+ * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. Use the
+ *   lark_source config entity, \Drupal\lark\Entity\LarkSourceInterface,
+ *   instead.
  */
 class SourceBase extends PluginBase implements LarkSourceInterface {
 

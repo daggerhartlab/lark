@@ -10,8 +10,8 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 /**
  * The lark transaction attribute.
  *
- * @deprecated
- *   Remove in v2.
+ * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. There is no
+ *   replacement.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class LarkTransaction extends AttributeBase {
