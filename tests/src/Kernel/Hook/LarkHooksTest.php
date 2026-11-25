@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\lark\Kernel\Hook;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Routing\EntityTypeInfo;
@@ -105,12 +106,16 @@ class LarkHooksTest extends KernelTestBase {
     $module_handler = $this->container->get('module_handler');
 
     $this->setUpCurrentUser(['uid' => 2], ['lark import entity']);
-    $operations = $module_handler->invokeAll('entity_operation', [$node]);
+    $cacheability = new CacheableMetadata();
+    $operations = $module_handler->invokeAll('entity_operation', [$node, $cacheability]);
     $this->assertArrayHasKey('lark', $operations);
+    $this->assertContains('user.permissions', $cacheability->getCacheContexts());
 
     $this->setUpCurrentUser(['uid' => 3]);
-    $operations = $module_handler->invokeAll('entity_operation', [$node]);
+    $cacheability = new CacheableMetadata();
+    $operations = $module_handler->invokeAll('entity_operation', [$node, $cacheability]);
     $this->assertArrayNotHasKey('lark', $operations);
+    $this->assertContains('user.permissions', $cacheability->getCacheContexts());
   }
 
 }

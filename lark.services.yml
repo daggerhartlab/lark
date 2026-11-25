@@ -10,6 +10,10 @@ services:
     factory: ['Drupal\lark\Model\LarkSettings', 'create']
     autowire: true
 
+  Drupal\lark\Routing\EntityTypeInfo:
+    class: Drupal\lark\Routing\EntityTypeInfo
+    autowire: true
+
   Drupal\lark\Routing\RouteSubscriber:
     class: Drupal\lark\Routing\RouteSubscriber
     autowire: true
