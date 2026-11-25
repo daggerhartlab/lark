@@ -26,11 +26,6 @@ class LarkOverviewTest extends BrowserTestBase {
   protected $defaultTheme = 'stark';
 
   /**
-   * {@inheritdoc}
-   */
-  protected $strictConfigSchema = FALSE;
-
-  /**
    * The overview page shows the README.
    */
   public function testOverviewShowsReadme(): void {

@@ -7,8 +7,8 @@ namespace Drupal\lark_transaction\Plugin;
 /**
  * Interface for lark transaction plugins.
  *
- * @deprecated
- *   Remove in v2.
+ * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. There is no
+ *   replacement.
  */
 interface LarkTransactionInterface {
 
@@ -98,22 +98,16 @@ interface LarkTransactionInterface {
 
   /**
    * Pre-execution can be used to set up the content creation/updates.
-   *
-   * @return void
    */
   public function preExecute(): void;
 
   /**
    * Perform the content creation/updates.
-   *
-   * @return void
    */
   public function execute(): void;
 
   /**
    * Post-execution, such as validating the content creation/updates.
-   *
-   * @return void
    */
   public function postExecute(): void;
 

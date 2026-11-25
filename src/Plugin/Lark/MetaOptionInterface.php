@@ -12,15 +12,17 @@ use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\ExportArray;
 
 /**
- * Interface for lark_entity_export_form plugins. These plugins are used when
- * building and handling the entity export form.
+ * Interface for lark_entity_export_form plugins.
+ *
+ * These plugins are used when building and handling the entity export form.
  */
 interface MetaOptionInterface {
 
   /**
-   * Plugin ID.
+   * Returns the plugin ID.
    *
    * @return string
+   *   The plugin ID.
    */
   public function id(): string;
 
@@ -28,6 +30,7 @@ interface MetaOptionInterface {
    * Returns the translated plugin label.
    *
    * @return string
+   *   The plugin label.
    */
   public function label(): string;
 
@@ -35,6 +38,7 @@ interface MetaOptionInterface {
    * Returns the translated plugin description.
    *
    * @return string
+   *   The plugin description.
    */
   public function description(): string;
 
@@ -42,8 +46,10 @@ interface MetaOptionInterface {
    * Return whether this element applies to the given entity.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to check.
    *
    * @return bool
+   *   TRUE if this element applies to the entity.
    */
   public function applies(EntityInterface $entity): bool;
 
@@ -65,13 +71,13 @@ interface MetaOptionInterface {
    */
   public function formElement(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents): array;
 
-//  public function validateElement(array &$form, FormStateInterface $form_state): void;
-
   /**
+   * Processes the submitted values for this plugin.
+   *
    * @param array $submitted_values
    *   Values for this plugin for a single export entity.
    * @param \Drupal\lark\Model\ExportableInterface $exportable
-   *   UUID of the entity.
+   *   The exportable the values belong to.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   Current form state.
    *
@@ -84,33 +90,27 @@ interface MetaOptionInterface {
    * Perform additional actions during the archiving of an exportable.
    *
    * @param \Drupal\Core\Archiver\ArchiveTar $archive
+   *   The archive being built.
    * @param \Drupal\lark\Model\ExportableInterface $exportable
-   *
-   * @return void
+   *   The exportable being archived.
    */
   public function preExportDownload(ArchiveTar $archive, ExportableInterface $exportable): void;
 
   /**
-   * Perform additional actions and modifications to the exportable immediately
-   * before it is written to yaml.
+   * Modifies the exportable immediately before it is written to yaml.
    *
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   Exportable being written.
-   *
-   * @return void
    */
   public function preExportWrite(ExportableInterface $exportable): void;
 
   /**
-   * Perform additional actions and modifications to the entity immediately
-   * before is it saved to the database.
+   * Modifies the entity immediately before it is saved to the database.
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   Entity being imported.
    * @param \Drupal\lark\Model\ExportArray $export
    *   Export array for the entity being imported.
-   *
-   * @return void
    */
   public function preImportSave(ContentEntityInterface $entity, ExportArray $export): void;
 

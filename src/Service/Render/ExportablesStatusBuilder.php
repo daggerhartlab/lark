@@ -48,6 +48,7 @@ class ExportablesStatusBuilder {
    * Get status render details.
    *
    * @param \Drupal\lark\Model\ExportableStatus $status
+   *   The status.
    *
    * @return string[]
    *   Exportable status render details.

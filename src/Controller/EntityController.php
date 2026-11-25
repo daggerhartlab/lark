@@ -11,6 +11,9 @@ use Drupal\lark\Service\Utility\StatusResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
+/**
+ * Provides the lark tab redirect and export diff pages for entities.
+ */
 class EntityController extends ControllerBase {
 
   public function __construct(
@@ -66,6 +69,7 @@ class EntityController extends ControllerBase {
    * Display diff between exported and current entity.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
+   *   The current route match.
    *
    * @return array
    *   Render array.

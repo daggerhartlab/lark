@@ -25,8 +25,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Base class for lark transaction plugins.
  *
- * @deprecated
- *   Remove in v2.
+ * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. There is no
+ *   replacement.
  */
 abstract class LarkTransactionPluginBase extends PluginBase implements LarkTransactionInterface, ContainerFactoryPluginInterface {
 
@@ -37,9 +37,9 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    *
    * @param array $configuration
    *   Configuration array.
-   * @param $plugin_id
+   * @param string $plugin_id
    *   Plugin ID.
-   * @param $plugin_definition
+   * @param mixed $plugin_definition
    *   Plugin definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager service.

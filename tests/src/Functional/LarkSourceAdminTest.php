@@ -7,22 +7,28 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * Test Source entity CRUD via the admin UI.
+ * Tests Source entity CRUD via the admin UI.
+ *
+ * Runs in separate processes to avoid state leaks, which Drupal 11.3.0+
+ * requires of BrowserTestBase tests and 12.0.0 will enforce.
  */
 #[Group('lark')]
-// Required by Drupal 11.3.0+: BrowserTestBase tests must isolate to avoid state leaks.
-// Will become a hard requirement in Drupal 12.0.0.
 #[RunTestsInSeparateProcesses]
 class LarkSourceAdminTest extends BrowserTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = ['lark', 'node', 'user'];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $defaultTheme = 'stark';
 
   /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
+   * {@inheritdoc}
    */
-  protected $strictConfigSchema = FALSE;
-
   protected function setUp(): void {
     parent::setUp();
     $admin = $this->drupalCreateUser([
@@ -32,11 +38,17 @@ class LarkSourceAdminTest extends BrowserTestBase {
     $this->drupalLogin($admin);
   }
 
+  /**
+   * Tests that the source list page loads.
+   */
   public function testSourceListPageLoads(): void {
     $this->drupalGet('/admin/lark/source');
     $this->assertSession()->statusCodeEquals(200);
   }
 
+  /**
+   * Tests that a source created via the add form appears in the list.
+   */
   public function testCreateSourceViaUi(): void {
     $this->drupalGet('/admin/lark/source/add');
     $this->assertSession()->statusCodeEquals(200);
@@ -53,6 +65,9 @@ class LarkSourceAdminTest extends BrowserTestBase {
     $this->assertSession()->pageTextContains('Test Source');
   }
 
+  /**
+   * Tests that the source list is denied without the admin permission.
+   */
   public function testSourcePageRequiresPermission(): void {
     $this->drupalLogout();
     $anonymous = $this->drupalCreateUser([]);

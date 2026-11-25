@@ -14,27 +14,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests \Drupal\lark\Entity\LarkSource.
+ *
+ * Process isolation is required by Drupal 11.3.0+ to avoid state leaks, and
+ * will become a hard requirement in Drupal 12.0.0.
  */
 #[CoversClass(LarkSource::class)]
 #[Group('lark')]
-// Required by Drupal 11.3.0+: kernel tests must isolate to avoid state leaks.
-// Will become a hard requirement in Drupal 12.0.0.
 #[RunTestsInSeparateProcesses]
 class LarkSourceTest extends KernelTestBase {
 
   /**
-   * Lark.settings config stores boolean fields as integers; suppress strict schema check.
+   * {@inheritdoc}
    */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = ['lark', 'user', 'system'];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('lark_source');
     $this->installConfig(['lark']);
   }
 
+  /**
+   * Tests that a plain absolute directory is returned unchanged.
+   */
   public function testDirectoryProcessedReturnsAbsolutePathForPlainDirectory(): void {
     /** @var \Drupal\lark\Entity\LarkSource $source */
     $source = LarkSource::create([
@@ -47,6 +52,9 @@ class LarkSourceTest extends KernelTestBase {
     $this->assertSame('/tmp/absolute-path', $source->directoryProcessed());
   }
 
+  /**
+   * Tests that a [module] token expands to the module's absolute path.
+   */
   public function testDirectoryProcessedExpandsModuleToken(): void {
     /** @var \Drupal\lark\Entity\LarkSource $source */
     $source = LarkSource::create([
@@ -62,6 +70,9 @@ class LarkSourceTest extends KernelTestBase {
     $this->assertStringNotContainsString('[lark]', $processed, 'Token must be fully expanded');
   }
 
+  /**
+   * Tests that the destination path joins entity type, bundle, and filename.
+   */
   public function testGetDestinationFilepathBuildsCorrectPath(): void {
     /** @var \Drupal\lark\Entity\LarkSource $source */
     $source = LarkSource::create([
@@ -74,7 +85,7 @@ class LarkSourceTest extends KernelTestBase {
   }
 
   /**
-   * The entity type is declared with an attribute and keeps its definition.
+   * Tests that the entity type is declared by attribute with its definition.
    */
   public function testEntityTypeDefinition(): void {
     $this->assertNotEmpty((new \ReflectionClass(LarkSource::class))->getAttributes(ConfigEntityType::class));
@@ -98,7 +109,13 @@ class LarkSourceTest extends KernelTestBase {
       'add-form' => '/admin/lark/source/add',
       'edit-form' => '/admin/lark/source/{lark_source}/edit',
       'delete-form' => '/admin/lark/source/{lark_source}/delete',
-    ], array_intersect_key($definition->getLinkTemplates(), array_flip(['canonical', 'collection', 'add-form', 'edit-form', 'delete-form'])));
+    ], array_intersect_key($definition->getLinkTemplates(), array_flip([
+      'canonical',
+      'collection',
+      'add-form',
+      'edit-form',
+      'delete-form',
+    ])));
     $this->assertSame('id', $definition->getKey('id'));
     $this->assertSame('label', $definition->getKey('label'));
     $this->assertSame('uuid', $definition->getKey('uuid'));

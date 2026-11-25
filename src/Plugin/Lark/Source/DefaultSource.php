@@ -11,7 +11,8 @@ use Drupal\lark\Plugin\Lark\SourceBase;
 /**
  * Default class used for lark_source plugins.
  *
- * @deprecated
- *   Replaced by lark_source config entity.
+ * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. Use the
+ *   lark_source config entity, \Drupal\lark\Entity\LarkSourceInterface,
+ *   instead.
  */
 class DefaultSource extends SourceBase implements LarkSourceInterface, ContainerFactoryPluginInterface {}

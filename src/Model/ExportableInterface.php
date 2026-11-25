@@ -100,7 +100,7 @@ interface ExportableInterface {
    *
    * @param string $name
    *   Name of data.
-   * @param $value
+   * @param mixed $value
    *   Value.
    *
    * @return $this
@@ -111,6 +111,7 @@ interface ExportableInterface {
    * Get the values already exported to this Exportable's Source's.
    *
    * @return \Drupal\lark\Model\ExportArray
+   *   The source export array.
    */
   public function getSourceExportArray(): ExportArray;
 

@@ -21,11 +21,17 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class EntityUtilityTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
     'link', 'menu_link_content',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -38,6 +44,9 @@ class EntityUtilityTest extends KernelTestBase {
     Menu::create(['id' => 'test-menu', 'label' => 'Test menu'])->save();
   }
 
+  /**
+   * Tests that an entity is not listed among its own dependencies.
+   */
   public function testGetEntityExportDependenciesExcludesRootEntity(): void {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
@@ -49,6 +58,9 @@ class EntityUtilityTest extends KernelTestBase {
     $this->assertArrayNotHasKey($node->uuid(), $deps, 'The root entity should not appear in its own dependency list');
   }
 
+  /**
+   * Tests that the UUID to entity type pairs include the root entity.
+   */
   public function testGetEntityUuidEntityTypePairsIncludesRoot(): void {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
@@ -62,6 +74,9 @@ class EntityUtilityTest extends KernelTestBase {
     $this->assertSame('node', $pairs[$node->uuid()]);
   }
 
+  /**
+   * Tests that the entity array omits the entity and revision IDs.
+   */
   public function testGetEntityArrayStripsIdAndRevisionKeys(): void {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
@@ -75,6 +90,19 @@ class EntityUtilityTest extends KernelTestBase {
     $this->assertArrayHasKey('uuid', $array);
   }
 
+  /**
+   * Creates and saves a menu link, optionally under a parent link.
+   *
+   * @param string $title
+   *   The link title.
+   * @param \Drupal\menu_link_content\Entity\MenuLinkContent|null $parent
+   *   The parent link, or NULL for a top-level link.
+   * @param string $uri
+   *   The link URI.
+   *
+   * @return \Drupal\menu_link_content\Entity\MenuLinkContent
+   *   The saved menu link.
+   */
   private function createLink(string $title, ?MenuLinkContent $parent = NULL, string $uri = 'internal:/'): MenuLinkContent {
     $link = MenuLinkContent::create([
       'title' => $title,
@@ -86,6 +114,9 @@ class EntityUtilityTest extends KernelTestBase {
     return $link;
   }
 
+  /**
+   * Tests that a dependency contributed by a field handler is discovered.
+   */
   public function testHandlerContributedDependencyIsDiscovered(): void {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
@@ -98,6 +129,9 @@ class EntityUtilityTest extends KernelTestBase {
     $this->assertArrayHasKey($parent->uuid(), $deps);
   }
 
+  /**
+   * Tests that handler-contributed dependencies are followed recursively.
+   */
   public function testHandlerContributedDependencyIsRecursed(): void {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
@@ -115,6 +149,9 @@ class EntityUtilityTest extends KernelTestBase {
     );
   }
 
+  /**
+   * Tests that the root entity comes last in discovery order.
+   */
   public function testRootEntityIsDiscoveredLast(): void {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
@@ -136,6 +173,9 @@ class EntityUtilityTest extends KernelTestBase {
     $this->assertContains($grandparent->uuid(), $order);
   }
 
+  /**
+   * Tests that an entity without reference fields has no references.
+   */
   public function testGetEntityExportReferencesIsEmptyWithoutContributors(): void {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
@@ -146,6 +186,9 @@ class EntityUtilityTest extends KernelTestBase {
     $this->assertSame([], $utility->getEntityExportReferences($node));
   }
 
+  /**
+   * Tests that an export of such an entity records no references.
+   */
   public function testCreateFromEntityHasEmptyReferencesWithoutContributors(): void {
     $node = Node::create(['type' => 'article', 'title' => 'Test']);
     $node->save();

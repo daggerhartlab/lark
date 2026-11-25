@@ -23,18 +23,23 @@ interface LarkSourceInterface extends ConfigEntityInterface {
    * Returns the translated plugin label.
    *
    * @return string|\Drupal\Core\StringTranslation\TranslatableMarkup|null
+   *   The source label.
    */
   public function label();
 
   /**
+   * Returns the source description.
+   *
    * @return string
+   *   The source description.
    */
   public function description(): string;
 
   /**
-   * Unprocessed raw directory string.
+   * Returns the unprocessed raw directory string.
    *
    * @return string
+   *   The directory as stored.
    */
   public function directory(): string;
 
@@ -43,8 +48,6 @@ interface LarkSourceInterface extends ConfigEntityInterface {
    *
    * @param string $directory
    *   The directory where the source is located.
-   *
-   * @return void
    */
   public function setDirectory(string $directory): void;
 
@@ -53,6 +56,9 @@ interface LarkSourceInterface extends ConfigEntityInterface {
    *
    * @param bool $absolute
    *   Whether to return an absolute path.
+   *
+   * @return string
+   *   The processed directory.
    */
   public function directoryProcessed(bool $absolute = TRUE): string;
 

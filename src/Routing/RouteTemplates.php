@@ -4,12 +4,19 @@ namespace Drupal\lark\Routing;
 
 use Drupal\Component\Serialization\Yaml;
 
+/**
+ * Builds lark route and link definitions from routeTemplates.yml.
+ */
 class RouteTemplates {
 
   /**
+   * Gets the route templates for an entity type.
+   *
    * @param string $entity_type_id
+   *   The entity type id.
    *
    * @return array[]
+   *   Route template definitions keyed by instance name.
    */
   public static function getRouteTemplates(string $entity_type_id): array {
     $yaml = Yaml::decode(file_get_contents(__DIR__ . '/routeTemplates.yml'));

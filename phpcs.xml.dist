@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="lark">
+  <description>Drupal coding standards for Lark.</description>
+
+  <!-- These require an @see link to a drupal.org change record; Lark is not on drupal.org. -->
+  <rule ref="Drupal">
+    <exclude name="Drupal.Commenting.Deprecated.DeprecatedMissingSeeTag"/>
+    <exclude name="Drupal.Commenting.Deprecated.DeprecatedWrongSeeUrlFormat"/>
+  </rule>
+  <rule ref="DrupalPractice"/>
+</ruleset>

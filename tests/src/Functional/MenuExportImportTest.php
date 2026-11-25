@@ -16,18 +16,22 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class MenuExportImportTest extends BrowserTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $defaultTheme = 'stark';
 
   /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
+   * {@inheritdoc}
    */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = [
     'lark', 'node', 'user', 'field', 'text', 'filter', 'block',
     'menu_ui', 'menu_link_content', 'link',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     Menu::create(['id' => 'test-menu', 'label' => 'Test menu'])->save();
@@ -46,6 +50,17 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->drupalPlaceBlock('local_tasks_block');
   }
 
+  /**
+   * Creates a link in the test menu.
+   *
+   * @param string $title
+   *   The link title.
+   * @param \Drupal\menu_link_content\Entity\MenuLinkContent|null $parent
+   *   The parent link, or NULL for a top-level link.
+   *
+   * @return \Drupal\menu_link_content\Entity\MenuLinkContent
+   *   The saved link.
+   */
   private function createLink(string $title, ?MenuLinkContent $parent = NULL): MenuLinkContent {
     $link = MenuLinkContent::create([
       'title' => $title,
@@ -57,6 +72,9 @@ class MenuExportImportTest extends BrowserTestBase {
     return $link;
   }
 
+  /**
+   * Tests that the menu edit form links to the Lark tab.
+   */
   public function testLarkTabAppearsOnTheMenuEditForm(): void {
     $this->drupalLogin($this->drupalCreateUser([
       'administer menu', 'lark export entity', 'lark import entity',
@@ -67,6 +85,9 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->linkByHrefExists('/admin/structure/menu/manage/test-menu/lark');
   }
 
+  /**
+   * Tests that the export tab lists every link in the menu.
+   */
   public function testExportTabListsEveryLinkInTheMenu(): void {
     $this->createLink('First');
     $this->createLink('Second');
@@ -81,6 +102,9 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->pageTextContains('Second');
   }
 
+  /**
+   * Tests that the export tab is denied without the export permission.
+   */
   public function testExportTabIsDeniedWithoutTheExportPermission(): void {
     $this->drupalLogin($this->drupalCreateUser(['administer menu']));
 
@@ -88,6 +112,9 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->statusCodeEquals(403);
   }
 
+  /**
+   * Tests that the import tab is denied without the import permission.
+   */
   public function testImportTabIsDeniedWithoutTheImportPermission(): void {
     $this->drupalLogin($this->drupalCreateUser(['administer menu']));
 
@@ -95,6 +122,9 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->statusCodeEquals(403);
   }
 
+  /**
+   * Tests that the Lark tab redirects an export-only user to export.
+   */
   public function testLarkTabRedirectsToExportForAnExportOnlyUser(): void {
     $this->drupalLogin($this->drupalCreateUser([
       'administer menu', 'lark export entity',
@@ -104,6 +134,9 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->addressEquals('/admin/structure/menu/manage/test-menu/lark/export');
   }
 
+  /**
+   * Tests that the Lark tab redirects an import-only user to import.
+   */
   public function testLarkTabRedirectsToImportForAnImportOnlyUser(): void {
     $this->drupalLogin($this->drupalCreateUser([
       'administer menu', 'lark import entity',
@@ -113,6 +146,9 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->addressEquals('/admin/structure/menu/manage/test-menu/lark/import');
   }
 
+  /**
+   * Tests that an empty menu's export tab has no export button.
+   */
   public function testEmptyMenuRendersWithoutAnExportButton(): void {
     $this->drupalLogin($this->drupalCreateUser([
       'administer menu', 'lark export entity',
@@ -125,6 +161,9 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->buttonNotExists('Export to Source');
   }
 
+  /**
+   * Tests that the export tab has a download button.
+   */
   public function testDownloadButtonExistsOnTheExportTab(): void {
     $this->createLink('First');
 
@@ -136,7 +175,10 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->buttonExists('Download');
   }
 
-  public function testDownloadButtonReturnsAFileResponse(): void {
+  /**
+   * Tests that the download button returns a file attachment.
+   */
+  public function testDownloadButtonReturnsFileResponse(): void {
     $this->createLink('First');
 
     $this->drupalLogin($this->drupalCreateUser([
@@ -150,6 +192,9 @@ class MenuExportImportTest extends BrowserTestBase {
     $this->assertSession()->responseHeaderContains('Content-Disposition', 'attachment');
   }
 
+  /**
+   * Tests that a deleted child link is reimported under its parent.
+   */
   public function testDeletedChildLinkIsRecreatedWithItsParentIntact(): void {
     $this->drupalLogin($this->drupalCreateUser([
       'administer menu', 'lark export entity', 'lark import entity',

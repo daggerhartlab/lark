@@ -11,6 +11,9 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Adds lark link templates and operations to exportable entity types.
+ */
 class EntityTypeInfo implements ContainerInjectionInterface {
 
   use StringTranslationTrait;
@@ -18,10 +21,12 @@ class EntityTypeInfo implements ContainerInjectionInterface {
   const IS_EXPORTABLE = '_lark_exportable';
 
   /**
-   * EntityTypeInfo constructor.
+   * Constructs an EntityTypeInfo object.
    *
    * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   Current user.
+   * @param \Drupal\lark\Service\Utility\EntityUtility $entityUtility
+   *   The entity utility.
    */
   public function __construct(
     protected AccountInterface $currentUser,
@@ -68,7 +73,8 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       // The delete-form template is used to extract and set additional params
       // dynamically. If there is no 'delete-form' template still create the
       // link using 'entity_type_id/{entity_type_id}' as the link. This allows
-      // lark info to be viewed for any entity, even if the url has to be typed manually.
+      // lark info to be viewed for any entity, even if the url has to be typed
+      // manually.
       // @see https://gitlab.com/drupalspoons/devel/-/issues/377
       $link_template = $entity_type->getLinkTemplate('edit-form') ?: $entity_type_id . "/{{$entity_type_id}}";
       $template_instances = RouteTemplates::getRouteTemplates($entity_type_id);
@@ -95,16 +101,13 @@ class EntityTypeInfo implements ContainerInjectionInterface {
   }
 
   /**
-   * Sets entity type link template.
+   * Gets the route parameter path parts from a link template.
    *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   Entity type.
    * @param string $link_template
-   *   Entity link.
-   * @param string $link_key
-   *   Link key.
-   * @param string $base_path
-   *   Base path for link key.
+   *   Entity link template.
+   *
+   * @return string
+   *   The template's route parameters as path parts, e.g. "/{node}".
    */
   protected function getTemplatePath(string $link_template) {
     // Extract all route parameters from the given template and set them to

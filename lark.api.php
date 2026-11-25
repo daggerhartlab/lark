@@ -2,6 +2,7 @@
 
 /**
  * @file
+ * Hooks provided by the Lark module.
  */
 
 use Drupal\Core\Entity\ContentEntityInterface;

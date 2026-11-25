@@ -23,16 +23,18 @@ class SourceViewBuilder {
   use StringTranslationTrait;
 
   /**
-   * SourceViewBuilder constructor.
+   * Constructs a SourceViewBuilder object.
    *
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo
+   *   Entity type bundle info.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager.
-   * @param \Drupal\lark\Service\ImporterInterface $importer
-   *   The importer.
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   Exportable factory.
    * @param \Drupal\lark\Service\Render\ExportablesStatusBuilder $statusBuilder
    *   Exportable status builder.
+   * @param \Drupal\lark\Service\ImporterInterface $importer
+   *   The importer.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   Module handler.
    * @param \Drupal\lark\Service\Render\SourceRootsViewBuilder $rootsViewBuilder
@@ -180,6 +182,7 @@ class SourceViewBuilder {
    * Build the contents summary for a single Source.
    *
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   Source config entity.
    *
    * @return array
    *   Summary table.
@@ -264,10 +267,9 @@ class SourceViewBuilder {
    *
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   Source config entity.
-   * @param \Drupal\lark\Model\ExportableInterface $root_exportable
-   *   The root-level exportable entity.
    *
    * @return array
+   *   Table render array.
    */
   public function table(LarkSourceInterface $source): array {
     $path = $this->moduleHandler->getModule('lark')->getPath();

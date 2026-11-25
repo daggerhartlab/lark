@@ -15,8 +15,8 @@ use Drupal\lark_transaction\Attribute\LarkTransaction;
 /**
  * Lark transactions plugin manager.
  *
- * @deprecated
- *   Remove in v2.
+ * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. There is no
+ *   replacement.
  */
 class LarkTransactionPluginManager extends DefaultPluginManager {
 
@@ -170,8 +170,6 @@ class LarkTransactionPluginManager extends DefaultPluginManager {
    *
    * @param \Drupal\lark_transaction\Plugin\LarkTransactionInterface $plugin
    *   Plugin instance.
-   *
-   * @return void
    */
   protected function upsertPluginHistory(LarkTransactionInterface $plugin): void {
     $this->database->merge('lark_transaction')

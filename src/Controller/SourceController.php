@@ -19,13 +19,16 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 class SourceController extends ControllerBase {
 
   /**
-   * The controller constructor.
+   * Constructs a SourceController object.
    *
    * @param \Drupal\lark\Controller\DownloadController $downloadController
+   *   The download controller.
    * @param \Drupal\lark\Service\ImporterInterface $importer
    *   The entity importer service.
    * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
+   *   The lark source manager.
    * @param \Drupal\lark\Service\Render\SourceViewBuilder $sourceViewBuilder
+   *   The source view builder.
    */
   public function __construct(
     protected DownloadController $downloadController,
@@ -47,9 +50,10 @@ class SourceController extends ControllerBase {
   }
 
   /**
-   * Import single entity.
+   * Imports a single entity from a source.
    *
    * @param \Drupal\lark\Entity\LarkSourceInterface $lark_source
+   *   The source to import from.
    * @param string $uuid
    *   The UUID of the entity to import.
    *
@@ -67,9 +71,10 @@ class SourceController extends ControllerBase {
   }
 
   /**
-   * Import all entities from a single source.
+   * Imports all entities from a single source.
    *
    * @param \Drupal\lark\Entity\LarkSourceInterface $lark_source
+   *   The source to import.
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   Redirect response.
@@ -85,11 +90,13 @@ class SourceController extends ControllerBase {
   }
 
   /**
-   * View source title.
+   * Gets the source page title.
    *
    * @param string $lark_source
+   *   The source id.
    *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   * @return string
+   *   The page title.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
@@ -103,9 +110,14 @@ class SourceController extends ControllerBase {
   }
 
   /**
+   * Builds the source page.
+   *
    * @param string $lark_source
+   *   The source id.
    *
    * @return array
+   *   Render array.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
@@ -117,9 +129,14 @@ class SourceController extends ControllerBase {
   }
 
   /**
-   * @param string $source_id
+   * Downloads a source's exports as an archive.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $lark_source
+   *   The source to download.
    *
    * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+   *   File download response.
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */

@@ -16,6 +16,9 @@ use Drupal\lark\Service\Render\ExportablesTableBuilder;
 use Drupal\lark\Service\LarkSourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Provides shared services for the entity export and import forms.
+ */
 abstract class EntityBaseForm extends FormBase {
 
   use ExportablesOverridesTrait;

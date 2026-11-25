@@ -37,6 +37,9 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(
     ContainerInterface $container,
     array $configuration,
@@ -85,11 +88,6 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
   /**
    * {@inheritdoc}
    */
-  //public function validateElement(array &$element, FormStateInterface $form_state): void {}
-
-  /**
-   * {@inheritdoc}
-   */
   public function processFormValues(array $submitted_values, ExportableInterface $exportable, FormStateInterface $form_state): array {
     return [];
   }
@@ -105,12 +103,20 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
   public function preExportDownload(ArchiveTar $archive, ExportableInterface $exportable): void {}
 
   /**
-   * Takes a normal render array for a radios element and makes it work within
-   * a rendered table element. This solves a core Drupal bug where Radios are
-   * not rendered at all within a table.
+   * Makes a radios render array work within a rendered table element.
+   *
+   * This solves a core Drupal bug where Radios are not rendered at all within
+   * a table.
    *
    * @link https://www.drupal.org/project/drupal/issues/3246825
    *
+   * @param array $form
+   *   The form being built. A hidden element registering the tree name is
+   *   added to it when needed.
+   * @param array $render_parents
+   *   The #parents for the radios element.
+   * @param string $render_name
+   *   The name of the radios element.
    * @param array $radios
    *   Normal radios render array.
    *

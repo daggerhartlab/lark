@@ -19,6 +19,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 - Implement hooks in OOP hook classes, and remove `lark.module` (#73).
 - Declare the `lark_source` entity type with an attribute instead of an
   annotation (#74).
+- Store the `should_export_assets` and `should_import_assets` settings as
+  booleans. Run database updates to convert existing values (#67).
 
 ### Removed
 

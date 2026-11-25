@@ -241,6 +241,7 @@ class ExportableFactory implements ExportableFactoryInterface {
    *   Keyed by uuid.
    *
    * @return \Drupal\lark\Model\ExportableInterface
+   *   The prepared exportable.
    */
   protected function prepareExportable(ExportableInterface $exportable, ?LarkSourceInterface $source = NULL, array $meta_option_overrides = []): ExportableInterface {
     $entity = $exportable->entity();

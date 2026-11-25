@@ -24,10 +24,11 @@ interface EntityUpdaterInterface {
    *   The bundle.
    * @param string $default_langcode
    *   The default langcode.
-   * @param string|NULL $label
+   * @param string|null $label
    *   The label.
    *
    * @return \Drupal\Core\Entity\ContentEntityInterface
+   *   The existing or newly created entity.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
@@ -40,8 +41,6 @@ interface EntityUpdaterInterface {
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   Entity being imported.
-   *
-   * @return void
    */
   public function ensureEntityOwner(ContentEntityInterface $entity): void;
 
@@ -52,8 +51,6 @@ interface EntityUpdaterInterface {
    *   Entity.
    * @param \Drupal\lark\Model\ExportArray $export
    *   Decoded export data.
-   *
-   * @return void
    *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException

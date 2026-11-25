@@ -71,5 +71,6 @@ jobs:
         with:
           phpunit: false
           phpcs: true
+          phpcs_standard: ${{ github.workspace }}/phpcs.xml.dist
           phpstan: true
           report_only: true

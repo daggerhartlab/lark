@@ -32,16 +32,22 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 class StatusResolverTest extends KernelTestBase {
 
   /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
+   * {@inheritdoc}
    */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
   ];
 
+  /**
+   * The absolute path of the temporary export directory.
+   *
+   * @var string
+   */
   protected string $exportDir;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -54,7 +60,8 @@ class StatusResolverTest extends KernelTestBase {
     // Create user 1 so AdminAccountSwitcher doesn't fail.
     User::create(['uid' => 1, 'name' => 'admin', 'status' => 1])->save();
 
-    // Use an absolute path so LarkSource::directoryProcessed() doesn't prepend DRUPAL_ROOT.
+    // Use an absolute path so LarkSource::directoryProcessed() doesn't prepend
+    // DRUPAL_ROOT.
     $this->exportDir = sys_get_temp_dir() . '/lark-status-test-' . uniqid();
     LarkSource::create([
       'id' => 'test_source',
@@ -67,6 +74,9 @@ class StatusResolverTest extends KernelTestBase {
       ->save();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown(): void {
     if (isset($this->exportDir) && is_dir($this->exportDir)) {
       \Drupal::service('file_system')->deleteRecursive($this->exportDir);
@@ -74,6 +84,9 @@ class StatusResolverTest extends KernelTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Tests that an entity without an export has the NotExported status.
+   */
   public function testStatusIsNotExportedWhenNoYamlExists(): void {
     $node = Node::create(['type' => 'article', 'title' => 'Not Exported']);
     $node->save();
@@ -87,6 +100,9 @@ class StatusResolverTest extends KernelTestBase {
     $this->assertSame(ExportableStatus::NotExported, $exportable->getStatus());
   }
 
+  /**
+   * Tests that a freshly exported entity has the InSync status.
+   */
   public function testStatusIsInSyncAfterExport(): void {
     $node = Node::create(['type' => 'article', 'title' => 'In Sync']);
     $node->save();
@@ -105,6 +121,9 @@ class StatusResolverTest extends KernelTestBase {
     $this->assertSame(ExportableStatus::InSync, $exportable->getStatus());
   }
 
+  /**
+   * Tests that an entity changed after export has the OutOfSync status.
+   */
   public function testStatusIsOutOfSyncWhenEntityChangedAfterExport(): void {
     $node = Node::create(['type' => 'article', 'title' => 'Will Change']);
     $node->save();
@@ -127,6 +146,12 @@ class StatusResolverTest extends KernelTestBase {
     $this->assertSame(ExportableStatus::OutOfSync, $exportable->getStatus());
   }
 
+  /**
+   * Creates an exportable factory with an empty status cache.
+   *
+   * @return \Drupal\lark\Service\ExportableFactory
+   *   A new exportable factory.
+   */
   private function freshExportableFactory(): ExportableFactory {
     return new ExportableFactory(
       $this->container->get(EntityRepositoryInterface::class),

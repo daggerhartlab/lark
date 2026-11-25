@@ -112,6 +112,7 @@ class ExportablesTableBuilder {
    *   solving renderer bugs involving tables.
    *
    * @return array
+   *   Table rows.
    */
   protected function rows(array $exportables, array &$form, FormStateInterface $form_state, string $tree_name) {
     $rows = [];
@@ -127,10 +128,15 @@ class ExportablesTableBuilder {
    *
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   Exportable to create render rows for.
-   * @param array $exportables
-   *   All exportables in the current context.
+   * @param array $form
+   *   Form this table is being added to.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Current form state.
+   * @param array $render_parents
+   *   The #parents for form elements in the row.
    *
    * @return array
+   *   Table rows for the exportable.
    */
   protected function row(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents = []): array {
     $entity = $exportable->entity();

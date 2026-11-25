@@ -10,8 +10,9 @@ use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\LarkSourceManager;
 
 /**
- * Used to determine the status of an exportable entity and prepare exports for
- * comparison.
+ * Determines the status of an exportable entity.
+ *
+ * Also prepares exports for comparison.
  */
 class StatusResolver {
 
@@ -33,8 +34,6 @@ class StatusResolver {
    *
    * @param \Drupal\lark\Model\ExportableInterface $exportable
    *   The exportable entity.
-   * @param \Drupal\lark\Model\ExportArray|null $sourceExportArray
-   *   The export array.
    *
    * @return \Drupal\lark\Model\ExportableStatus
    *   The status code.
@@ -99,8 +98,9 @@ class StatusResolver {
   }
 
   /**
-   * Process the export array for comparison by removing values that diff from
-   * one environment to another.
+   * Processes the export array for comparison.
+   *
+   * Removes values that differ from one environment to another.
    *
    * @param array $array
    *   The export array.

@@ -23,15 +23,16 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 class MenuLinkCollectorTest extends KernelTestBase {
 
   /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
+   * {@inheritdoc}
    */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
     'link', 'menu_link_content',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
@@ -40,6 +41,21 @@ class MenuLinkCollectorTest extends KernelTestBase {
     Menu::create(['id' => 'other-menu', 'label' => 'Other menu'])->save();
   }
 
+  /**
+   * Creates and saves a menu link.
+   *
+   * @param string $title
+   *   The link title.
+   * @param string $menu
+   *   The menu ID.
+   * @param \Drupal\menu_link_content\Entity\MenuLinkContent|null $parent
+   *   The parent link, or NULL for a top-level link.
+   * @param int $weight
+   *   The link weight.
+   *
+   * @return \Drupal\menu_link_content\Entity\MenuLinkContent
+   *   The saved menu link.
+   */
   private function createLink(string $title, string $menu = 'test-menu', ?MenuLinkContent $parent = NULL, int $weight = 0): MenuLinkContent {
     $link = MenuLinkContent::create([
       'title' => $title,
@@ -52,10 +68,22 @@ class MenuLinkCollectorTest extends KernelTestBase {
     return $link;
   }
 
+  /**
+   * Loads a menu.
+   *
+   * @param string $id
+   *   The menu ID.
+   *
+   * @return \Drupal\system\Entity\Menu
+   *   The menu.
+   */
   private function menu(string $id): Menu {
     return Menu::load($id);
   }
 
+  /**
+   * Tests that only links in the given menu are returned.
+   */
   public function testReturnsOnlyLinksInTheGivenMenu(): void {
     /** @var \Drupal\lark\Service\Utility\MenuLinkCollector $collector */
     $collector = $this->container->get(MenuLinkCollector::class);
@@ -69,6 +97,9 @@ class MenuLinkCollectorTest extends KernelTestBase {
     $this->assertSame($mine->uuid(), reset($links)->uuid());
   }
 
+  /**
+   * Tests that an empty menu yields an empty array.
+   */
   public function testReturnsEmptyArrayForAnEmptyMenu(): void {
     /** @var \Drupal\lark\Service\Utility\MenuLinkCollector $collector */
     $collector = $this->container->get(MenuLinkCollector::class);
@@ -76,6 +107,9 @@ class MenuLinkCollectorTest extends KernelTestBase {
     $this->assertSame([], $collector->getMenuLinks($this->menu('test-menu')));
   }
 
+  /**
+   * Tests that parents are ordered before their children.
+   */
   public function testOrdersParentsBeforeChildren(): void {
     /** @var \Drupal\lark\Service\Utility\MenuLinkCollector $collector */
     $collector = $this->container->get(MenuLinkCollector::class);
@@ -91,6 +125,9 @@ class MenuLinkCollectorTest extends KernelTestBase {
     $this->assertSame(['Parent', 'Child', 'Grandchild'], $order);
   }
 
+  /**
+   * Tests that siblings are ordered by weight, then title.
+   */
   public function testOrdersSiblingsByWeightThenTitle(): void {
     /** @var \Drupal\lark\Service\Utility\MenuLinkCollector $collector */
     $collector = $this->container->get(MenuLinkCollector::class);
@@ -104,6 +141,9 @@ class MenuLinkCollectorTest extends KernelTestBase {
     $this->assertSame(['Zebra', 'Alpha', 'Beta'], $order);
   }
 
+  /**
+   * Tests that a link with a non-content parent is still returned.
+   */
   public function testLinkWithAnUnknownParentIsTreatedAsTopLevel(): void {
     /** @var \Drupal\lark\Service\Utility\MenuLinkCollector $collector */
     $collector = $this->container->get(MenuLinkCollector::class);
@@ -122,6 +162,9 @@ class MenuLinkCollectorTest extends KernelTestBase {
     $this->assertCount(1, $links);
   }
 
+  /**
+   * Tests that a link that is its own parent is still returned.
+   */
   public function testSelfReferencingParentLinkIsStillReturned(): void {
     /** @var \Drupal\lark\Service\Utility\MenuLinkCollector $collector */
     $collector = $this->container->get(MenuLinkCollector::class);
@@ -138,6 +181,9 @@ class MenuLinkCollectorTest extends KernelTestBase {
     $this->assertArrayHasKey($link->uuid(), $links);
   }
 
+  /**
+   * Tests that links that are each other's parent are both returned.
+   */
   public function testMutuallyCyclicParentsAreStillReturned(): void {
     /** @var \Drupal\lark\Service\Utility\MenuLinkCollector $collector */
     $collector = $this->container->get(MenuLinkCollector::class);
@@ -156,6 +202,9 @@ class MenuLinkCollectorTest extends KernelTestBase {
     $this->assertArrayHasKey($b->uuid(), $links);
   }
 
+  /**
+   * Tests that source link UUIDs are limited to the given menu.
+   */
   public function testGetSourceLinkUuidsReturnsOnlyThisMenusLinks(): void {
     $this->installEntitySchema('lark_source');
 
@@ -183,6 +232,9 @@ class MenuLinkCollectorTest extends KernelTestBase {
     \Drupal::service('file_system')->deleteRecursive($export_dir);
   }
 
+  /**
+   * Tests that source exports without a menu name are skipped.
+   */
   public function testGetSourceLinkUuidsSkipsExportsMissingMenuName(): void {
     $this->installEntitySchema('lark_source');
 

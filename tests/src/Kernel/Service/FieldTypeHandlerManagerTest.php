@@ -19,10 +19,16 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class FieldTypeHandlerManagerTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -32,6 +38,9 @@ class FieldTypeHandlerManagerTest extends KernelTestBase {
     $this->installSchema('node', ['node_access']);
   }
 
+  /**
+   * Tests that a plain field gets no dependencies or references.
+   */
   public function testHandlersWithoutOverridesContributeNothing(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -44,6 +53,9 @@ class FieldTypeHandlerManagerTest extends KernelTestBase {
     $this->assertSame([], $manager->getFieldReferences($node->get('title')));
   }
 
+  /**
+   * Tests that the default handler returns no dependencies or references.
+   */
   public function testBaseClassDefaultsAreEmpty(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);

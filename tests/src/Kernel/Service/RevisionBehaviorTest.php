@@ -21,16 +21,22 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 class RevisionBehaviorTest extends KernelTestBase {
 
   /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
+   * {@inheritdoc}
    */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
   ];
 
+  /**
+   * The absolute path of the temporary export directory.
+   *
+   * @var string
+   */
   protected string $exportDir;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -67,6 +73,9 @@ class RevisionBehaviorTest extends KernelTestBase {
       ->save();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown(): void {
     // Clean up the real temp directory created during the test.
     if (isset($this->exportDir) && is_dir($this->exportDir)) {
@@ -75,6 +84,9 @@ class RevisionBehaviorTest extends KernelTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Tests that exported YAML omits the revision and entity IDs.
+   */
   public function testRevisionIdIsNotExportedToYaml(): void {
     $node = Node::create(['type' => 'article', 'title' => 'Revisioned Node']);
     $node->save();
@@ -90,8 +102,12 @@ class RevisionBehaviorTest extends KernelTestBase {
     $this->assertArrayNotHasKey('nid', $content['default'] ?? [], 'Entity ID (nid) must never appear in exported YAML');
   }
 
+  /**
+   * Tests that importing a revisionable node restores its content.
+   */
   public function testImportDoesNotCorruptEntityContent(): void {
-    // The main concern: even if revisions are created, the content must be correct.
+    // The main concern: even if revisions are created, the content must be
+    // correct.
     $node = Node::create(['type' => 'article', 'title' => 'Revision Content Test']);
     $node->save();
 
@@ -109,9 +125,13 @@ class RevisionBehaviorTest extends KernelTestBase {
     $this->assertSame('Revision Content Test', reset($nodes)->label());
   }
 
+  /**
+   * Tests that repeated imports keep content intact.
+   */
   public function testRepeatedImportsDocumentRevisionCreation(): void {
     // This test documents (not asserts a specific count) that repeated imports
-    // do not destroy content. The revision count behavior is implementation-defined.
+    // do not destroy content. The revision count behavior is
+    // implementation-defined.
     $node = Node::create(['type' => 'article', 'title' => 'Repeated Import']);
     $node->save();
 
@@ -126,7 +146,8 @@ class RevisionBehaviorTest extends KernelTestBase {
     $importer->importSourceExport('revision_test_source', $node->uuid(), FALSE);
     $importer->importSourceExport('revision_test_source', $node->uuid(), FALSE);
 
-    // The node must still have the correct content regardless of revision count.
+    // The node must still have the correct content regardless of revision
+    // count.
     $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['uuid' => $node->uuid()]);
     $this->assertNotEmpty($nodes);
     $this->assertSame('Repeated Import', reset($nodes)->label());
@@ -142,7 +163,8 @@ class RevisionBehaviorTest extends KernelTestBase {
       ->execute();
 
     // This assertion documents current behavior, not enforces it.
-    // If the module adds setNewRevision(FALSE), this count will be 1 and this test needs updating.
+    // If the module adds setNewRevision(FALSE), this count will be 1 and this
+    // test needs updating.
     $this->assertGreaterThanOrEqual(1, count($revision_ids), 'At least one revision must exist after import');
   }
 

@@ -41,7 +41,9 @@ class Exportable implements ExportableInterface {
   protected ExportableStatus $status = ExportableStatus::NotImported;
 
   /**
-   * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
+   * Constructs an Exportable object.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   Entity.
    */
   public function __construct(protected ContentEntityInterface $entity) {

@@ -45,6 +45,8 @@ class SourceRootsViewBuilder {
    *
    * @param \Drupal\lark\Entity\LarkSourceInterface $source
    *   The source entity.
+   * @param \Drupal\lark\Model\ExportableInterface $exportable
+   *   The root-level exportable.
    *
    * @return array
    *   The render array.
@@ -77,7 +79,8 @@ class SourceRootsViewBuilder {
    * @param string $root_uuid
    *   The UUID of the root exportable.
    *
-   * @return array
+   * @return \Drupal\lark\Model\ExportableInterface[]
+   *   Exportables for the root's dependencies, keyed by UUID.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException

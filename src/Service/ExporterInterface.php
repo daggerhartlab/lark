@@ -21,8 +21,6 @@ interface ExporterInterface {
    * @param array $meta_options_overrides
    *   An array of values for the export _meta array, key by entity uuid.
    *
-   * @return void
-   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\lark\Exception\LarkEntityNotFoundException
@@ -42,8 +40,6 @@ interface ExporterInterface {
    *   Whether to show messages.
    * @param array $meta_options_overrides
    *   An array of values for the export _meta array, keyed by entity uuid.
-   *
-   * @return void
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException

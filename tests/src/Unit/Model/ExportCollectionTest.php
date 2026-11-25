@@ -15,16 +15,41 @@ use PHPUnit\Framework\TestCase;
 #[Group('lark')]
 class ExportCollectionTest extends TestCase {
 
+  /**
+   * Creates a node export.
+   *
+   * @param string $uuid
+   *   The export's UUID.
+   * @param array $deps
+   *   Dependencies, keyed by UUID with entity type id values.
+   *
+   * @return \Drupal\lark\Model\ExportArray
+   *   The export.
+   */
   private function makeExport(string $uuid, array $deps = []): ExportArray {
-    $export = new ExportArray(['_meta' => ['uuid' => $uuid, 'entity_type' => 'node', 'bundle' => 'article', 'default_langcode' => 'en', 'depends' => $deps]]);
+    $export = new ExportArray([
+      '_meta' => [
+        'uuid' => $uuid,
+        'entity_type' => 'node',
+        'bundle' => 'article',
+        'default_langcode' => 'en',
+        'depends' => $deps,
+      ],
+    ]);
     return $export;
   }
 
+  /**
+   * Tests that the constructor rejects values that aren't ExportArrays.
+   */
   public function testRejectsNonExportArrayValues(): void {
     $this->expectException(\InvalidArgumentException::class);
     new ExportCollection(['not-an-export-array']);
   }
 
+  /**
+   * Tests that has() finds an added export and not a missing one.
+   */
   public function testAddAndHas(): void {
     $collection = new ExportCollection();
     $export = $this->makeExport('uuid-1');
@@ -33,6 +58,9 @@ class ExportCollectionTest extends TestCase {
     $this->assertFalse($collection->has('uuid-999'));
   }
 
+  /**
+   * Tests that remove() drops an export from the collection.
+   */
   public function testRemove(): void {
     $collection = new ExportCollection();
     $collection->add($this->makeExport('uuid-1'));
@@ -40,6 +68,9 @@ class ExportCollectionTest extends TestCase {
     $this->assertFalse($collection->has('uuid-1'));
   }
 
+  /**
+   * Tests that diff() keeps only exports missing from the other collection.
+   */
   public function testDiff(): void {
     $a = new ExportCollection();
     $a->add($this->makeExport('uuid-1'));
@@ -51,6 +82,9 @@ class ExportCollectionTest extends TestCase {
     $this->assertFalse($diff->has('uuid-1'));
   }
 
+  /**
+   * Tests that filter() keeps only exports matching the callback.
+   */
   public function testFilter(): void {
     $collection = new ExportCollection();
     $collection->add($this->makeExport('uuid-1'));
@@ -60,6 +94,9 @@ class ExportCollectionTest extends TestCase {
     $this->assertFalse($filtered->has('uuid-2'));
   }
 
+  /**
+   * Tests that getWithDependencies() orders dependencies before dependents.
+   */
   public function testGetWithDependenciesReturnsCorrectOrder(): void {
     // A depends on B. B depends on C. Expected order: C, B, A.
     $collection = new ExportCollection();
@@ -73,6 +110,9 @@ class ExportCollectionTest extends TestCase {
     $this->assertSame(['uuid-c', 'uuid-b', 'uuid-a'], $uuids);
   }
 
+  /**
+   * Tests that getRootLevel() excludes exports another export depends on.
+   */
   public function testGetRootLevel(): void {
     $collection = new ExportCollection();
     $collection->add($this->makeExport('uuid-dep'));
@@ -82,6 +122,9 @@ class ExportCollectionTest extends TestCase {
     $this->assertFalse($roots->has('uuid-dep'));
   }
 
+  /**
+   * Tests that getWithDependencies() doesn't follow soft references.
+   */
   public function testGetWithDependenciesIgnoresReferences(): void {
     $root = $this->makeExport('root-uuid');
     $root->addReference('referenced-uuid', 'node');
@@ -100,6 +143,9 @@ class ExportCollectionTest extends TestCase {
     );
   }
 
+  /**
+   * Tests that getWithDependencies() orders ancestors before descendants.
+   */
   public function testGetWithDependenciesOrdersAncestorsFirst(): void {
     // Grandparent <- parent <- child, the shape a nested menu produces.
     $grandparent = $this->makeExport('gp-uuid');

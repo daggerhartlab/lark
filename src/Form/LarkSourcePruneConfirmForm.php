@@ -9,6 +9,9 @@ use Drupal\lark\Service\ExportFileManager;
 use Drupal\lark\Service\ImporterInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Confirms deleting exports, or all content, from a lark source.
+ */
 class LarkSourcePruneConfirmForm extends ConfirmFormBase {
 
   public function __construct(
@@ -49,7 +52,7 @@ class LarkSourcePruneConfirmForm extends ConfirmFormBase {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getCancelUrl() {
     $source = $this->getRequest()->attributes->get('lark_source');
@@ -57,7 +60,7 @@ class LarkSourcePruneConfirmForm extends ConfirmFormBase {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getFormId() {
     return 'lark_source_prune_confirm_form';
@@ -145,7 +148,7 @@ class LarkSourcePruneConfirmForm extends ConfirmFormBase {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */

@@ -7,8 +7,9 @@ namespace Drupal\lark\Plugin\Lark;
 /**
  * Interface for lark_source plugins.
  *
- * @deprecated
- *   Replaced by lark_source config entity.
+ * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. Use the
+ *   lark_source config entity, \Drupal\lark\Entity\LarkSourceInterface,
+ *   instead.
  */
 interface LarkSourceInterface {
 
@@ -16,6 +17,7 @@ interface LarkSourceInterface {
    * Returns the plugin ID.
    *
    * @return string
+   *   The plugin ID.
    */
   public function id();
 
@@ -23,13 +25,15 @@ interface LarkSourceInterface {
    * Returns the translated plugin label.
    *
    * @return string
+   *   The plugin label.
    */
   public function label();
 
   /**
-   * Unprocessed raw directory string.
+   * Returns the unprocessed raw directory string.
    *
    * @return string
+   *   The directory as stored.
    */
   public function directory(): string;
 

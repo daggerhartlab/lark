@@ -113,7 +113,6 @@ final class SettingsForm extends ConfigFormBase {
         '#default_value' => $this->larkSettings->assetExportFileExists()->name,
         '#options' => [
           FileExists::Error->name => $this->t('Do nothing.'),
-          //FileExists::Rename->name => $this->t('Rename the asset being exported and update the export.'),
           FileExists::Replace->name => $this->t('Replace the existing exported asset with the new asset.'),
         ],
       ],
@@ -155,9 +154,9 @@ final class SettingsForm extends ConfigFormBase {
     $this->config(LarkSettings::NAME)
       ->set('default_source', $form_state->getValue('default_source'))
       ->set('ignored_comparison_keys', $form_state->getValue('ignored_comparison_keys'))
-      ->set('should_export_assets', $form_state->getValue('should_export_assets'))
+      ->set('should_export_assets', (bool) $form_state->getValue('should_export_assets'))
       ->set('asset_export_file_exists', $form_state->getValue('asset_export_file_exists'))
-      ->set('should_import_assets', $form_state->getValue('should_import_assets'))
+      ->set('should_import_assets', (bool) $form_state->getValue('should_import_assets'))
       ->set('asset_import_file_exists', $form_state->getValue('asset_import_file_exists'))
       ->save();
 

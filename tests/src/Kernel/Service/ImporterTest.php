@@ -24,16 +24,22 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 class ImporterTest extends KernelTestBase {
 
   /**
-   * Disable strict config schema to avoid lark.settings integer/string mismatch.
+   * {@inheritdoc}
    */
-  protected $strictConfigSchema = FALSE;
-
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
   ];
 
+  /**
+   * The absolute path of the temporary export directory.
+   *
+   * @var string
+   */
   protected string $exportDir;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -66,6 +72,9 @@ class ImporterTest extends KernelTestBase {
       ->save();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown(): void {
     // Clean up the real temp directory created during the test.
     if (isset($this->exportDir) && is_dir($this->exportDir)) {
@@ -74,6 +83,9 @@ class ImporterTest extends KernelTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Tests that a deleted node is recreated by importing its export.
+   */
   public function testExportThenImportRoundtrip(): void {
     // Create, export, delete, re-import.
     $node = Node::create(['type' => 'article', 'title' => 'Roundtrip Node']);
@@ -100,6 +112,9 @@ class ImporterTest extends KernelTestBase {
     $this->assertSame('Roundtrip Node', $reimported->label());
   }
 
+  /**
+   * Tests that an imported entity keeps its exported UUID.
+   */
   public function testImportPreservesUuid(): void {
     $node = Node::create(['type' => 'article', 'title' => 'UUID Preserved']);
     $node->save();
@@ -119,6 +134,9 @@ class ImporterTest extends KernelTestBase {
     $this->assertSame($original_uuid, reset($nodes)->uuid());
   }
 
+  /**
+   * Tests that import reverts an existing entity to its exported values.
+   */
   public function testImportUpdatesExistingEntity(): void {
     $node = Node::create(['type' => 'article', 'title' => 'Original Title']);
     $node->save();
@@ -140,6 +158,9 @@ class ImporterTest extends KernelTestBase {
     $this->assertSame('Original Title', reset($reimported)->label());
   }
 
+  /**
+   * Tests that importing a list of UUIDs imports each of them.
+   */
   public function testImportSourceExportsImportsEveryUuid(): void {
     /** @var \Drupal\lark\Service\ExporterInterface $exporter */
     $exporter = $this->container->get(ExporterInterface::class);
@@ -164,6 +185,9 @@ class ImporterTest extends KernelTestBase {
     $this->assertNotNull($repository->loadEntityByUuid('node', $two_uuid));
   }
 
+  /**
+   * Tests that a UUID absent from the source is warned about and skipped.
+   */
   public function testImportSourceExportsSkipsUuidsAbsentFromTheSource(): void {
     /** @var \Drupal\lark\Service\ImporterInterface $importer */
     $importer = $this->container->get(ImporterInterface::class);
@@ -186,6 +210,9 @@ class ImporterTest extends KernelTestBase {
     );
   }
 
+  /**
+   * Tests that importing an empty UUID list emits no messages.
+   */
   public function testImportSourceExportsAcceptsAnEmptyList(): void {
     /** @var \Drupal\lark\Service\ImporterInterface $importer */
     $importer = $this->container->get(ImporterInterface::class);
