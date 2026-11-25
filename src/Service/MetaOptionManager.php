@@ -27,7 +27,7 @@ final class MetaOptionManager extends DefaultPluginManager {
   /**
    * Get all plugin instances.
    *
-   * @return MetaOptionInterface[]
+   * @return \Drupal\lark\Plugin\Lark\MetaOptionInterface[]
    */
   public function getInstances(array $configuration = []): array {
     $instances = [];

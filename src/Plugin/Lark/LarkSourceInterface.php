@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\lark\Plugin\Lark;
 
-use Drupal\Component\Plugin\DerivativeInspectionInterface;
-use Drupal\Component\Plugin\PluginInspectionInterface;
-
 /**
  * Interface for lark_source plugins.
  *

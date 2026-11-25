@@ -124,7 +124,7 @@ final class LarkSource extends ConfigEntityBase implements LarkSourceInterface {
    */
   public function directoryProcessed(bool $absolute = TRUE): string {
     $directory = $this->directory();
-    $directory = preg_replace_callback('/\[\w+]/', function(array $matches) {
+    $directory = preg_replace_callback('/\[\w+]/', function (array $matches) {
       $name = str_replace(['[', ']'], '', $matches[0]);
       try {
         $path = $this->extensionPathResolver->getPath('module', $name);
@@ -175,7 +175,7 @@ final class LarkSource extends ConfigEntityBase implements LarkSourceInterface {
   public function exportExistsInSource(string $entity_type_id, string $bundle, string $uuid): bool {
     return \file_exists(implode(DIRECTORY_SEPARATOR, [
       $this->getDestinationDirectory($entity_type_id, $bundle, TRUE),
-      "{$uuid}.yml"
+      "{$uuid}.yml",
     ]));
   }
 

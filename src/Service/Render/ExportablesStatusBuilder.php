@@ -134,7 +134,7 @@ class ExportablesStatusBuilder {
             '#tag' => 'span',
             '#value' => $this->t('Status Summary'),
           ],
-        ]
+        ],
       ],
       '#rows' => [],
       '#attributes' => [

@@ -1,7 +1,8 @@
 <?php
 
 /**
- * @file lark_transaction.install
+ * @file
+ * lark_transaction.install
  */
 
 /**

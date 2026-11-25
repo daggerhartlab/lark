@@ -2,9 +2,7 @@
 
 namespace Drupal\lark\Model;
 
-
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Entity\LarkSourceInterface;
 
 /**

@@ -67,7 +67,7 @@ class LarkSettings {
     $ignored_keys = array_map('trim', $ignored_keys);
 
     // Ignore 'original_values' key added by the EntityReferenceUuidHandler.
-    // @todo - convert to hook.
+    // @todo convert to hook.
     $ignored_keys[] = 'original_values';
     return $ignored_keys;
   }

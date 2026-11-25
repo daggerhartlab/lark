@@ -3,7 +3,6 @@
 namespace Drupal\lark\Service;
 
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\file\FileInterface;
 use Drupal\lark\Model\ExportArray;
 
 /**
@@ -29,6 +28,7 @@ interface EntityUpdaterInterface {
    *   The label.
    *
    * @return \Drupal\Core\Entity\ContentEntityInterface
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
@@ -54,6 +54,7 @@ interface EntityUpdaterInterface {
    *   Decoded export data.
    *
    * @return void
+   *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
    */

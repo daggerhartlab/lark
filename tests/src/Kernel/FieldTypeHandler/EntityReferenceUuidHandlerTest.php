@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\lark\Kernel\FieldTypeHandler;
 
+use Drupal\lark\Service\FieldTypeHandlerManagerInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\KernelTests\KernelTestBase;
@@ -60,7 +61,7 @@ class EntityReferenceUuidHandlerTest extends KernelTestBase {
     $parent->save();
 
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
-    $manager = $this->container->get(\Drupal\lark\Service\FieldTypeHandlerManagerInterface::class);
+    $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
     /** @var \Drupal\lark\Plugin\Lark\FieldTypeHandler\EntityReferenceUuidHandler $handler */
     $handler = $manager->getInstances()['entity_reference_uuid_handler'];
     $this->assertInstanceOf(EntityReferenceUuidHandler::class, $handler);
@@ -82,7 +83,7 @@ class EntityReferenceUuidHandlerTest extends KernelTestBase {
     $referenced->save();
 
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
-    $manager = $this->container->get(\Drupal\lark\Service\FieldTypeHandlerManagerInterface::class);
+    $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
     $handler = $manager->getInstances()['entity_reference_uuid_handler'];
 
     // Build the import value structure that alterExportValue produces.
@@ -91,7 +92,8 @@ class EntityReferenceUuidHandlerTest extends KernelTestBase {
       'target_entity_type' => 'node',
       'target_bundle' => 'article',
       'original_values' => [],
-    ]];
+    ],
+    ];
 
     // Use the real entity reference field (not uid, which points to users).
     $parent = Node::create(['type' => 'article', 'title' => 'Parent']);

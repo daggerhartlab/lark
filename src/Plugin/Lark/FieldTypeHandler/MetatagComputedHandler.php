@@ -29,7 +29,7 @@ class MetatagComputedHandler extends FieldTypeHandlerBase {
       ->condition('id', [
         $field->getEntity()->getEntityTypeId(),
         "{$field->getEntity()->getEntityTypeId()}__{$field->getEntity()->bundle()}",
-        ], 'IN')
+      ], 'IN')
       ->execute();
 
     /** @var \Drupal\metatag\MetatagManagerInterface $metatagManager */

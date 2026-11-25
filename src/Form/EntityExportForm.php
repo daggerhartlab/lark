@@ -2,15 +2,7 @@
 
 namespace Drupal\lark\Form;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Service\ExportableFactoryInterface;
-use Drupal\lark\Service\Render\ExportablesStatusBuilder;
-use Drupal\lark\Service\ExporterInterface;
-use Drupal\lark\Service\Render\ExportablesTableBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Form for exporting an entity.
@@ -82,7 +74,7 @@ class EntityExportForm extends EntityBaseForm {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-      'table' => $this->exportablesTableBuilder->table($exportables, $form, $form_state, 'export_form_values')
+      'table' => $this->exportablesTableBuilder->table($exportables, $form, $form_state, 'export_form_values'),
     ];
 
     return $form;

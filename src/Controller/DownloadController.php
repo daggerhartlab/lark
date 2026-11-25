@@ -156,7 +156,6 @@ class DownloadController extends ControllerBase {
       $this->addExportablesToArchive($archive, $exportables);
     }
 
-
     $request = new Request(['file' => 'lark-source.tar.gz']);
     return $this->fileDownloadController->download($request, 'temporary');
   }

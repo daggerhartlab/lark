@@ -94,7 +94,7 @@ final class SettingsForm extends ConfigFormBase {
       'export_heading' => [
         '#type' => 'html_tag',
         '#tag' => 'h3',
-        '#value' => $this->t('Asset Export Settings')
+        '#value' => $this->t('Asset Export Settings'),
       ],
       'should_export_assets' => [
         '#type' => 'radios',
@@ -120,7 +120,7 @@ final class SettingsForm extends ConfigFormBase {
       'import_heading' => [
         '#type' => 'html_tag',
         '#tag' => 'h3',
-        '#value' => $this->t('Asset Import Settings')
+        '#value' => $this->t('Asset Import Settings'),
       ],
       'should_import_assets' => [
         '#type' => 'radios',

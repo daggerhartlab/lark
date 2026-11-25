@@ -166,7 +166,8 @@ class LinkHandlerTest extends KernelTestBase {
       'target_entity_type' => 'node',
       'title' => '',
       'options' => [],
-    ]];
+    ],
+    ];
 
     $result = $manager->alterImportValues($values, $link->get('link'));
 
@@ -188,7 +189,8 @@ class LinkHandlerTest extends KernelTestBase {
       'target_entity_type' => 'node',
       'title' => '',
       'options' => [],
-    ]];
+    ],
+    ];
 
     $result = $manager->alterImportValues($values, $link->get('link'));
 
@@ -207,7 +209,8 @@ class LinkHandlerTest extends KernelTestBase {
       'target_entity_type' => 'node',
       'title' => '',
       'options' => [],
-    ]];
+    ],
+    ];
 
     $result = $manager->alterImportValues($values, $link->get('link'));
 
@@ -259,7 +262,8 @@ class LinkHandlerTest extends KernelTestBase {
       'target_entity_type' => 'node',
       'title' => '',
       'options' => [],
-    ]], $link->get('link'));
+    ],
+    ], $link->get('link'));
 
     $this->assertArrayNotHasKey('target_uuid', $imported[0]);
     $link->set('link', $imported);
@@ -290,7 +294,8 @@ class LinkHandlerTest extends KernelTestBase {
       'target_entity_type' => 'node',
       'title' => '',
       'options' => [],
-    ]];
+    ],
+    ];
 
     // Setting the field must not raise on unknown properties - the handler is
     // responsible for stripping its own annotations.
@@ -299,7 +304,6 @@ class LinkHandlerTest extends KernelTestBase {
 
     $this->assertSame('entity:node/' . $node->id(), $link->get('link')->first()->uri);
   }
-
 
   /**
    * Create a path alias pointing at an entity's canonical path.

@@ -12,7 +12,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 /**
  * Interface for lark_field_type_handler plugins.
  */
-interface FieldTypeHandlerInterface extends PluginInspectionInterface, DerivativeInspectionInterface{
+interface FieldTypeHandlerInterface extends PluginInspectionInterface, DerivativeInspectionInterface {
 
   /**
    * Returns the translated plugin label.

@@ -53,5 +53,4 @@ abstract class EntityBaseForm extends FormBase {
     );
   }
 
-
 }

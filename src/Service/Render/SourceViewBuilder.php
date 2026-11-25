@@ -139,7 +139,7 @@ class SourceViewBuilder {
         ],
         [
           'heading' => ['header' => TRUE, 'data' => $this->t('Directory')],
-          'value' => ['class' => ['directory'], 'data' => $source->directory()]
+          'value' => ['class' => ['directory'], 'data' => $source->directory()],
         ],
         [
           'heading' => ['header' => TRUE, 'data' => $this->t('Absolute')],
@@ -169,7 +169,7 @@ class SourceViewBuilder {
   public function sourceStatusSummary(LarkSourceInterface $source): array {
     $collection = $this->importer->discoverSourceExports($source);
 
-    $exportables = array_map(function($export) use ($source) {
+    $exportables = array_map(function ($export) use ($source) {
       return $this->exportableFactory->createFromExportArray($export, $source);
     }, $collection->getArrayCopy());
 
@@ -214,8 +214,8 @@ class SourceViewBuilder {
           'bundle' => [
             'header' => TRUE,
             'data' => ($bundle == $entity_type_id) ?
-              $bundle_info[$bundle]['label'] :
-              "{$entity_type_id} : {$bundle_info[$bundle]['label']}",
+            $bundle_info[$bundle]['label'] :
+            "{$entity_type_id} : {$bundle_info[$bundle]['label']}",
           ],
           'count' => $count,
         ];

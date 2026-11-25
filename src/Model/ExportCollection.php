@@ -2,10 +2,8 @@
 
 namespace Drupal\lark\Model;
 
-use Drupal\lark\Exception\LarkImportException;
-
 /**
- * Class ExportCollection
+ * Class ExportCollection.
  *
  * @package Drupal\lark\Model
  */
@@ -196,7 +194,7 @@ class ExportCollection extends \ArrayObject {
     $export = $this->get($uuid);
     foreach ($export->dependencies() as $dependency_uuid => $entity_type) {
       // Look for the dependency export.
-      // @todo - Handle missing dependencies?
+      // @todo Handle missing dependencies?
       if (
         $this->has($dependency_uuid)
         // Don't recurse into dependency if it's already been registered.

@@ -2,20 +2,21 @@
 
 namespace Drupal\lark\Form;
 
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Form\FormStateInterface;
 
-class LarkSourceUploadForm extends \Drupal\Core\Form\FormBase {
+class LarkSourceUploadForm extends FormBase {
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function getFormId() {
     return 'lark_source_upload_form';
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['file'] = [
@@ -37,7 +38,7 @@ class LarkSourceUploadForm extends \Drupal\Core\Form\FormBase {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /** @var \SplFileInfo[] $files */
