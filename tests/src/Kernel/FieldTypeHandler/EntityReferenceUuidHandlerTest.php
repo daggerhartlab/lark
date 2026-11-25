@@ -21,10 +21,16 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class EntityReferenceUuidHandlerTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -49,6 +55,9 @@ class EntityReferenceUuidHandlerTest extends KernelTestBase {
     ])->save();
   }
 
+  /**
+   * Tests that export replaces target_id with the referenced entity's UUID.
+   */
   public function testAlterExportValueReplacesTargetIdWithUuid(): void {
     $referenced = Node::create(['type' => 'article', 'title' => 'Referenced']);
     $referenced->save();
@@ -78,6 +87,9 @@ class EntityReferenceUuidHandlerTest extends KernelTestBase {
     $this->assertArrayNotHasKey('target_id', $result[0], 'target_id must be removed from export values');
   }
 
+  /**
+   * Tests that import resolves target_uuid back to the local target_id.
+   */
   public function testAlterImportValueResolvesUuidToTargetId(): void {
     $referenced = Node::create(['type' => 'article', 'title' => 'Referenced']);
     $referenced->save();

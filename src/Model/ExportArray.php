@@ -7,8 +7,9 @@ use Drupal\Core\Language\LanguageInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
 
 /**
- * Object for array of data exported to yaml. Ideally all knowledge of the
- * yaml schema is contained in this class.
+ * Holds the array of data exported to yaml.
+ *
+ * Ideally all knowledge of the yaml schema is contained in this class.
  */
 class ExportArray extends \ArrayObject {
 
@@ -617,8 +618,9 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
-   * Get all fields values for the given langcode. If no langcode is provided,
-   * the default translation fields are returned.
+   * Gets all field values for the given langcode.
+   *
+   * If no langcode is provided, the default translation fields are returned.
    *
    * @param string $langcode
    *   Langcode.
@@ -635,8 +637,9 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
-   * Set all field values for the given langcode. If no langcode is provided,
-   * the default translation fields are set.
+   * Sets all field values for the given langcode.
+   *
+   * If no langcode is provided, the default translation fields are set.
    *
    * @param array $fields
    *   Fields.
@@ -658,8 +661,9 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
-   * Get a field value for the given langcode. If no langcode is provided,
-   * the default translation field is returned.
+   * Gets a field value for the given langcode.
+   *
+   * If no langcode is provided, the default translation field is returned.
    *
    * @param string $field_name
    *   Field name.
@@ -678,8 +682,9 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
-   * Set a field value for the given langcode. If no langcode is provided,
-   * the default translation field is set.
+   * Sets a field value for the given langcode.
+   *
+   * If no langcode is provided, the default translation field is set.
    *
    * @param string $field_name
    *   Field name.
@@ -705,8 +710,9 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
-   * Unset a field value for the given langcode. If no langcode is provided,
-   * the default translation field is unset.
+   * Unsets a field value for the given langcode.
+   *
+   * If no langcode is provided, the default translation field is unset.
    *
    * @param string $name
    *   Field name.
@@ -727,14 +733,20 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
+   * Checks whether this export is a file entity.
+   *
    * @return bool
+   *   TRUE if the export is a file entity.
    */
   public function isFile(): bool {
     return $this->entityTypeId() === 'file';
   }
 
   /**
+   * Gets the filename of the exported file asset.
+   *
    * @return string|null
+   *   The asset filename, or NULL if this is not a file export.
    */
   public function fileAssetFilename(): ?string {
     return $this->isFile() && isset($this->getField('uri')[0]['value']) ?
@@ -743,7 +755,10 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
+   * Gets the filepath of the exported file asset.
+   *
    * @return string|null
+   *   The asset filepath, or NULL if this is not a file export.
    */
   public function fileAssetFilepath(): ?string {
     return $this->isFile() ?
@@ -752,11 +767,13 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
+   * Checks whether the file asset exists in the destination directory.
    *
    * @param string|null $destination
-   *   Defaults to this export's path.
+   *   The destination directory. Defaults to this export's directory.
    *
    * @return bool
+   *   TRUE if the asset file exists.
    */
   public function fileAssetIsExported(?string $destination = NULL): bool {
     $destination = \rtrim($destination ?? $this->path(), DIRECTORY_SEPARATOR);

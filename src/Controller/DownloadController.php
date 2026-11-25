@@ -18,6 +18,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Builds archive download responses for exported entities and sources.
+ */
 class DownloadController extends ControllerBase {
 
   public function __construct(
@@ -32,6 +35,9 @@ class DownloadController extends ControllerBase {
     $this->entityTypeManager = $entityTypeManager;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       FileDownloadController::create($container),
@@ -181,10 +187,12 @@ class DownloadController extends ControllerBase {
   }
 
   /**
-   * @param \Drupal\Core\Archiver\ArchiveTar $archive
-   * @param \Drupal\lark\Model\ExportableInterface[] $exportables
+   * Adds exportables and their meta option assets to an archive.
    *
-   * @return void
+   * @param \Drupal\Core\Archiver\ArchiveTar $archive
+   *   The archive to add to.
+   * @param \Drupal\lark\Model\ExportableInterface[] $exportables
+   *   The exportables to add.
    */
   protected function addExportablesToArchive(ArchiveTar $archive, array $exportables): void {
     // Add all contents of the export storage to the archive.

@@ -37,9 +37,9 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    *
    * @param array $configuration
    *   Configuration array.
-   * @param $plugin_id
+   * @param string $plugin_id
    *   Plugin ID.
-   * @param $plugin_definition
+   * @param mixed $plugin_definition
    *   Plugin definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager service.

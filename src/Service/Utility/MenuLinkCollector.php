@@ -79,7 +79,8 @@ class MenuLinkCollector {
     }
 
     $flat = $this->flattenTree($children, '');
-    // A cyclic or self-referencing parent leaves links unreachable; never drop one.
+    // A cyclic or self-referencing parent leaves links unreachable; never drop
+    // one.
     return $flat + $by_uuid;
   }
 

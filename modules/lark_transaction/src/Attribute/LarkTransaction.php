@@ -29,11 +29,11 @@ class LarkTransaction extends AttributeBase {
    * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $description
    *   (optional) A brief description of the plugin.
    * @param int|null $weight
-   *  (optional) The weight of the plugin.
+   *   (optional) The weight of the plugin.
    * @param bool|null $enabled
-   *  (optional) Whether the plugin is enabled.
+   *   (optional) Whether the plugin is enabled.
    * @param bool|null $repeatable
-   *  (optional) Whether the plugin is repeatable.
+   *   (optional) Whether the plugin is repeatable.
    */
   public function __construct(
     public readonly string $id,

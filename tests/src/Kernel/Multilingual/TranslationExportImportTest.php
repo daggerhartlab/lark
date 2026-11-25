@@ -21,13 +21,24 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class TranslationExportImportTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
     'language', 'content_translation',
   ];
 
+  /**
+   * The absolute path of the temporary export directory.
+   *
+   * @var string
+   */
   protected string $exportDir;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -68,6 +79,9 @@ class TranslationExportImportTest extends KernelTestBase {
       ->save();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown(): void {
     // Clean up the real temp directory created during the test.
     if (isset($this->exportDir) && is_dir($this->exportDir)) {
@@ -76,6 +90,9 @@ class TranslationExportImportTest extends KernelTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Tests that exported YAML includes the entity's translations.
+   */
   public function testExportIncludesTranslationsInYaml(): void {
     $node = Node::create(['type' => 'article', 'title' => 'English Title', 'langcode' => 'en']);
     $node->save();
@@ -92,6 +109,9 @@ class TranslationExportImportTest extends KernelTestBase {
     $this->assertArrayHasKey('fr', $content['translations'], 'French translation must be present in exported YAML');
   }
 
+  /**
+   * Tests that importing a deleted entity recreates all its translations.
+   */
   public function testImportCreatesAllTranslations(): void {
     $node = Node::create(['type' => 'article', 'title' => 'English Title', 'langcode' => 'en']);
     $node->save();
@@ -119,6 +139,9 @@ class TranslationExportImportTest extends KernelTestBase {
     $this->assertSame('Spanish Title', $reimported->getTranslation('es')->label());
   }
 
+  /**
+   * Tests that import reverts a modified translation to the exported value.
+   */
   public function testImportUpdatesExistingTranslation(): void {
     $node = Node::create(['type' => 'article', 'title' => 'Original EN', 'langcode' => 'en']);
     $node->save();
@@ -141,6 +164,9 @@ class TranslationExportImportTest extends KernelTestBase {
     $this->assertSame('Original FR', $reimported->getTranslation('fr')->label());
   }
 
+  /**
+   * Tests that import keeps a translation missing from the YAML (known gap).
+   */
   public function testOrphanedTranslationPersistsAfterReimport(): void {
     // This test documents the known gap: translations absent from the YAML
     // are NOT removed during import. If you fix this gap, this test should
@@ -158,8 +184,8 @@ class TranslationExportImportTest extends KernelTestBase {
     $node->save();
     $exporter->exportEntity('multilingual_source', 'node', (int) $node->id(), FALSE);
 
-    // Re-import. The YAML no longer has FR, but the entity in the DB still has no FR.
-    // Let's add it back manually to simulate the orphan scenario.
+    // Re-import. The YAML no longer has FR, but the entity in the DB still has
+    // no FR. Let's add it back manually to simulate the orphan scenario.
     $node->addTranslation('fr', ['title' => 'Orphaned FR'])->save();
 
     /** @var \Drupal\lark\Service\ImporterInterface $importer */

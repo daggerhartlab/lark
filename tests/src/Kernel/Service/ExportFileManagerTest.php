@@ -18,8 +18,14 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class ExportFileManagerTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = ['lark', 'user', 'system'];
 
+  /**
+   * Tests that a missing directory yields an empty collection.
+   */
   public function testDiscoverExportsReturnsEmptyCollectionForMissingDirectory(): void {
     /** @var \Drupal\lark\Service\ExportFileManager $manager */
     $manager = $this->container->get(ExportFileManager::class);
@@ -27,6 +33,9 @@ class ExportFileManagerTest extends KernelTestBase {
     $this->assertCount(0, $collection);
   }
 
+  /**
+   * Tests that discovered exports are sorted with dependencies first.
+   */
   public function testDiscoverExportsSortsDependenciesFirst(): void {
     /** @var \Drupal\lark\Service\ExportFileManager $manager */
     $manager = $this->container->get(ExportFileManager::class);
@@ -43,7 +52,7 @@ class ExportFileManagerTest extends KernelTestBase {
   }
 
   /**
-   * Only exports that reference the removal set are reported.
+   * Tests that only exports referencing the removal set are reported.
    */
   public function testFindExportsReferencingRemovalSetReportsOnlyReferencers(): void {
     /** @var \Drupal\lark\Service\ExportFileManager $manager */

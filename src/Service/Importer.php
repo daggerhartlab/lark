@@ -30,6 +30,11 @@ class Importer implements ImporterInterface {
 
   use StringTranslationTrait;
 
+  /**
+   * Discovered export collections, keyed by source id.
+   *
+   * @var \Drupal\lark\Model\ExportCollection[]
+   */
   protected array $discoveryCache = [];
 
   /**
@@ -251,8 +256,6 @@ class Importer implements ImporterInterface {
    * @param string|null $source_label
    *   The source label to use in the bulk summary message.
    *
-   * @return void
-   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -370,12 +373,8 @@ class Importer implements ImporterInterface {
         }
       }
 
-      /* @todo - Figure out "modified by another user" issue.
-      $violations = $entity->validate();
-      if (count($violations) > 0) {
-        throw new LarkEntityInvalidException($violations, $path);
-      }
-      */
+      // @todo Validate the entity before saving, once the "modified by another
+      //   user" issue is understood.
       $entity->save();
     }
   }
@@ -385,8 +384,6 @@ class Importer implements ImporterInterface {
    *
    * @param \Drupal\lark\Model\ExportArray $export
    *   Decoded yaml export data.
-   *
-   * @return void
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -430,8 +427,8 @@ class Importer implements ImporterInterface {
     // of the available translations if one exists with those values. If none
     // exists, create the entity in the default language.
     // During the installer, when installing with an alternative language,
-    // `en` is still the default when modules are installed so check the default language
-    // instead.
+    // `en` is still the default when modules are installed so check the
+    // default language instead.
     if (!$this->languageManager->getLanguage($default_langcode) || (InstallerKernel::installationAttempted() && $default_language->getId() !== $default_langcode)) {
       $use_default = TRUE;
       foreach ($export->translations() as $langcode => $translation_data) {
@@ -457,8 +454,6 @@ class Importer implements ImporterInterface {
    *   The entity being imported.
    * @param \Drupal\lark\Model\ExportArray $export
    *   The export data.
-   *
-   * @return void
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */

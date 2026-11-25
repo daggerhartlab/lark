@@ -3,16 +3,19 @@
 namespace Drupal\lark\Model;
 
 /**
- * Class ExportCollection.
- *
- * @package Drupal\lark\Model
+ * Holds a set of export arrays keyed by UUID.
  */
 class ExportCollection extends \ArrayObject {
 
   /**
+   * Constructs an ExportCollection object.
+   *
    * @param \Drupal\lark\Model\ExportArray[] $array
+   *   The export arrays to add.
    * @param int $flags
+   *   ArrayObject behavior flags.
    * @param string $iteratorClass
+   *   The iterator class to use.
    */
   public function __construct(object|array $array = [], int $flags = 0, string $iteratorClass = "ArrayIterator") {
     $typed_keyed = [];
@@ -66,19 +69,22 @@ class ExportCollection extends \ArrayObject {
   }
 
   /**
-   * @param string $uuid
-   * @param \Drupal\lark\Model\ExportArray $item
+   * Sets an item by UUID.
    *
-   * @return void
+   * @param string $uuid
+   *   The UUID of the item.
+   * @param \Drupal\lark\Model\ExportArray $item
+   *   The item to set.
    */
   public function set(string $uuid, ExportArray $item): void {
     $this->offsetSet($uuid, $item);
   }
 
   /**
-   * @param \Drupal\lark\Model\ExportArray $export
+   * Adds an item keyed by its UUID.
    *
-   * @return void
+   * @param \Drupal\lark\Model\ExportArray $export
+   *   The item to add.
    */
   public function add(ExportArray $export): void {
     $this->set($export->uuid(), $export);
@@ -98,6 +104,7 @@ class ExportCollection extends \ArrayObject {
    * Merge another collection into this one.
    *
    * @param \Drupal\lark\Model\ExportCollection $collection
+   *   The collection to merge in.
    */
   public function merge(ExportCollection $collection): void {
     foreach ($collection as $export) {
@@ -127,6 +134,7 @@ class ExportCollection extends \ArrayObject {
    *   The mode to pass to array_filter.
    *
    * @return \Drupal\lark\Model\ExportCollection
+   *   The filtered collection.
    */
   public function filter(callable $callback, int $mode = 0): ExportCollection {
     return new static(array_filter($this->getArrayCopy(), $callback, $mode));

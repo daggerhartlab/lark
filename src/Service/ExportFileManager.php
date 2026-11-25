@@ -10,6 +10,9 @@ use Drupal\lark\Model\ExportCollection;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
 
+/**
+ * Discovers and removes export files in a source directory.
+ */
 class ExportFileManager {
 
   /**

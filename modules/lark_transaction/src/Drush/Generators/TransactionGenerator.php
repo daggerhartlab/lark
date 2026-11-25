@@ -11,6 +11,8 @@ use DrupalCodeGenerator\GeneratorType;
 use Drush\Commands\AutowireTrait;
 
 /**
+ * Generates a Lark Transaction plugin.
+ *
  * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. There is no
  *   replacement.
  */

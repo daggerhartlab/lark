@@ -6,17 +6,20 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Uploads an archive of lark exports.
+ */
 class LarkSourceUploadForm extends FormBase {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getFormId() {
     return 'lark_source_upload_form';
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['file'] = [
@@ -38,7 +41,7 @@ class LarkSourceUploadForm extends FormBase {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /** @var \SplFileInfo[] $files */

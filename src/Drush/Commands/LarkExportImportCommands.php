@@ -46,6 +46,8 @@ class LarkExportImportCommands extends DrushCommands {
   /**
    * Import a single entity with its dependencies.
    *
+   * @param string $source_id
+   *   Source id.
    * @param string $uuid
    *   Entity UUID to import.
    *

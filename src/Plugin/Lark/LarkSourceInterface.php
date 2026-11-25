@@ -17,6 +17,7 @@ interface LarkSourceInterface {
    * Returns the plugin ID.
    *
    * @return string
+   *   The plugin ID.
    */
   public function id();
 
@@ -24,13 +25,15 @@ interface LarkSourceInterface {
    * Returns the translated plugin label.
    *
    * @return string
+   *   The plugin label.
    */
   public function label();
 
   /**
-   * Unprocessed raw directory string.
+   * Returns the unprocessed raw directory string.
    *
    * @return string
+   *   The directory as stored.
    */
   public function directory(): string;
 

@@ -20,8 +20,6 @@ interface ImporterInterface {
    * @param bool $show_messages
    *   Whether to show messages.
    *
-   * @return void
-   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
@@ -45,8 +43,6 @@ interface ImporterInterface {
    * @param bool $show_messages
    *   Whether to show messages.
    *
-   * @return void
-   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
@@ -58,8 +54,6 @@ interface ImporterInterface {
    *
    * @param bool $show_messages
    *   Whether to show messages.
-   *
-   * @return void
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
@@ -75,8 +69,6 @@ interface ImporterInterface {
    * @param bool $show_messages
    *   Whether to show messages.
    *
-   * @return void
-   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
@@ -90,8 +82,6 @@ interface ImporterInterface {
    *   Path to the archive.
    * @param bool $show_messages
    *   Whether to show messages.
-   *
-   * @return void
    */
   public function importArchive(string $path_to_archive, bool $show_messages = TRUE): void;
 

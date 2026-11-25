@@ -18,16 +18,20 @@ class Exporter implements ExporterInterface {
   use StringTranslationTrait;
 
   /**
-   * EntityExporter constructor.
+   * Constructs an Exporter object.
    *
    * @param \Drupal\lark\Service\ExportableFactoryInterface $exportableFactory
    *   The lark exportable factory service.
-   * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
-   *   Meta options manager.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   The logger service.
+   * @param \Drupal\lark\Service\MetaOptionManager $metaOptionManager
+   *   Meta options manager.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\lark\Service\LarkSourceManager $sourceManager
+   *   The lark source manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   The module handler.
    */
   public function __construct(
     protected ExportableFactoryInterface $exportableFactory,

@@ -21,12 +21,23 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class ExporterTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
   ];
 
+  /**
+   * The absolute path of the temporary export directory.
+   *
+   * @var string
+   */
   protected string $exportDir;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -51,6 +62,9 @@ class ExporterTest extends KernelTestBase {
       ->save();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown(): void {
     // Clean up the real temp directory created during the test.
     if (isset($this->exportDir) && is_dir($this->exportDir)) {
@@ -59,6 +73,9 @@ class ExporterTest extends KernelTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Tests that exporting an entity writes a YAML file at the expected path.
+   */
   public function testExportEntityCreatesYamlFile(): void {
     $node = Node::create(['type' => 'article', 'title' => 'Export Me']);
     $node->save();
@@ -71,6 +88,9 @@ class ExporterTest extends KernelTestBase {
     $this->assertFileExists($expected_file, 'Export must create a YAML file at the expected path');
   }
 
+  /**
+   * Tests that exported YAML contains the _meta entity type, bundle, and UUID.
+   */
   public function testExportedYamlContainsRequiredMetaKeys(): void {
     $node = Node::create(['type' => 'article', 'title' => 'Check Meta']);
     $node->save();
@@ -89,6 +109,9 @@ class ExporterTest extends KernelTestBase {
     $this->assertArrayNotHasKey('nid', $content['default'] ?? []);
   }
 
+  /**
+   * Tests that exported YAML omits the numeric entity ID.
+   */
   public function testExportedYamlDoesNotContainNumericEntityId(): void {
     $node = Node::create(['type' => 'article', 'title' => 'No NID']);
     $node->save();
@@ -102,6 +125,9 @@ class ExporterTest extends KernelTestBase {
     $this->assertArrayNotHasKey('nid', $content['default'] ?? []);
   }
 
+  /**
+   * Tests that exporting a set of entities writes a file for each.
+   */
   public function testExportEntitiesWritesEveryEntityInTheSet(): void {
     /** @var \Drupal\lark\Service\ExporterInterface $exporter */
     $exporter = $this->container->get(ExporterInterface::class);
@@ -117,6 +143,9 @@ class ExporterTest extends KernelTestBase {
     $this->assertFileExists($this->exportDir . '/node/article/' . $two->uuid() . '.yml');
   }
 
+  /**
+   * Tests that exporting an empty set writes nothing and does not fail.
+   */
   public function testExportEntitiesAcceptsAnEmptySet(): void {
     /** @var \Drupal\lark\Service\ExporterInterface $exporter */
     $exporter = $this->container->get(ExporterInterface::class);

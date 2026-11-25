@@ -23,11 +23,17 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class LinkHandlerTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
     'link', 'menu_link_content', 'path_alias',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -40,12 +46,30 @@ class LinkHandlerTest extends KernelTestBase {
     Menu::create(['id' => 'test-menu', 'label' => 'Test menu'])->save();
   }
 
+  /**
+   * Creates and saves an article node.
+   *
+   * @param string $title
+   *   The node title.
+   *
+   * @return \Drupal\node\Entity\Node
+   *   The saved node.
+   */
   private function createNode(string $title = 'Target'): Node {
     $node = Node::create(['type' => 'article', 'title' => $title]);
     $node->save();
     return $node;
   }
 
+  /**
+   * Creates and saves a menu link with the given URI.
+   *
+   * @param string $uri
+   *   The link URI.
+   *
+   * @return \Drupal\menu_link_content\Entity\MenuLinkContent
+   *   The saved menu link.
+   */
   private function createLink(string $uri): MenuLinkContent {
     $link = MenuLinkContent::create([
       'title' => 'A link',
@@ -56,12 +80,24 @@ class LinkHandlerTest extends KernelTestBase {
     return $link;
   }
 
+  /**
+   * Gets the first exported link field item of a menu link.
+   *
+   * @param \Drupal\menu_link_content\Entity\MenuLinkContent $link
+   *   The menu link to export.
+   *
+   * @return array
+   *   The exported link field item.
+   */
   private function exportedLinkItem(MenuLinkContent $link): array {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
     return $utility->getEntityArray($link)['link'][0];
   }
 
+  /**
+   * Tests that an entity: URI exports with the target's UUID.
+   */
   public function testEntitySchemeUriExportsAsUuid(): void {
     $node = $this->createNode();
     $link = $this->createLink('entity:node/' . $node->id());
@@ -73,6 +109,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame('node', $item['target_entity_type']);
   }
 
+  /**
+   * Tests that an internal:/node URI exports with the UUID, keeping its scheme.
+   */
   public function testInternalSchemeUriExportsAsUuidAndKeepsScheme(): void {
     $node = $this->createNode();
     $link = $this->createLink('internal:/node/' . $node->id());
@@ -84,6 +123,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame('node', $item['target_entity_type']);
   }
 
+  /**
+   * Tests that URIs not pointing at an entity export unchanged.
+   */
   public function testNonEntityUrisAreUntouched(): void {
     foreach (['https://example.com', 'internal:/some/alias', 'route:<nolink>', 'internal:/'] as $uri) {
       $link = $this->createLink($uri);
@@ -94,6 +136,9 @@ class LinkHandlerTest extends KernelTestBase {
     }
   }
 
+  /**
+   * Tests that an entity URI with an unknown ID exports unchanged.
+   */
   public function testUnresolvableEntityIdIsUntouched(): void {
     $link = $this->createLink('entity:node/999999');
     $item = $this->exportedLinkItem($link);
@@ -102,6 +147,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertArrayNotHasKey('target_uuid', $item);
   }
 
+  /**
+   * Tests that a URI targeting a non-exportable entity type exports unchanged.
+   */
   public function testNonExportableTargetIsUntouched(): void {
     // Users are explicitly excluded from export by EntityTypeInfo.
     $link = $this->createLink('entity:user/1');
@@ -111,7 +159,10 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertArrayNotHasKey('target_uuid', $item);
   }
 
-  public function testTargetIsASoftReferenceNotADependency(): void {
+  /**
+   * Tests that a linked entity is a reference, not a dependency.
+   */
+  public function testTargetIsSoftReferenceNotDependency(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
 
@@ -125,6 +176,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame([], $manager->getFieldDependencies($link->get('link')));
   }
 
+  /**
+   * Tests that a linked node does not join the export set.
+   */
   public function testLinkedNodeIsNotPulledIntoTheExportSet(): void {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
@@ -143,6 +197,9 @@ class LinkHandlerTest extends KernelTestBase {
     );
   }
 
+  /**
+   * Tests that the export records the link target as a reference.
+   */
   public function testExportRecordsTheReferenceInMeta(): void {
     $node = $this->createNode();
     $link = $this->createLink('entity:node/' . $node->id());
@@ -153,6 +210,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame([], $export->dependencies());
   }
 
+  /**
+   * Tests that import rewrites a UUID entity URI to the local entity ID.
+   */
   public function testImportRestoresTheLocalEntityId(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -176,6 +236,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertArrayNotHasKey('target_entity_type', $result[0]);
   }
 
+  /**
+   * Tests that import rewrites a UUID internal URI to the local entity ID.
+   */
   public function testImportRestoresTheInternalScheme(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -197,6 +260,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame('internal:/node/' . $node->id(), $result[0]['uri']);
   }
 
+  /**
+   * Tests that import keeps the UUID URI when the target is missing.
+   */
   public function testImportWithMissingTargetDoesNotThrow(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -222,6 +288,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertArrayNotHasKey('target_uuid', $result[0]);
   }
 
+  /**
+   * Tests that a UUID-form URI with an existing target exports unchanged.
+   */
   public function testUuidFormUriWithExistingTargetExportsStably(): void {
     $node = $this->createNode();
     $link = $this->createLink('entity:node/' . $node->uuid());
@@ -233,6 +302,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame('node', $item['target_entity_type']);
   }
 
+  /**
+   * Tests that a UUID-form URI with a missing target is still referenced.
+   */
   public function testUuidFormUriWithAbsentTargetStillAnnotatesAndReferences(): void {
     $missing_uuid = '11111111-2222-3333-4444-555555555555';
     $link = $this->createLink('entity:node/' . $missing_uuid);
@@ -247,6 +319,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame([$missing_uuid => 'node'], $export->references());
   }
 
+  /**
+   * Tests that re-exporting an unresolved import restores its reference.
+   */
   public function testDegradedRoundTripPreservesAnnotationsAndReference(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -281,6 +356,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame([], $export->dependencies());
   }
 
+  /**
+   * Tests that imported values save cleanly to the link field.
+   */
   public function testImportedValuesAreAcceptedByTheLinkField(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -306,7 +384,14 @@ class LinkHandlerTest extends KernelTestBase {
   }
 
   /**
-   * Create a path alias pointing at an entity's canonical path.
+   * Creates a path alias pointing at an entity's canonical path.
+   *
+   * @param string $alias
+   *   The alias path.
+   * @param string $system_path
+   *   The system path the alias points at.
+   * @param string $langcode
+   *   The alias language code.
    */
   private function createAlias(string $alias, string $system_path, string $langcode = 'en'): void {
     \Drupal::entityTypeManager()->getStorage('path_alias')->create([
@@ -316,7 +401,10 @@ class LinkHandlerTest extends KernelTestBase {
     ])->save();
   }
 
-  public function testAliasLinkContributesAReference(): void {
+  /**
+   * Tests that an alias link records its target as a reference.
+   */
+  public function testAliasLinkContributesReference(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
 
@@ -331,6 +419,9 @@ class LinkHandlerTest extends KernelTestBase {
     );
   }
 
+  /**
+   * Tests that an alias link URI exports verbatim.
+   */
   public function testAliasLinkUriIsNeverRewrittenOnExport(): void {
     $node = $this->createNode();
     $this->createAlias('/faqs', '/node/' . $node->id());
@@ -347,6 +438,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertArrayNotHasKey('target_entity_type', $item);
   }
 
+  /**
+   * Tests that an alias link adds no dependency.
+   */
   public function testAliasLinkStillContributesNoDependency(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -358,6 +452,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame([], $manager->getFieldDependencies($link->get('link')));
   }
 
+  /**
+   * Tests that an alias link target does not join the export set.
+   */
   public function testAliasTargetIsNotPulledIntoTheExportSet(): void {
     /** @var \Drupal\lark\Service\Utility\EntityUtility $utility */
     $utility = $this->container->get(EntityUtility::class);
@@ -377,6 +474,9 @@ class LinkHandlerTest extends KernelTestBase {
     );
   }
 
+  /**
+   * Tests that an unknown alias adds no reference.
+   */
   public function testUnresolvableAliasContributesNothing(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -386,6 +486,9 @@ class LinkHandlerTest extends KernelTestBase {
     $this->assertSame([], $manager->getFieldReferences($link->get('link')));
   }
 
+  /**
+   * Tests that an alias with a query string or fragment still resolves.
+   */
   public function testAliasWithQueryStringOrFragmentStillResolves(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -403,6 +506,9 @@ class LinkHandlerTest extends KernelTestBase {
     }
   }
 
+  /**
+   * Tests that alias resolution uses the link entity's language.
+   */
   public function testAliasResolutionUsesTheEntityLanguage(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -419,7 +525,10 @@ class LinkHandlerTest extends KernelTestBase {
     );
   }
 
-  public function testAliasPointingAtANonExportableTypeContributesNothing(): void {
+  /**
+   * Tests that an alias to a non-exportable entity type adds no reference.
+   */
+  public function testAliasPointingAtNonExportableTypeContributesNothing(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
 

@@ -170,8 +170,6 @@ class LarkTransactionPluginManager extends DefaultPluginManager {
    *
    * @param \Drupal\lark_transaction\Plugin\LarkTransactionInterface $plugin
    *   Plugin instance.
-   *
-   * @return void
    */
   protected function upsertPluginHistory(LarkTransactionInterface $plugin): void {
     $this->database->merge('lark_transaction')

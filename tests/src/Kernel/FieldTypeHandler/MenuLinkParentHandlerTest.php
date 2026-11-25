@@ -21,11 +21,17 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class MenuLinkParentHandlerTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
     'link', 'menu_link_content',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -37,6 +43,17 @@ class MenuLinkParentHandlerTest extends KernelTestBase {
     Menu::create(['id' => 'test-menu', 'label' => 'Test menu'])->save();
   }
 
+  /**
+   * Creates and saves a menu link, optionally under a parent link.
+   *
+   * @param string $title
+   *   The link title.
+   * @param \Drupal\menu_link_content\Entity\MenuLinkContent|null $parent
+   *   The parent link, or NULL for a top-level link.
+   *
+   * @return \Drupal\menu_link_content\Entity\MenuLinkContent
+   *   The saved menu link.
+   */
   private function createLink(string $title, ?MenuLinkContent $parent = NULL): MenuLinkContent {
     $link = MenuLinkContent::create([
       'title' => $title,
@@ -48,7 +65,10 @@ class MenuLinkParentHandlerTest extends KernelTestBase {
     return $link;
   }
 
-  public function testParentIsAHardDependency(): void {
+  /**
+   * Tests that a content parent link is a dependency of its child.
+   */
+  public function testParentIsHardDependency(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
 
@@ -61,6 +81,9 @@ class MenuLinkParentHandlerTest extends KernelTestBase {
     );
   }
 
+  /**
+   * Tests that a top-level link has no parent dependency.
+   */
   public function testTopLevelLinkHasNoParentDependency(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -70,6 +93,9 @@ class MenuLinkParentHandlerTest extends KernelTestBase {
     $this->assertSame([], $manager->getFieldDependencies($link->get('parent')));
   }
 
+  /**
+   * Tests that a parent from a module-defined link adds no dependency.
+   */
   public function testNonContentParentIsIgnored(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -86,6 +112,9 @@ class MenuLinkParentHandlerTest extends KernelTestBase {
     $this->assertSame([], $manager->getFieldDependencies($link->get('parent')));
   }
 
+  /**
+   * Tests that string fields other than the menu parent add no dependency.
+   */
   public function testOtherStringFieldsAreIgnored(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);
@@ -98,6 +127,9 @@ class MenuLinkParentHandlerTest extends KernelTestBase {
     $this->assertSame([], $manager->getFieldDependencies($node->get('title')));
   }
 
+  /**
+   * Tests that a parent link is not recorded as a reference.
+   */
   public function testParentContributesNoSoftReference(): void {
     /** @var \Drupal\lark\Service\FieldTypeHandlerManagerInterface $manager */
     $manager = $this->container->get(FieldTypeHandlerManagerInterface::class);

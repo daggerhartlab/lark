@@ -6,21 +6,28 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\File\FileExists;
 
+/**
+ * Provides typed access to the lark.settings config.
+ */
 class LarkSettings {
 
   const NAME = 'lark.settings';
 
   /**
+   * Constructs a LarkSettings object.
+   *
    * @param \Drupal\Core\Config\ImmutableConfig $settings
+   *   The lark.settings config.
    */
   public function __construct(
     protected ImmutableConfig $settings,
   ) {}
 
   /**
-   * Factory.
+   * Creates a LarkSettings object from the config factory.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory.
    *
    * @return static
    */
@@ -49,9 +56,10 @@ class LarkSettings {
   }
 
   /**
-   * Raw ignored_comparison_keys value.
+   * Gets the raw ignored_comparison_keys value.
    *
    * @return string
+   *   Newline-separated keys.
    */
   public function ignoredComparisonKeys(): string {
     return $this->settings->get('ignored_comparison_keys') ?? '';
@@ -61,6 +69,7 @@ class LarkSettings {
    * Get ignored_comparison_keys as an array.
    *
    * @return array
+   *   The keys to ignore when comparing exports.
    */
   public function ignoredComparisonKeysArray(): array {
     $ignored_keys = array_filter(preg_split("/[\r\n]+/", $this->ignoredComparisonKeys()));
@@ -96,6 +105,7 @@ class LarkSettings {
    * Get enum value for FileExists based on Drupal config.
    *
    * @return \Drupal\Core\File\FileExists
+   *   The action to take when an exported asset already exists.
    */
   public function assetExportFileExists(): FileExists {
     $name = $this->settings->get('asset_export_file_exists') ?? FileExists::Replace->name;
@@ -106,6 +116,7 @@ class LarkSettings {
    * Get enum value for FileExists based on Drupal config.
    *
    * @return \Drupal\Core\File\FileExists
+   *   The action to take when an imported asset already exists.
    */
   public function assetImportFileExists(): FileExists {
     $name = $this->settings->get('asset_import_file_exists') ?? FileExists::Replace->name;
@@ -116,6 +127,7 @@ class LarkSettings {
    * Get the FileExists enum value for the given value name.
    *
    * @param string $value_name
+   *   The enum case name.
    *
    * @return \Drupal\Core\File\FileExists
    *   FileExists enum value.

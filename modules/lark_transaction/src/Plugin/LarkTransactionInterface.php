@@ -98,22 +98,16 @@ interface LarkTransactionInterface {
 
   /**
    * Pre-execution can be used to set up the content creation/updates.
-   *
-   * @return void
    */
   public function preExecute(): void;
 
   /**
    * Perform the content creation/updates.
-   *
-   * @return void
    */
   public function execute(): void;
 
   /**
    * Post-execution, such as validating the content creation/updates.
-   *
-   * @return void
    */
   public function postExecute(): void;
 

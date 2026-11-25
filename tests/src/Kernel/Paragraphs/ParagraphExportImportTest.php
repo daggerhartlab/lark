@@ -21,20 +21,32 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * Tests export/import of nodes containing paragraphs.
  *
  * Explicitly covers the parent_id self-correction behavior: paragraphs are
- * exported with the source environment's parent_id, and entity_reference_revisions
- * corrects it when the host entity is saved during import.
+ * exported with the source environment's parent_id, and
+ * entity_reference_revisions corrects it when the host entity is saved during
+ * import.
  */
 #[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class ParagraphExportImportTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
     'paragraphs', 'entity_reference_revisions', 'file',
   ];
 
+  /**
+   * The absolute path of the temporary export directory.
+   *
+   * @var string
+   */
   protected string $exportDir;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -99,6 +111,9 @@ class ParagraphExportImportTest extends KernelTestBase {
       ->save();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown(): void {
     // Clean up the real temp directory created during the test.
     if (isset($this->exportDir) && is_dir($this->exportDir)) {
@@ -107,6 +122,9 @@ class ParagraphExportImportTest extends KernelTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Tests that a node and its paragraph round-trip with content intact.
+   */
   public function testNodeWithParagraphExportsAndImportsCleanly(): void {
     $paragraph = Paragraph::create([
       'type' => 'text_block',
@@ -135,7 +153,8 @@ class ParagraphExportImportTest extends KernelTestBase {
     $node->delete();
     $paragraph->delete();
 
-    // Re-import via source (imports in dependency order: paragraph first, node second).
+    // Re-import via source (imports in dependency order: paragraph first, node
+    // second).
     /** @var \Drupal\lark\Service\ImporterInterface $importer */
     $importer = $this->container->get(ImporterInterface::class);
     $importer->importSource('paragraph_test_source', FALSE);
@@ -161,6 +180,9 @@ class ParagraphExportImportTest extends KernelTestBase {
     );
   }
 
+  /**
+   * Tests that a reimported paragraph's parent_id points at the new node.
+   */
   public function testParagraphParentIdIsCorrectAfterReimport(): void {
     // This test explicitly documents the implicit dependency on
     // entity_reference_revisions::postSave() for parent_id correction.
@@ -185,7 +207,6 @@ class ParagraphExportImportTest extends KernelTestBase {
     $this->assertSame((string) $node->id(), $exported_parent_id, 'Exported paragraph must contain source node\'s numeric ID');
 
     // Delete and re-import.
-    $original_node_id = $node->id();
     $node->delete();
     $paragraph->delete();
 
@@ -196,7 +217,8 @@ class ParagraphExportImportTest extends KernelTestBase {
     $paragraphs = \Drupal::entityTypeManager()->getStorage('paragraph')->loadByProperties(['uuid' => $paragraph->uuid()]);
     $reimported_paragraph = reset($paragraphs);
 
-    // The destination node might have a different ID, but parent_id should match it.
+    // The destination node might have a different ID, but parent_id should
+    // match it.
     $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['uuid' => $node->uuid()]);
     $reimported_node = reset($nodes);
 

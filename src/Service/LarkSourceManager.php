@@ -26,10 +26,14 @@ class LarkSourceManager {
   protected EntityStorageInterface $storage;
 
   /**
-   * LarkSourceManager constructor.
+   * Constructs a LarkSourceManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager.
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   The file system.
+   * @param \Drupal\lark\Model\LarkSettings $larkSettings
+   *   The lark settings.
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
@@ -168,7 +172,8 @@ class LarkSourceManager {
   /**
    * Get the default source.
    *
-   * @return \Drupal\lark\Entity\LarkSourceInterface|null
+   * @return \Drupal\lark\Entity\LarkSourceInterface
+   *   The default source, or the temporary source if none is configured.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException

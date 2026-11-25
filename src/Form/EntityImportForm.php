@@ -4,6 +4,9 @@ namespace Drupal\lark\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Imports an entity from a lark source.
+ */
 class EntityImportForm extends EntityBaseForm {
 
   /**
@@ -14,7 +17,7 @@ class EntityImportForm extends EntityBaseForm {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $entity_type_id = $this->getRouteMatch()->getRouteObject()->getOption('_lark_entity_type_id');
@@ -84,7 +87,7 @@ class EntityImportForm extends EntityBaseForm {
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $source_id = $form_state->getValue('source');

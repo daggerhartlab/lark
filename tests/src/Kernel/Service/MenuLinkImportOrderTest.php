@@ -35,12 +35,23 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 #[RunTestsInSeparateProcesses]
 class MenuLinkImportOrderTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'user', 'system', 'field', 'link', 'menu_link_content',
   ];
 
+  /**
+   * The absolute path of the temporary export directory.
+   *
+   * @var string
+   */
   protected string $exportDir;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('user');
@@ -66,6 +77,9 @@ class MenuLinkImportOrderTest extends KernelTestBase {
     Menu::create(['id' => 'test-menu', 'label' => 'Test menu'])->save();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown(): void {
     if (isset($this->exportDir) && is_dir($this->exportDir)) {
       \Drupal::service('file_system')->deleteRecursive($this->exportDir);
@@ -73,6 +87,17 @@ class MenuLinkImportOrderTest extends KernelTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Creates and saves a menu link, optionally under a parent link.
+   *
+   * @param string $title
+   *   The link title.
+   * @param \Drupal\menu_link_content\Entity\MenuLinkContent|null $parent
+   *   The parent link, or NULL for a top-level link.
+   *
+   * @return \Drupal\menu_link_content\Entity\MenuLinkContent
+   *   The saved menu link.
+   */
   private function createLink(string $title, ?MenuLinkContent $parent = NULL): MenuLinkContent {
     $link = MenuLinkContent::create([
       'title' => $title,
@@ -84,6 +109,9 @@ class MenuLinkImportOrderTest extends KernelTestBase {
     return $link;
   }
 
+  /**
+   * Tests that a parent link is imported before a child listed first.
+   */
   public function testParentIsCreatedBeforeItsChildDespiteHostileUuidOrder(): void {
     /** @var \Drupal\lark\Service\ExporterInterface $exporter */
     $exporter = $this->container->get(ExporterInterface::class);
@@ -126,7 +154,10 @@ class MenuLinkImportOrderTest extends KernelTestBase {
     );
   }
 
-  public function testAncestorsPrecedeDescendantsThroughAThreeLevelChain(): void {
+  /**
+   * Tests that a reversed three-level chain imports ancestors first.
+   */
+  public function testAncestorsPrecedeDescendantsThroughThreeLevelChain(): void {
     /** @var \Drupal\lark\Service\ExporterInterface $exporter */
     $exporter = $this->container->get(ExporterInterface::class);
     /** @var \Drupal\lark\Service\ImporterInterface $importer */

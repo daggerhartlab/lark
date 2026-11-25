@@ -57,33 +57,47 @@ use Drupal\lark\Form\LarkSourceForm;
 final class LarkSource extends ConfigEntityBase implements LarkSourceInterface {
 
   /**
+   * The source id.
+   *
    * @var string
    */
   protected string $id = '';
 
   /**
+   * The source label.
+   *
    * @var string
    */
   protected string $label = '';
 
   /**
+   * The source description.
+   *
    * @var string
    */
   protected string $description = '';
 
   /**
+   * The unprocessed source directory.
+   *
    * @var string
    */
   protected string $directory = '';
 
   /**
-   * @var \Drupal\Core\Extension\ExtensionPathResolver|mixed
+   * The extension path resolver.
+   *
+   * @var \Drupal\Core\Extension\ExtensionPathResolver
    */
   protected ExtensionPathResolver $extensionPathResolver;
 
   /**
+   * Constructs a LarkSource object.
+   *
    * @param array $values
-   * @param $entity_type
+   *   An array of values to set, keyed by property name.
+   * @param string $entity_type
+   *   The entity type id.
    */
   public function __construct(array $values, $entity_type) {
     parent::__construct($values, $entity_type);

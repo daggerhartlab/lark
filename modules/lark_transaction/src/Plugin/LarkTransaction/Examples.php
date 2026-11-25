@@ -73,7 +73,6 @@ class Examples extends LarkTransactionPluginBase {
       'field_link' => [
         'title' => 'This is a link title',
         'uri' => 'entity:node/1',
-        // 'options' => [],
       ],
     ]);
 
@@ -82,9 +81,7 @@ class Examples extends LarkTransactionPluginBase {
       $paragraph->save();
     }
 
-    /**
-     * Node: Simple node that has paragraphs as components.
-     */
+    // Node: Simple node that has paragraphs as components.
     $node = $this->entityTypeManager->getStorage('node')->create([
       'title' => 'Example node created',
       'type' => 'landing_page',
@@ -97,25 +94,18 @@ class Examples extends LarkTransactionPluginBase {
     ]);
     $node->save();
 
-    /**
-     * Blocks: Content blocks that aren't exported correctly can be created
-     * after the fact by giving them the same uuid that was originally created
-     * for the block.
-     *
-     * The block's expected UUID can be found in the block's configuration yaml.
-     */
-
+    // Blocks: Content blocks that aren't exported correctly can be created
+    // after the fact by giving them the same uuid that was originally created
+    // for the block.
+    //
+    // The block's expected UUID can be found in the block's configuration
+    // yaml.
+    //
     // Since we are forcing the UUID, we need to check that the blocks don't
     // exist or else the creation will fatally fail.
     $exists = $this->entityTypeManager->getStorage('block_content')->loadByProperties([
       'uuid' => '3dd21587-c8c5-4366-9e60-c54cf762ecdf',
     ]);
-
-    // Alternatively, you could load and delete the old one before creating a
-    // new block with the same uuid.
-    foreach ($exists as $exist) {
-      // $exist->delete();
-    }
 
     if (!$exists) {
       // Create the missing footer logo block content.
@@ -150,9 +140,7 @@ class Examples extends LarkTransactionPluginBase {
       $block->save();
     }
 
-    /**
-     * Menu link content: Create menu links assigned to specific menus.
-     */
+    // Menu link content: Create menu links assigned to specific menus.
     $menu_links = [];
     $menu_links[] = $this->entityTypeManager->getStorage('menu_link_content')->create([
       // Name of the menu this link belongs to.

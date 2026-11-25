@@ -190,7 +190,8 @@ class LinkHandler extends FieldTypeHandlerBase {
    *   something that is not a single-segment entity path.
    */
   protected function parseAliasUri(string $uri, string $langcode): ?array {
-    // path_alias is optional; with no alias manager there is nothing to resolve.
+    // path_alias is optional; with no alias manager there is nothing to
+    // resolve.
     if (!$this->aliasManager) {
       return NULL;
     }
@@ -245,19 +246,39 @@ class LinkHandler extends FieldTypeHandlerBase {
     $uuid = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
 
     if (preg_match('#^entity:([a-z0-9_]+)/(\d+)$#', $uri, $matches)) {
-      return ['scheme' => 'entity', 'entity_type_id' => $matches[1], 'identifier' => $matches[2], 'identifier_type' => 'id'];
+      return [
+        'scheme' => 'entity',
+        'entity_type_id' => $matches[1],
+        'identifier' => $matches[2],
+        'identifier_type' => 'id',
+      ];
     }
 
     if (preg_match('#^internal:/([a-z0-9_]+)/(\d+)$#', $uri, $matches)) {
-      return ['scheme' => 'internal', 'entity_type_id' => $matches[1], 'identifier' => $matches[2], 'identifier_type' => 'id'];
+      return [
+        'scheme' => 'internal',
+        'entity_type_id' => $matches[1],
+        'identifier' => $matches[2],
+        'identifier_type' => 'id',
+      ];
     }
 
     if (preg_match('#^entity:([a-z0-9_]+)/(' . $uuid . ')$#', $uri, $matches)) {
-      return ['scheme' => 'entity', 'entity_type_id' => $matches[1], 'identifier' => $matches[2], 'identifier_type' => 'uuid'];
+      return [
+        'scheme' => 'entity',
+        'entity_type_id' => $matches[1],
+        'identifier' => $matches[2],
+        'identifier_type' => 'uuid',
+      ];
     }
 
     if (preg_match('#^internal:/([a-z0-9_]+)/(' . $uuid . ')$#', $uri, $matches)) {
-      return ['scheme' => 'internal', 'entity_type_id' => $matches[1], 'identifier' => $matches[2], 'identifier_type' => 'uuid'];
+      return [
+        'scheme' => 'internal',
+        'entity_type_id' => $matches[1],
+        'identifier' => $matches[2],
+        'identifier_type' => 'uuid',
+      ];
     }
 
     return NULL;

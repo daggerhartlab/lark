@@ -17,20 +17,33 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
- * Tests that nested paragraphs (paragraph referencing paragraph) export and
- * import correctly, with correct parent_id at every level.
+ * Tests that nested paragraphs export and import correctly.
+ *
+ * Covers a paragraph referencing a paragraph, with the correct parent_id at
+ * every level.
  */
 #[Group('lark')]
 #[RunTestsInSeparateProcesses]
 class NestedParagraphTest extends KernelTestBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected static $modules = [
     'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
     'paragraphs', 'entity_reference_revisions', 'file',
   ];
 
+  /**
+   * The absolute path of the temporary export directory.
+   *
+   * @var string
+   */
   protected string $exportDir;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->installEntitySchema('node');
@@ -111,6 +124,9 @@ class NestedParagraphTest extends KernelTestBase {
       ->save();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function tearDown(): void {
     // Clean up the real temp directory created during the test.
     if (isset($this->exportDir) && is_dir($this->exportDir)) {
@@ -119,6 +135,9 @@ class NestedParagraphTest extends KernelTestBase {
     parent::tearDown();
   }
 
+  /**
+   * Tests that nested paragraphs round-trip with correct parent IDs.
+   */
   public function testNestedParagraphsRoundtrip(): void {
     // Build: node → section paragraph → item paragraph (3 levels deep).
     $item = Paragraph::create(['type' => 'item', 'field_item_text' => 'Item content']);
