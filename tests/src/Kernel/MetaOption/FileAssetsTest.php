@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\lark\Kernel\MetaOption;
 
+use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormState;
@@ -13,6 +14,8 @@ use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
+use Drupal\lark\Form\EntityExportForm;
+use Drupal\lark\Form\EntityImportForm;
 use Drupal\lark\Model\Exportable;
 use Drupal\lark\Plugin\Lark\FieldTypeHandler\FileUuidHandler;
 use Drupal\lark\Plugin\Lark\MetaOption\FileAssets;
@@ -172,17 +175,32 @@ class FileAssetsTest extends KernelTestBase {
    * Tests that a download archive includes the asset.
    */
   public function testDownloadArchiveIncludesAsset(): void {
-    $source = $this->container->get(LarkSourceManager::class)->load('test_source');
-    $exportables = $this->container->get(ExportableFactoryInterface::class)
-      ->createFromEntityWithDependencies('node', (int) $this->node->id(), $source);
-    $exportable = $exportables[$this->file->uuid()];
+    $this->assertContains($this->archiveAssetName(), $this->downloadArchiveNames());
+  }
 
-    $archive_path = $this->exportDir . '/archive.tar.gz';
-    $archive = new ArchiveTar($archive_path, 'gz');
-    $this->fileAssets()->preExportDownload($archive, $exportable);
+  /**
+   * Tests that a download archive leaves out the asset when disabled.
+   */
+  public function testDownloadArchiveSkipsAssetWhenDisabled(): void {
+    $this->setLarkSetting('should_export_assets', FALSE);
+    $this->assertNotContains($this->archiveAssetName(), $this->downloadArchiveNames());
+  }
 
-    $names = array_column($archive->listContent(), 'filename');
-    $this->assertContains('file/file/' . $this->file->uuid() . '--test.txt', $names);
+  /**
+   * Tests that a per-file override adds the asset despite the settings.
+   */
+  public function testDownloadArchiveOverrideEnablesAsset(): void {
+    $this->setLarkSetting('should_export_assets', FALSE);
+    $names = $this->downloadArchiveNames(['should_export' => TRUE]);
+    $this->assertContains($this->archiveAssetName(), $names);
+  }
+
+  /**
+   * Tests that a per-file override leaves out the asset despite the settings.
+   */
+  public function testDownloadArchiveOverrideDisablesAsset(): void {
+    $names = $this->downloadArchiveNames(['should_export' => FALSE]);
+    $this->assertNotContains($this->archiveAssetName(), $names);
   }
 
   /**
@@ -298,6 +316,79 @@ class FileAssetsTest extends KernelTestBase {
   }
 
   /**
+   * Tests form values against settings that disable both assets.
+   */
+  public function testProcessFormValuesWithAssetsDisabled(): void {
+    $this->setLarkSetting('should_export_assets', FALSE);
+    $this->setLarkSetting('should_import_assets', FALSE);
+    $plugin = $this->fileAssets();
+    $exportable = new Exportable($this->file);
+
+    $this->assertSame([], $plugin->processFormValues(
+      ['should_export' => '0', 'should_import' => '0'],
+      $exportable,
+      new FormState(),
+    ));
+    $this->assertSame(['should_export' => TRUE], $plugin->processFormValues(
+      ['should_export' => '1', 'should_import' => '0'],
+      $exportable,
+      new FormState(),
+    ));
+  }
+
+  /**
+   * Tests that the form shows the settings when there is no override.
+   */
+  public function testFormElementDefaultsToSettings(): void {
+    $this->setLarkSetting('should_import_assets', FALSE);
+    $element = $this->buildFormElement(EntityExportForm::class);
+
+    $this->assertSame(1, $element['should_export']['#default_value']);
+    $this->assertSame(0, $element['should_import']['#default_value']);
+    $this->assertStringStartsWith('(Default)', (string) $element['should_export']['#options'][1]);
+    $this->assertStringStartsWith('(Override)', (string) $element['should_export']['#options'][0]);
+    $this->assertStringStartsWith('(Default)', (string) $element['should_import']['#options'][0]);
+    $this->assertStringStartsWith('(Override)', (string) $element['should_import']['#options'][1]);
+  }
+
+  /**
+   * Tests that the form shows an exported override instead of the settings.
+   */
+  public function testFormElementShowsExportedOverride(): void {
+    $this->export(['should_export' => FALSE, 'should_import' => FALSE]);
+    $element = $this->buildFormElement(EntityExportForm::class);
+
+    $this->assertSame(0, $element['should_export']['#default_value']);
+    $this->assertSame(0, $element['should_import']['#default_value']);
+  }
+
+  /**
+   * Tests that the choices can be changed on export forms only.
+   */
+  public function testFormElementDisabledOnImportForms(): void {
+    $export = $this->buildFormElement(EntityExportForm::class);
+    $this->assertFalse($export['should_export']['#disabled']);
+    $this->assertFalse($export['should_import']['#disabled']);
+
+    $import = $this->buildFormElement(EntityImportForm::class);
+    $this->assertTrue($import['should_export']['#disabled']);
+    $this->assertTrue($import['should_import']['#disabled']);
+  }
+
+  /**
+   * Tests that an override survives a re-export that doesn't set one.
+   */
+  public function testOverrideSurvivesReexport(): void {
+    $this->export(['should_import' => FALSE]);
+    $this->resetServices();
+
+    $this->export();
+
+    $yaml = Yaml::decode(file_get_contents($this->exportDir . '/file/file/' . $this->file->uuid() . '.yml'));
+    $this->assertSame(['should_import' => FALSE], $yaml['_meta']['options']['file_assets']);
+  }
+
+  /**
    * Exports the node and its file.
    *
    * @param array $file_assets
@@ -307,6 +398,65 @@ class FileAssetsTest extends KernelTestBase {
     $overrides = $file_assets ? [$this->file->uuid() => ['file_assets' => $file_assets]] : [];
     $this->container->get(ExporterInterface::class)
       ->exportEntity('test_source', 'node', (int) $this->node->id(), FALSE, $overrides);
+  }
+
+  /**
+   * Builds a download archive of the node and lists its contents.
+   *
+   * @param array $file_assets
+   *   File assets option values for the file.
+   *
+   * @return string[]
+   *   The paths in the archive.
+   */
+  protected function downloadArchiveNames(array $file_assets = []): array {
+    $overrides = $file_assets ? [$this->file->uuid() => ['file_assets' => $file_assets]] : [];
+    $source = $this->container->get(LarkSourceManager::class)->load('test_source');
+    $exportables = $this->container->get(ExportableFactoryInterface::class)
+      ->createFromEntityWithDependencies('node', (int) $this->node->id(), $source, $overrides);
+
+    // The archive always holds the file's YAML before any asset is added.
+    $exportable = $exportables[$this->file->uuid()];
+    $archive = new ArchiveTar($this->exportDir . '/archive.tar.gz', 'gz');
+    $archive->addString('file/file/' . $this->file->uuid() . '.yml', $exportable->toYaml());
+    $this->fileAssets()->preExportDownload($archive, $exportable);
+    return array_column($archive->listContent(), 'filename');
+  }
+
+  /**
+   * Returns the asset's path inside a download archive.
+   */
+  protected function archiveAssetName(): string {
+    return 'file/file/' . $this->file->uuid() . '--test.txt';
+  }
+
+  /**
+   * Builds the file assets form element as a form would.
+   *
+   * @param class-string<\Drupal\Core\Form\FormInterface> $form_class
+   *   The form the element is built for.
+   *
+   * @return array
+   *   The form element.
+   */
+  protected function buildFormElement(string $form_class): array {
+    $this->resetServices();
+    $source = $this->container->get(LarkSourceManager::class)->load('test_source');
+    $exportables = $this->container->get(ExportableFactoryInterface::class)
+      ->createFromEntityWithDependencies('node', (int) $this->node->id(), $source);
+
+    $form_state = new FormState();
+    $form_state->setFormObject($this->container->get('class_resolver')->getInstanceFromDefinition($form_class));
+    $form = [];
+    return $this->fileAssets()->formElement($exportables[$this->file->uuid()], $form, $form_state, ['export_form_values']);
+  }
+
+  /**
+   * Replaces the services so nothing is cached from earlier exports.
+   */
+  protected function resetServices(): void {
+    $this->container->get('kernel')->resetContainer();
+    $this->container = \Drupal::getContainer();
   }
 
   /**
