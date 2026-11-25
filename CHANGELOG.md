@@ -7,6 +7,11 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Setting a file's asset choices back to the defaults in the export form now
+  clears the earlier override (#89).
+
 ## [2.2.0] - 2026-11-24
 
 ### Added

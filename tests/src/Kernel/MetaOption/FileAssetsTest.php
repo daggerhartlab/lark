@@ -389,6 +389,54 @@ class FileAssetsTest extends KernelTestBase {
   }
 
   /**
+   * Tests that submitting the defaults in the export form clears an override.
+   */
+  public function testExportFormClearsOverride(): void {
+    $this->export(['should_import' => FALSE]);
+    $this->resetServices();
+
+    $this->exportFromForm(['should_export' => '1', 'should_import' => '1']);
+
+    $this->assertArrayNotHasKey('file_assets', $this->exportedOptions());
+  }
+
+  /**
+   * Tests that the export form replaces an override with a different one.
+   */
+  public function testExportFormReplacesOverride(): void {
+    $this->export(['should_import' => FALSE]);
+    $this->resetServices();
+
+    $this->exportFromForm(['should_export' => '0', 'should_import' => '1']);
+
+    $this->assertSame(['should_export' => FALSE], $this->exportedOptions()['file_assets']);
+  }
+
+  /**
+   * Exports the node with file asset choices submitted through the form.
+   *
+   * @param array $file_assets
+   *   The submitted file assets values for the file.
+   */
+  protected function exportFromForm(array $file_assets): void {
+    $form = $this->container->get('class_resolver')->getInstanceFromDefinition(EntityExportForm::class);
+    $form_state = (new FormState())->setValue('export_form_values', [
+      $this->file->uuid() => ['file_assets' => $file_assets],
+    ]);
+    $overrides = $form->getSubmittedOverrides('export_form_values', $form_state);
+    $this->container->get(ExporterInterface::class)
+      ->exportEntity('test_source', 'node', (int) $this->node->id(), FALSE, $overrides);
+  }
+
+  /**
+   * Returns the options in the file's exported YAML.
+   */
+  protected function exportedOptions(): array {
+    $yaml = Yaml::decode(file_get_contents($this->exportDir . '/file/file/' . $this->file->uuid() . '.yml'));
+    return $yaml['_meta']['options'] ?? [];
+  }
+
+  /**
    * Exports the node and its file.
    *
    * @param array $file_assets

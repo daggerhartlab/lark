@@ -45,14 +45,12 @@ trait ExportablesOverridesTrait {
           continue;
         }
 
-        // Ensure it has submitted values.
-        if (!array_key_exists($meta_option->id(), $values)) {
-          $values[$meta_option->id()] = [];
-        }
-
         // Allow the plugin to record the values to the export.
-        $plugin_values = $meta_option->processFormValues($values[$meta_option->id()], $exportable, $form_state);
-        if ($plugin_values) {
+        $submitted = array_key_exists($meta_option->id(), $values);
+        $plugin_values = $meta_option->processFormValues($values[$meta_option->id()] ?? [], $exportable, $form_state);
+
+        // Submitted values with no override clear an earlier override.
+        if ($plugin_values || $submitted) {
           $overrides[$uuid][$meta_option->id()] = $plugin_values;
         }
       }
