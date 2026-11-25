@@ -47,7 +47,7 @@ class DefaultHandlerTest extends KernelTestBase {
   public function testSerializedPropertyFromString(): void {
     $settings = ['plugin' => ['key' => 'value']];
     $values = $this->alterImportValue(serialize($settings));
-    $this->assertSame($settings, unserialize($values[0]['value']));
+    $this->assertSame($settings, unserialize($values[0]['value'], ['allowed_classes' => FALSE]));
   }
 
   /**

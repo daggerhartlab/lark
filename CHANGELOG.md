@@ -21,6 +21,7 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   annotation (#74).
 - Store the `should_export_assets` and `should_import_assets` settings as
   booleans. Run database updates to convert existing values (#67).
+- Harden handling of serialized field values during import.
 
 ### Removed
 

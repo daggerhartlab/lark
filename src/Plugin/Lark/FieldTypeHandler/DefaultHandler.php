@@ -42,12 +42,17 @@ class DefaultHandler extends FieldTypeHandlerBase {
         // Handle serialized properties.
         if (\in_array($property_name, $serialized_property_names)) {
           if (\is_string($value)) {
-            $unserialized_value = \unserialize($value);
-            if ($value === FALSE && $value !== 'b:0;') {
-              throw new LarkImportException("Received string for serialized property for {$entity->getEntityTypeId()} with uuid {$entity->uuid()}: [$field_name][$delta][$property_name] '{$value}'.");
+            $unserialized_value = @\unserialize($value, ['allowed_classes' => FALSE]);
+            if ($unserialized_value === FALSE && $value !== 'b:0;') {
+              throw new LarkImportException("Received invalid serialized data for {$entity->getEntityTypeId()} with uuid {$entity->uuid()}: [$field_name][$delta][$property_name].");
             }
 
             $value = $unserialized_value;
+          }
+
+          // Serialized properties hold scalars and arrays only.
+          if (!$this->isPlainData($value)) {
+            throw new LarkImportException("Received unsupported serialized data for {$entity->getEntityTypeId()} with uuid {$entity->uuid()}: [$field_name][$delta][$property_name].");
           }
 
           $values[$delta][$property_name] = \serialize($value);
@@ -56,6 +61,27 @@ class DefaultHandler extends FieldTypeHandlerBase {
     }
 
     return $values;
+  }
+
+  /**
+   * Checks that a value contains only scalars, NULL, and arrays of those.
+   *
+   * @param mixed $value
+   *   The value to check.
+   *
+   * @return bool
+   *   TRUE if the value is plain data.
+   */
+  protected function isPlainData(mixed $value): bool {
+    if (\is_array($value)) {
+      foreach ($value as $item) {
+        if (!$this->isPlainData($item)) {
+          return FALSE;
+        }
+      }
+      return TRUE;
+    }
+    return $value === NULL || \is_scalar($value);
   }
 
   /**
