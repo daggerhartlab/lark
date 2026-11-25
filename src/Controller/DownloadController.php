@@ -20,6 +20,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Builds archive download responses for exported entities and sources.
+ *
+ * @phpstan-consistent-constructor
  */
 class DownloadController extends ControllerBase {
 

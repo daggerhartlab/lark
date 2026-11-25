@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Displays the module README, or redirects to settings without one.
+ *
+ * @phpstan-consistent-constructor
  */
 class LarkOverview extends ControllerBase {
 

@@ -225,8 +225,9 @@ class Exportable implements ExportableInterface {
    * {@inheritdoc}
    */
   public function getFileAssetFilename(): ?string {
-    return $this->isFile() ?
-      $this->entity()->uuid() . '--' . \basename($this->entity()->getFileUri()) :
+    $entity = $this->entity();
+    return $entity instanceof FileInterface ?
+      $entity->uuid() . '--' . \basename($entity->getFileUri()) :
       NULL;
   }
 

@@ -25,6 +25,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Base class for lark transaction plugins.
  *
+ * @phpstan-consistent-constructor
+ *
  * @deprecated in lark:2.0.0 and is removed from lark:3.0.0. There is no
  *   replacement.
  */

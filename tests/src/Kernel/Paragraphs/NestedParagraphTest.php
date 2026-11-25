@@ -189,7 +189,9 @@ class NestedParagraphTest extends KernelTestBase {
     $this->assertNotEmpty($items, 'Item paragraph must be re-created');
 
     $reimported_node = reset($nodes);
+    /** @var \Drupal\paragraphs\ParagraphInterface $reimported_section */
     $reimported_section = reset($sections);
+    /** @var \Drupal\paragraphs\ParagraphInterface $reimported_item */
     $reimported_item = reset($items);
 
     // Section's parent_id must point to the destination node.

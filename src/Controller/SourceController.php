@@ -15,6 +15,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Entity exports controller.
+ *
+ * @phpstan-consistent-constructor
  */
 class SourceController extends ControllerBase {
 

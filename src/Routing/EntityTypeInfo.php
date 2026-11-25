@@ -13,6 +13,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Adds lark link templates and operations to exportable entity types.
+ *
+ * @phpstan-consistent-constructor
  */
 class EntityTypeInfo implements ContainerInjectionInterface {
 

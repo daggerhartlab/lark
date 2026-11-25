@@ -18,6 +18,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides shared services for the entity export and import forms.
+ *
+ * @phpstan-consistent-constructor
  */
 abstract class EntityBaseForm extends FormBase {
 

@@ -2,13 +2,14 @@
 
 namespace Drupal\lark\Service;
 
+use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 
 /**
  * LarkFieldTypeHandler plugin manager.
  */
-interface FieldTypeHandlerManagerInterface {
+interface FieldTypeHandlerManagerInterface extends PluginManagerInterface {
 
   /**
    * {@inheritdoc}

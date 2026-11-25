@@ -30,9 +30,11 @@ function lark_install($is_syncing) {
  */
 function lark_update_10001() {
   /** @var \Drupal\lark\Service\SourceManagerInterface $old_source_manager */
+  // @phpstan-ignore classConstant.deprecatedInterface (Migrates sources from the deprecated plugin type.)
   $old_source_manager = \Drupal::service(SourceManagerInterface::class);
   $new_storage = \Drupal::entityTypeManager()->getStorage('lark_source');
 
+  // @phpstan-ignore method.deprecatedInterface (Migrates sources from the deprecated plugin type.)
   foreach ($old_source_manager->getInstances() as $old_source) {
     $new_id = strtolower($old_source->id());
     $new_id = str_replace('.', '_', $new_id);

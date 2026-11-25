@@ -44,6 +44,7 @@ class PathHandler extends DefaultHandler {
       // import can recreate the same behavior instead of assuming it was
       // always unchecked.
       if ($has_pathauto) {
+        // @phpstan-ignore property.notFound (Pathauto is an optional integration.)
         $values[$delta]['pathauto'] = (int) $field->get($delta)->pathauto;
       }
     }
@@ -61,6 +62,7 @@ class PathHandler extends DefaultHandler {
         // state. If it wasn't exported (older export, or field doesn't
         // support pathauto), default to SKIP so the manual alias we're
         // about to create below isn't immediately overwritten.
+        // @phpstan-ignore class.notFound (Pathauto is an optional integration.)
         $pathauto_state = $value['pathauto'] ?? PathautoState::SKIP;
 
         // We need the entity's id, so we must ensure the entity has been saved

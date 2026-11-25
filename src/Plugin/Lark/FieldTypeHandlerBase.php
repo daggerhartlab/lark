@@ -15,6 +15,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base class for lark_field_type_handler plugins.
+ *
+ * @phpstan-consistent-constructor
  */
 abstract class FieldTypeHandlerBase extends PluginBase implements FieldTypeHandlerInterface, ContainerFactoryPluginInterface {
 

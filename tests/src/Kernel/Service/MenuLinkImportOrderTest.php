@@ -8,6 +8,7 @@ use Drupal\lark\Service\ExporterInterface;
 use Drupal\lark\Service\Importer;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
+use Drupal\menu_link_content\MenuLinkContentInterface;
 use Drupal\system\Entity\Menu;
 use Drupal\user\Entity\User;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -137,13 +138,11 @@ class MenuLinkImportOrderTest extends KernelTestBase {
     // mechanism can put the parent back in front of it.
     $importer->importSourceExports('test_source', [$child_uuid, $parent_uuid], FALSE);
 
-    /** @var \Drupal\menu_link_content\MenuLinkContentInterface $restored_parent */
     $restored_parent = $repository->loadEntityByUuid('menu_link_content', $parent_uuid);
-    /** @var \Drupal\menu_link_content\MenuLinkContentInterface $restored_child */
     $restored_child = $repository->loadEntityByUuid('menu_link_content', $child_uuid);
 
-    $this->assertNotNull($restored_parent, 'The parent link was imported.');
-    $this->assertNotNull($restored_child, 'The child link was imported.');
+    $this->assertInstanceOf(MenuLinkContentInterface::class, $restored_parent, 'The parent link was imported.');
+    $this->assertInstanceOf(MenuLinkContentInterface::class, $restored_child, 'The child link was imported.');
 
     // The load-bearing assertion. Auto-increment IDs are permanent, so a lower
     // parent ID proves the parent row was written first.

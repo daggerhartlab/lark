@@ -21,6 +21,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Shared plumbing for the menu Lark export and import forms.
+ *
+ * @phpstan-consistent-constructor
  */
 abstract class MenuBaseForm extends FormBase {
 

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Drupal\lark\Plugin\Lark\FieldTypeHandler;
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\TypedData\DataReferenceInterface;
 use Drupal\lark\Attribute\LarkFieldTypeHandler;
 use Drupal\lark\Exception\LarkEntityNotFoundException;
 use Drupal\lark\Plugin\Lark\FieldTypeHandlerBase;
@@ -30,10 +32,11 @@ class EntityReferenceUuidHandler extends FieldTypeHandlerBase {
   public function alterExportValue(array $values, ContentEntityInterface $entity, FieldItemListInterface $field): array {
     foreach ($values as $delta => $item_value) {
       $item = $field->get($delta);
+      $reference = $item instanceof EntityReferenceItem ? $item->get('entity') : NULL;
       // Record entity reference target UUID and entity type.
-      if ($item instanceof EntityReferenceItem && $item->get('entity')?->getTarget()) {
+      if ($reference instanceof DataReferenceInterface && $reference->getTarget()) {
         /** @var \Drupal\Core\Entity\EntityInterface $referenced_entity */
-        $referenced_entity = $item->get('entity')->getTarget()->getValue();
+        $referenced_entity = $reference->getTarget()->getValue();
 
         if (!$referenced_entity->getEntityType()->get(EntityTypeInfo::IS_EXPORTABLE)) {
           continue;
@@ -93,7 +96,7 @@ class EntityReferenceUuidHandler extends FieldTypeHandlerBase {
         $values[$delta][$storage_definition->getMainPropertyName()] = $target_entity->id();
 
         // Get optional target revision id.
-        if (in_array('target_revision_id', $storage_definition->getPropertyNames(), TRUE)) {
+        if (in_array('target_revision_id', $storage_definition->getPropertyNames(), TRUE) && $target_entity instanceof RevisionableInterface) {
           $values[$delta]['target_revision_id'] = $target_entity->getRevisionId();
         }
       }
