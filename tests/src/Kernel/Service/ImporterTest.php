@@ -2,6 +2,9 @@
 
 namespace Drupal\Tests\lark\Kernel\Service;
 
+use Drupal\Component\Serialization\Yaml;
+use Drupal\Core\Archiver\ArchiveTar;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
@@ -224,6 +227,198 @@ class ImporterTest extends KernelTestBase {
     // bulk summary message - verifying this catches a regression where a
     // "Imported 0 entities" summary is emitted unconditionally.
     $this->assertSame([], \Drupal::messenger()->all());
+  }
+
+  /**
+   * Tests importing an uploaded archive and removing its temporary source.
+   */
+  public function testImportArchive(): void {
+    $node = $this->createExportedNode('From archive');
+    $archive_path = sys_get_temp_dir() . '/lark-test-archive-' . uniqid() . '.tar.gz';
+    (new ArchiveTar($archive_path, 'gz'))->createModify([$this->exportDir], '', $this->exportDir);
+    $node->delete();
+
+    try {
+      $this->importer()->importArchive($archive_path, FALSE);
+    }
+    finally {
+      unlink($archive_path);
+    }
+
+    $this->assertNodeExists($node->uuid());
+    $this->assertNull(LarkSource::load('_tmp'));
+    $this->assertDirectoryDoesNotExist($this->container->get('file_system')->getTempDirectory() . '/lark-archive');
+  }
+
+  /**
+   * Tests that importing all sources skips disabled sources.
+   */
+  public function testImportSourcesAllSkipsDisabledSources(): void {
+    $enabled = $this->createExportedNode('Enabled source');
+
+    $disabled_dir = $this->exportDir . '-disabled';
+    LarkSource::create([
+      'id' => 'disabled_source',
+      'label' => 'Disabled Source',
+      'directory' => $disabled_dir,
+      'status' => FALSE,
+    ])->save();
+    $disabled = Node::create(['type' => 'article', 'title' => 'Disabled source']);
+    $disabled->save();
+    $this->container->get(ExporterInterface::class)->exportEntity('disabled_source', 'node', (int) $disabled->id(), FALSE);
+
+    $enabled->delete();
+    $disabled->delete();
+
+    try {
+      $this->importer()->importSourcesAll(FALSE);
+    }
+    finally {
+      $this->container->get('file_system')->deleteRecursive($disabled_dir);
+    }
+
+    $this->assertNodeExists($enabled->uuid());
+    $this->assertNodeDoesNotExist($disabled->uuid());
+  }
+
+  /**
+   * Tests that importing one export leaves the source's other exports alone.
+   */
+  public function testImportSourceExportImportsOnlyThatExport(): void {
+    $wanted = $this->createExportedNode('Wanted');
+    $other = $this->createExportedNode('Other');
+    $wanted->delete();
+    $other->delete();
+
+    $this->importer()->importSourceExport('test_source', $wanted->uuid(), FALSE);
+
+    $this->assertNodeExists($wanted->uuid());
+    $this->assertNodeDoesNotExist($other->uuid());
+  }
+
+  /**
+   * Tests that importing an unknown UUID reports it and imports nothing.
+   */
+  public function testImportSourceExportReportsUnknownUuid(): void {
+    $node = $this->createExportedNode('Not requested');
+    $node->delete();
+
+    $this->importer()->importSourceExport('test_source', 'not-a-real-uuid', TRUE);
+
+    $this->assertNodeDoesNotExist($node->uuid());
+    $this->assertCount(1, \Drupal::messenger()->messagesByType(MessengerInterface::TYPE_ERROR));
+  }
+
+  /**
+   * Tests that an export missing required metadata is reported, not imported.
+   */
+  public function testImportRejectsExportWithoutBundle(): void {
+    $this->writeExport('node/article/invalid.yml', [
+      '_meta' => [
+        'entity_type' => 'node',
+        'uuid' => 'uuid-invalid-0000-0000-000000000001',
+        'default_langcode' => 'en',
+      ],
+      'default' => ['title' => [['value' => 'Invalid']]],
+    ]);
+
+    $this->importer()->importSource('test_source', TRUE);
+
+    $this->assertNodeDoesNotExist('uuid-invalid-0000-0000-000000000001');
+    $errors = \Drupal::messenger()->messagesByType(MessengerInterface::TYPE_ERROR);
+    $this->assertCount(1, $errors);
+    $this->assertStringContainsString('[_meta][bundle]', (string) $errors[0]);
+  }
+
+  /**
+   * Tests that an export of a config entity is reported, not imported.
+   */
+  public function testImportRejectsConfigEntityExport(): void {
+    $this->writeExport('lark_source/lark_source/config.yml', [
+      '_meta' => [
+        'entity_type' => 'lark_source',
+        'bundle' => 'lark_source',
+        'uuid' => 'uuid-config-0000-0000-000000000001',
+        'default_langcode' => 'en',
+      ],
+      'default' => ['id' => [['value' => 'imported_source']]],
+    ]);
+
+    $this->importer()->importSource('test_source', TRUE);
+
+    $this->assertNull(LarkSource::load('imported_source'));
+    $errors = \Drupal::messenger()->messagesByType(MessengerInterface::TYPE_ERROR);
+    $this->assertCount(1, $errors);
+    $this->assertStringContainsString('Only content entities can be imported', (string) $errors[0]);
+  }
+
+  /**
+   * Tests that an export in an unknown language imports in the site default.
+   */
+  public function testImportUnknownLanguageUsesSiteDefault(): void {
+    $this->writeExport('node/article/unknown-language.yml', [
+      '_meta' => [
+        'entity_type' => 'node',
+        'bundle' => 'article',
+        'uuid' => 'uuid-lang-0000-0000-000000000001',
+        'default_langcode' => 'xx',
+      ],
+      'default' => ['title' => [['value' => 'Unknown language']]],
+    ]);
+
+    $this->importer()->importSource('test_source', FALSE);
+
+    $node = $this->assertNodeExists('uuid-lang-0000-0000-000000000001');
+    $this->assertSame('en', $node->language()->getId());
+  }
+
+  /**
+   * Creates a node and exports it to the test source.
+   */
+  protected function createExportedNode(string $title): Node {
+    $node = Node::create(['type' => 'article', 'title' => $title]);
+    $node->save();
+    $this->container->get(ExporterInterface::class)->exportEntity('test_source', 'node', (int) $node->id(), FALSE);
+    return $node;
+  }
+
+  /**
+   * Writes an export file into the test source.
+   *
+   * @param string $path
+   *   Path relative to the source directory.
+   * @param array $export
+   *   The export data.
+   */
+  protected function writeExport(string $path, array $export): void {
+    $filepath = $this->exportDir . '/' . $path;
+    $export['_meta']['path'] = $filepath;
+    $directory = dirname($filepath);
+    $this->container->get('file_system')->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY);
+    file_put_contents($filepath, Yaml::encode($export));
+  }
+
+  /**
+   * Returns the importer.
+   */
+  protected function importer(): ImporterInterface {
+    return $this->container->get(ImporterInterface::class);
+  }
+
+  /**
+   * Asserts that a node with the UUID exists, and returns it.
+   */
+  protected function assertNodeExists(string $uuid): Node {
+    $node = $this->container->get('entity.repository')->loadEntityByUuid('node', $uuid);
+    $this->assertInstanceOf(Node::class, $node);
+    return $node;
+  }
+
+  /**
+   * Asserts that no node with the UUID exists.
+   */
+  protected function assertNodeDoesNotExist(string $uuid): void {
+    $this->assertNull($this->container->get('entity.repository')->loadEntityByUuid('node', $uuid));
   }
 
 }
