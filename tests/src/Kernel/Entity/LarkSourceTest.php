@@ -2,8 +2,12 @@
 
 namespace Drupal\Tests\lark\Kernel\Entity;
 
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\Entity\EntityDeleteForm;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
+use Drupal\lark\Entity\LarkSourceListBuilder;
+use Drupal\lark\Form\LarkSourceForm;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
@@ -67,6 +71,38 @@ class LarkSourceTest extends KernelTestBase {
     ]);
     $filepath = $source->getDestinationFilepath('node', 'article', 'my-uuid.yml');
     $this->assertSame('/tmp/exports/node/article/my-uuid.yml', $filepath);
+  }
+
+  /**
+   * The entity type is declared with an attribute and keeps its definition.
+   */
+  public function testEntityTypeDefinition(): void {
+    $this->assertNotEmpty((new \ReflectionClass(LarkSource::class))->getAttributes(ConfigEntityType::class));
+
+    $definition = $this->container->get('entity_type.manager')->getDefinition('lark_source');
+    $this->assertSame(LarkSource::class, $definition->getClass());
+    $this->assertSame('Source', (string) $definition->getLabel());
+    $this->assertSame('Sources', (string) $definition->getCollectionLabel());
+    $this->assertSame('source', (string) $definition->getSingularLabel());
+    $this->assertSame('sources', (string) $definition->getPluralLabel());
+    $this->assertSame('2 sources', (string) $definition->getCountLabel(2));
+    $this->assertSame(LarkSourceListBuilder::class, $definition->getListBuilderClass());
+    $this->assertSame(LarkSourceForm::class, $definition->getFormClass('add'));
+    $this->assertSame(LarkSourceForm::class, $definition->getFormClass('edit'));
+    $this->assertSame(EntityDeleteForm::class, $definition->getFormClass('delete'));
+    $this->assertSame('lark.lark_source', $definition->getConfigPrefix());
+    $this->assertSame('lark administer configuration', $definition->getAdminPermission());
+    $this->assertSame([
+      'canonical' => '/admin/lark/source/{lark_source}',
+      'collection' => '/admin/lark/source',
+      'add-form' => '/admin/lark/source/add',
+      'edit-form' => '/admin/lark/source/{lark_source}/edit',
+      'delete-form' => '/admin/lark/source/{lark_source}/delete',
+    ], array_intersect_key($definition->getLinkTemplates(), array_flip(['canonical', 'collection', 'add-form', 'edit-form', 'delete-form'])));
+    $this->assertSame('id', $definition->getKey('id'));
+    $this->assertSame('label', $definition->getKey('label'));
+    $this->assertSame('uuid', $definition->getKey('uuid'));
+    $this->assertSame(['id', 'label', 'description', 'directory'], $definition->get('config_export'));
   }
 
 }
