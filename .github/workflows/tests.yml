@@ -66,11 +66,9 @@ jobs:
         with:
           php_version: '8.3'
 
-      # Report-only until the existing errors are fixed (#67).
       - uses: daggerhartlab/devops-shared-actions/.github/actions/drupal-module-test@v1
         with:
           phpunit: false
           phpcs: true
           phpcs_standard: ${{ github.workspace }}/phpcs.xml.dist
           phpstan: true
-          report_only: true
