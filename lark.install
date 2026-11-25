@@ -2,14 +2,14 @@
 
 /**
  * @file
- */
-
-/**
- * Implements hook_install().
+ * Install, update and uninstall functions for Lark.
  */
 
 use Drupal\lark\Service\SourceManagerInterface;
 
+/**
+ * Implements hook_install().
+ */
 function lark_install($is_syncing) {
   // Create the default lark source if it doesn't exist.
   $storage = \Drupal::entityTypeManager()->getStorage('lark_source');
