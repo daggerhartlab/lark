@@ -21,6 +21,11 @@ trait TextFieldsTrait {
    *   Bundle.
    */
   protected function createTextFields(string $entity_type_id, string $bundle): void {
+    // Drupal 11.5 moves the text_with_summary field type into its own module.
+    if ($this->container->get('extension.list.module')->exists('text_with_summary')) {
+      $this->enableModules(['text_with_summary']);
+    }
+
     $fields = [
       'field_text' => 'text',
       'field_text_long' => 'text_long',
