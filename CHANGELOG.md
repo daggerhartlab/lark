@@ -9,6 +9,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Re-importing an existing file with the Rename asset import setting no longer
+  copies its asset and points the file at the copy (#87).
 - Setting a file's asset choices back to the defaults in the export form now
   clears the earlier override (#89).
 

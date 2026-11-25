@@ -283,6 +283,60 @@ class FileAssetsTest extends KernelTestBase {
   }
 
   /**
+   * Tests re-importing a file whose entity already exists.
+   */
+  public function testReimportExistingFileKeepsUri(): void {
+    $this->export();
+    $this->setLarkSetting('asset_import_file_exists', 'Rename');
+
+    $this->import();
+
+    $this->assertSame('public://test.txt', $this->loadFile($this->file->uuid())->getFileUri());
+    $this->assertFileDoesNotExist('public://test_0.txt');
+  }
+
+  /**
+   * Tests that an identical file owned by another entity isn't shared.
+   */
+  public function testImportDoesNotShareAnotherEntitysFile(): void {
+    $this->export();
+    $uuid = $this->file->uuid();
+    $this->deleteContent();
+    file_put_contents('public://test.txt', static::CONTENTS);
+    File::create(['uri' => 'public://test.txt'])->save();
+    $this->setLarkSetting('asset_import_file_exists', 'Rename');
+
+    $this->import();
+
+    $this->assertSame('public://test_0.txt', $this->loadFile($uuid)->getFileUri());
+  }
+
+  /**
+   * Tests that re-exporting replaces the asset by default.
+   */
+  public function testReexportReplacesAsset(): void {
+    $this->export();
+    file_put_contents('public://test.txt', 'changed');
+
+    $this->export();
+
+    $this->assertSame('changed', file_get_contents($this->assetPath()));
+  }
+
+  /**
+   * Tests that re-exporting with Rename keeps the earlier asset.
+   */
+  public function testReexportWithRenameKeepsAsset(): void {
+    $this->export();
+    file_put_contents('public://test.txt', 'changed');
+    $this->setLarkSetting('asset_export_file_exists', 'Rename');
+
+    $this->export();
+
+    $this->assertSame(static::CONTENTS, file_get_contents($this->assetPath()));
+  }
+
+  /**
    * Tests that an asset exported without the UUID prefix still imports.
    */
   public function testImportLegacyAssetFilename(): void {
