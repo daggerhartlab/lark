@@ -117,7 +117,7 @@ class Examples extends LarkTransactionPluginBase {
         'type' => 'basic',
         'info' => 'Footer Logo',
         'body' => [
-          'value' => '<p><a href="http://www.communitytissue.org" target="_blank"><img src="/themes/custom/maxxeus_theme/images/footer-logo.png" alt="logo" loading="lazy" width="400" height="117"></a></p>',
+          'value' => '<p><a href="https://www.example.com" target="_blank"><img src="/themes/custom/example_theme/images/footer-logo.png" alt="logo" loading="lazy" width="400" height="117"></a></p>',
           'format' => 'full_html',
         ],
       ]);
@@ -135,7 +135,7 @@ class Examples extends LarkTransactionPluginBase {
         'type' => 'basic',
         'info' => 'Copyright',
         'body' => [
-          'value' => '<p>&copy; Copyright 2024 - Maxxeus is a brand of Solvita. All Rights Reserved. <a href="/privacy-policy">Privacy Policy</a>.</p>',
+          'value' => '<p>&copy; Copyright 2024 - Example Organization. All Rights Reserved. <a href="/privacy-policy">Privacy Policy</a>.</p>',
           'format' => 'full_html',
         ],
       ]);
