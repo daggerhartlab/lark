@@ -5,52 +5,55 @@ declare(strict_types=1);
 namespace Drupal\lark\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
+use Drupal\Core\Entity\EntityDeleteForm;
 use Drupal\Core\Extension\Exception\UnknownExtensionException;
 use Drupal\Core\Extension\ExtensionPathResolver;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\lark\Form\LarkSourceForm;
 
 /**
  * Defines the source entity type.
- *
- * @ConfigEntityType(
- *   id = "lark_source",
- *   label = @Translation("Source"),
- *   label_collection = @Translation("Sources"),
- *   label_singular = @Translation("source"),
- *   label_plural = @Translation("sources"),
- *   label_count = @PluralTranslation(
- *     singular = "@count source",
- *     plural = "@count sources",
- *   ),
- *   handlers = {
- *     "list_builder" = "Drupal\lark\Entity\LarkSourceListBuilder",
- *     "form" = {
- *       "add" = "Drupal\lark\Form\LarkSourceForm",
- *       "edit" = "Drupal\lark\Form\LarkSourceForm",
- *       "delete" = "Drupal\Core\Entity\EntityDeleteForm",
- *     },
- *   },
- *   config_prefix = "lark_source",
- *   admin_permission = "lark administer configuration",
- *   links = {
- *     "canonical" = "/admin/lark/source/{lark_source}",
- *     "collection" = "/admin/lark/source",
- *     "add-form" = "/admin/lark/source/add",
- *     "edit-form" = "/admin/lark/source/{lark_source}/edit",
- *     "delete-form" = "/admin/lark/source/{lark_source}/delete",
- *   },
- *   entity_keys = {
- *     "id" = "id",
- *     "label" = "label",
- *     "uuid" = "uuid",
- *   },
- *   config_export = {
- *     "id",
- *     "label",
- *     "description",
- *     "directory",
- *   },
- * )
  */
+#[ConfigEntityType(
+  id: 'lark_source',
+  label: new TranslatableMarkup('Source'),
+  label_collection: new TranslatableMarkup('Sources'),
+  label_singular: new TranslatableMarkup('source'),
+  label_plural: new TranslatableMarkup('sources'),
+  config_prefix: 'lark_source',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+    'uuid' => 'uuid',
+  ],
+  handlers: [
+    'list_builder' => LarkSourceListBuilder::class,
+    'form' => [
+      'add' => LarkSourceForm::class,
+      'edit' => LarkSourceForm::class,
+      'delete' => EntityDeleteForm::class,
+    ],
+  ],
+  links: [
+    'canonical' => '/admin/lark/source/{lark_source}',
+    'collection' => '/admin/lark/source',
+    'add-form' => '/admin/lark/source/add',
+    'edit-form' => '/admin/lark/source/{lark_source}/edit',
+    'delete-form' => '/admin/lark/source/{lark_source}/delete',
+  ],
+  admin_permission: 'lark administer configuration',
+  label_count: [
+    'singular' => '@count source',
+    'plural' => '@count sources',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'description',
+    'directory',
+  ],
+)]
 final class LarkSource extends ConfigEntityBase implements LarkSourceInterface {
 
   /**
