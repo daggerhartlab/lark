@@ -85,6 +85,10 @@ services:
     class: Drupal\lark\Service\Render\SourceRootsViewBuilder
     autowire: true
 
+  Drupal\lark\Service\Render\ReadmeRenderer:
+    class: Drupal\lark\Service\Render\ReadmeRenderer
+    autowire: true
+
   Drupal\lark\Service\Render\SourceViewBuilder:
     class: Drupal\lark\Service\Render\SourceViewBuilder
     autowire: true
