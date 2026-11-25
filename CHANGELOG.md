@@ -25,6 +25,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ### Removed
 
 - Support for Drupal 10 and for Drupal 11 before 11.3 (#66).
+- `SourceManager::findSourceByUuid()`, which could not return a result and
+  failed on every call (#67).
 
 ### Fixed
 
