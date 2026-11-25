@@ -73,7 +73,7 @@ class Examples extends LarkTransactionPluginBase {
       'field_link' => [
         'title' => 'This is a link title',
         'uri' => 'entity:node/1',
-        //'options' => [],
+        // 'options' => [],
       ],
     ]);
 
@@ -89,8 +89,10 @@ class Examples extends LarkTransactionPluginBase {
       'title' => 'Example node created',
       'type' => 'landing_page',
       'langcode' => 'en',
-      'status' => 1, // Published.
-      'uid' => 1, // Owner is user id 1.
+      // Published.
+      'status' => 1,
+      // Owner is user id 1.
+      'uid' => 1,
       'field_components' => $paragraphs,
     ]);
     $node->save();
@@ -112,7 +114,7 @@ class Examples extends LarkTransactionPluginBase {
     // Alternatively, you could load and delete the old one before creating a
     // new block with the same uuid.
     foreach ($exists as $exist) {
-      //$exist->delete();
+      // $exist->delete();
     }
 
     if (!$exists) {
@@ -171,7 +173,7 @@ class Examples extends LarkTransactionPluginBase {
               'FINDME-NEW',
             ],
           ],
-        ]
+        ],
       ],
     ]);
     $menu_links[] = $this->entityTypeManager->getStorage('menu_link_content')->create([

@@ -6,7 +6,6 @@ use Drupal\Component\Diff\Diff;
 use Drupal\Component\Serialization\Yaml;
 use Drupal\lark\Model\ExportableStatus;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\LarkSettings;
 use Drupal\lark\Service\LarkSourceManager;
 

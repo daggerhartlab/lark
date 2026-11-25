@@ -61,18 +61,18 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
    *   Date formatter service.
    */
   public function __construct(
-    array                                $configuration,
-                                         $plugin_id,
-                                         $plugin_definition,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected LoggerInterface            $logger,
-    protected MessengerInterface         $messenger,
-    protected ConfigFactoryInterface     $configFactory,
-    protected FileSystemInterface        $fileSystem,
-    protected FileUsageInterface         $fileUsage,
-    protected AccountProxyInterface      $currentUser,
-    protected Time                       $time,
-    protected DateFormatterInterface     $dateFormatter,
+    protected LoggerInterface $logger,
+    protected MessengerInterface $messenger,
+    protected ConfigFactoryInterface $configFactory,
+    protected FileSystemInterface $fileSystem,
+    protected FileUsageInterface $fileUsage,
+    protected AccountProxyInterface $currentUser,
+    protected Time $time,
+    protected DateFormatterInterface $dateFormatter,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
@@ -84,7 +84,7 @@ abstract class LarkTransactionPluginBase extends PluginBase implements LarkTrans
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,

@@ -20,7 +20,7 @@ class RouteTemplates {
     foreach ($instances as $name => $instance) {
       $route = array_replace_recursive($template, $instance);
 
-      array_walk_recursive($route, function(&$value, $key) use ($entity_type_id, $name) {
+      array_walk_recursive($route, function (&$value, $key) use ($entity_type_id, $name) {
         if (is_string($value)) {
           $value = strtr($value, [
             '__ENTITY_TYPE_ID__' => $entity_type_id,

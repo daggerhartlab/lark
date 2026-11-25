@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\lark\Kernel\Paragraphs;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Component\Serialization\Yaml;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;

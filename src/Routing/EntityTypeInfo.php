@@ -158,7 +158,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
       $operations['view'] = [
         'title' => $this->t('View'),
         'weight' => -10,
-        'url' => $entity->toUrl('canonical')->setRouteParameter('lark_source', $entity->id())
+        'url' => $entity->toUrl('canonical')->setRouteParameter('lark_source', $entity->id()),
       ];
     }
 

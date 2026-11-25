@@ -387,6 +387,7 @@ class Importer implements ImporterInterface {
    *   Decoded yaml export data.
    *
    * @return void
+   *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function validateExport(ExportArray $export): void {
@@ -454,10 +455,11 @@ class Importer implements ImporterInterface {
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The entity being imported.
-   * @param ExportArray $export
+   * @param \Drupal\lark\Model\ExportArray $export
    *   The export data.
    *
    * @return void
+   *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   protected function processValuesForImport(ContentEntityInterface $entity, ExportArray $export) {

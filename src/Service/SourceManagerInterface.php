@@ -2,7 +2,6 @@
 
 namespace Drupal\lark\Service;
 
-
 use Drupal\lark\Entity\LarkSourceInterface;
 
 /**

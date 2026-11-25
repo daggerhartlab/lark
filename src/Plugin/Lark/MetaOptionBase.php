@@ -12,6 +12,7 @@ use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Render\Element\Radios;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Model\ExportableInterface;
 use Drupal\lark\Model\LarkSettings;
@@ -22,7 +23,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Base class for lark_entity_export_form plugins.
  */
-abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,  ContainerFactoryPluginInterface {
+abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface, ContainerFactoryPluginInterface {
 
   use StringTranslationTrait;
 
@@ -40,7 +41,7 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
     ContainerInterface $container,
     array $configuration,
     $plugin_id,
-    $plugin_definition
+    $plugin_definition,
   ) {
     return new static(
       $configuration,
@@ -150,7 +151,7 @@ abstract class MetaOptionBase extends PluginBase implements MetaOptionInterface,
     // Render each of the radios options as a single radio element. Neither
     // $form nor $form_state are actually used in this process, just required.
     $form_state = new FormState();
-    $radios = Element\Radios::processRadios($radios, $form_state, $form);
+    $radios = Radios::processRadios($radios, $form_state, $form);
 
     foreach (Element::children($radios) as $index) {
       // Radios::processRadios() doesn't set the #value field for the child

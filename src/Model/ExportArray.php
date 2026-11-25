@@ -4,7 +4,6 @@ namespace Drupal\lark\Model;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Language\LanguageInterface;
-use Drupal\file\FileInterface;
 use Drupal\lark\Service\Utility\EntityUtility;
 
 /**

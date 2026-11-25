@@ -59,7 +59,7 @@ class LarkTransactionPluginManager extends DefaultPluginManager {
     $definitions = parent::getDefinitions();
 
     // Sort by weight.
-    uasort($definitions, function($a, $b) {
+    uasort($definitions, function ($a, $b) {
       return $a['weight'] ?? 0 <=> $b['weight'] ?? 0;
     });
 
@@ -91,13 +91,13 @@ class LarkTransactionPluginManager extends DefaultPluginManager {
     }
 
     if (!$include_disabled) {
-      $instances = array_filter($instances, function($instance) {
+      $instances = array_filter($instances, function ($instance) {
         return $instance->enabled();
       }, ARRAY_FILTER_USE_BOTH);
     }
 
     if (!$include_completed) {
-      $instances = array_filter($instances, function($instance) {
+      $instances = array_filter($instances, function ($instance) {
         return $instance->executionCompleted() === FALSE;
       }, ARRAY_FILTER_USE_BOTH);
     }

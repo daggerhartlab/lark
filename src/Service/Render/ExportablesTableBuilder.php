@@ -62,7 +62,7 @@ class ExportablesTableBuilder {
       '#header' => [
         'icon' => [
           'class' => ['status-icon'],
-          'data' => $this->t('Status')
+          'data' => $this->t('Status'),
         ],
         'entity_id' => $this->t('Entity ID'),
         'entity_type' => $this->t('Entity Type'),
@@ -74,7 +74,7 @@ class ExportablesTableBuilder {
         'class' => ['lark-exportables-table-form'],
       ],
       '#attached' => [
-        'library' => ['lark/admin']
+        'library' => ['lark/admin'],
       ],
       '#toggle_handle_header' => $this->t('Toggle'),
       '#toggle_handle_open' => [
@@ -164,7 +164,7 @@ class ExportablesTableBuilder {
           'class' => ['lark-yaml-export-pre'],
         ],
         '#weight' => 100,
-      ]
+      ],
     ];
 
     foreach ($this->metaOptionManager->getInstances() as $meta_option) {
@@ -178,7 +178,7 @@ class ExportablesTableBuilder {
       'data' => [
         'icon' => [
           'class' => ['status-icon'],
-          'data' => $status_details['icon_render']
+          'data' => $status_details['icon_render'],
         ],
         'entity_id' => $entity->id(),
         'entity_type' => $entity->getEntityTypeId(),

@@ -7,7 +7,6 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportableInterface;
-use Drupal\lark\Model\ExportCollection;
 use Drupal\lark\Service\ExportableFactoryInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\LarkSourceManager;
@@ -70,7 +69,6 @@ class SourceRootsViewBuilder {
     ];
   }
 
-
   /**
    * Get the root-level dependencies of an exportable.
    *
@@ -91,7 +89,7 @@ class SourceRootsViewBuilder {
 
     $collection->remove($root_uuid);
 
-    return array_map(function($dependency_export) use ($source) {
+    return array_map(function ($dependency_export) use ($source) {
       return $this->exportableFactory->createFromExportArray($dependency_export, $source);
     }, $collection->getArrayCopy());
   }
@@ -117,7 +115,7 @@ class SourceRootsViewBuilder {
         'class' => ['lark-exportables-table-form'],
       ],
       '#attached' => [
-        'library' => ['lark/admin']
+        'library' => ['lark/admin'],
       ],
     ];
   }

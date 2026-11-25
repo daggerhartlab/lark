@@ -101,7 +101,7 @@ class ExportCollectionTest extends TestCase {
   }
 
   public function testGetWithDependenciesOrdersAncestorsFirst(): void {
-    // grandparent <- parent <- child, the shape a nested menu produces.
+    // Grandparent <- parent <- child, the shape a nested menu produces.
     $grandparent = $this->makeExport('gp-uuid');
     $parent = $this->makeExport('parent-uuid', ['gp-uuid' => 'menu_link_content']);
     $child = $this->makeExport('child-uuid', [

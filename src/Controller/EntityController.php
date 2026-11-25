@@ -31,7 +31,6 @@ class EntityController extends ControllerBase {
     );
   }
 
-
   /**
    * Negotiate which  tab the user should be on based on permissions.
    *
@@ -103,7 +102,7 @@ class EntityController extends ControllerBase {
         '#header' => [
           [
             'data' => $this->t('File'),
-            'colspan' => '2'
+            'colspan' => '2',
           ],
           [
             'data' => $this->t('Entity'),

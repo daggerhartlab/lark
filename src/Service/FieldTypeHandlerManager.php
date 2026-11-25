@@ -39,7 +39,7 @@ final class FieldTypeHandlerManager extends DefaultPluginManager implements Fiel
     $definitions = parent::getDefinitions();
 
     // Sort by weight.
-    uasort($definitions, function($a, $b) {
+    uasort($definitions, function ($a, $b) {
       return ($a['weight'] ?? 0) <=> ($b['weight'] ?? 0);
     });
 
@@ -61,7 +61,7 @@ final class FieldTypeHandlerManager extends DefaultPluginManager implements Fiel
 
       // Otherwise, only instantiate if at least one field types the handler
       // supports are enabled field types in Drupal.
-      // @todo - Should this check to see if _all_ field types are enabled?
+      // @todo Should this check to see if _all_ field types are enabled?
       if (array_intersect($definition['fieldTypes'], $enabled_field_types)) {
         $instances[$key] = $this->createInstance($definition['id']);
       }

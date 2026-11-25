@@ -118,8 +118,6 @@ class LarkSourceManager {
     return $options;
   }
 
-
-
   /**
    * Get the source plugin for the given exportable.
    *
@@ -171,6 +169,7 @@ class LarkSourceManager {
    * Get the default source.
    *
    * @return \Drupal\lark\Entity\LarkSourceInterface|null
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
@@ -194,6 +193,7 @@ class LarkSourceManager {
    *
    * @return array
    *   Render array.
+   *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityMalformedException
    */

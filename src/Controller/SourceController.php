@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Drupal\lark\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Service\ImporterInterface;
 use Drupal\lark\Service\Render\SourceViewBuilder;
@@ -91,6 +90,7 @@ class SourceController extends ControllerBase {
    * @param string $lark_source
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */

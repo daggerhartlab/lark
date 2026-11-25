@@ -1,8 +1,15 @@
 <?php
 
 /**
+ * @file
+ */
+
+/**
  * Implements hook_install().
  */
+
+use Drupal\lark\Service\SourceManagerInterface;
+
 function lark_install($is_syncing) {
   // Create the default lark source if it doesn't exist.
   $storage = \Drupal::entityTypeManager()->getStorage('lark_source');
@@ -23,7 +30,7 @@ function lark_install($is_syncing) {
  */
 function lark_update_10001() {
   /** @var \Drupal\lark\Service\SourceManagerInterface $old_source_manager */
-  $old_source_manager = \Drupal::service(\Drupal\lark\Service\SourceManagerInterface::class);
+  $old_source_manager = \Drupal::service(SourceManagerInterface::class);
   $new_storage = \Drupal::entityTypeManager()->getStorage('lark_source');
 
   foreach ($old_source_manager->getInstances() as $old_source) {

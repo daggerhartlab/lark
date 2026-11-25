@@ -23,7 +23,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 class LarkSourceTest extends KernelTestBase {
 
   /**
-   * lark.settings config stores boolean fields as integers; suppress strict schema check.
+   * Lark.settings config stores boolean fields as integers; suppress strict schema check.
    */
   protected $strictConfigSchema = FALSE;
 

@@ -61,7 +61,7 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
       $this->derivatives["$entity_type_id.{$parent['name']}"] = [
         'route_name' => $parent['route']['name'],
         'title' => $this->t('@lark_link_label', [
-          '@lark_link_label' => $parent['link']['label']
+          '@lark_link_label' => $parent['link']['label'],
         ]),
         'base_route' => "entity.$entity_type_id." . $base_route_form,
         'weight' => 100,
@@ -71,7 +71,7 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
         $this->derivatives["$entity_type_id.{$instance['name']}"] = [
           'route_name' => $instance['route']['name'],
           'title' => $this->t('@lark_link_label', [
-            '@lark_link_label' => $instance['link']['label']
+            '@lark_link_label' => $instance['link']['label'],
           ]),
           'parent_id' => "lark.entities:$entity_type_id.{$parent['name']}",
         ];

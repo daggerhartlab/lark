@@ -13,7 +13,6 @@ use Drupal\lark\Entity\LarkSourceInterface;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Routing\EntityTypeInfo;
 use Drupal\lark\Service\Utility\EntityUtility;
-use Drupal\lark\Service\LarkSourceManager;
 use Drupal\lark\Service\Utility\StatusResolver;
 
 /**
@@ -157,7 +156,7 @@ class ExportableFactory implements ExportableFactoryInterface {
     $exportables = [];
     foreach ($collection as $uuid => $export) {
       $exportables[$uuid] = $this->createFromExportArray($export, $source);
-    };
+    }
 
     $this->collectionsCache[$root_uuid] = $exportables;
     return $this->collectionsCache[$root_uuid];

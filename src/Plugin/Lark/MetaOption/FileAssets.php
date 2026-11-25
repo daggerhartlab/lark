@@ -36,7 +36,7 @@ final class FileAssets extends MetaOptionBase {
    * {@inheritdoc}
    */
   public function formElement(ExportableInterface $exportable, array &$form, FormStateInterface $form_state, array $render_parents): array {
-    /** @var FileInterface $file */
+    /** @var \Drupal\file\FileInterface $file */
     $file = $exportable->entity();
     $uuid = $file->uuid();
 
@@ -81,13 +81,13 @@ final class FileAssets extends MetaOptionBase {
       '#options' => [
         0 => $this->t('(@default_desc) Do not export', [
           '@default_desc' => $this->larkSettings->shouldExportAssets() === FALSE ?
-            $this->t('Default') :
-            $this->t('Override')
+          $this->t('Default') :
+          $this->t('Override'),
         ]),
         1 => $this->t('(@default_desc) Export this asset along with the File entity', [
           '@default_desc' => $this->larkSettings->shouldExportAssets() === TRUE ?
-            $this->t('Default') :
-            $this->t('Override')
+          $this->t('Default') :
+          $this->t('Override'),
         ]),
       ],
     ]);
@@ -106,13 +106,13 @@ final class FileAssets extends MetaOptionBase {
       '#options' => [
         '0' => $this->t('(@default_desc) Do not import', [
           '@default_desc' => $this->larkSettings->shouldImportAssets() === FALSE ?
-            $this->t('Default') :
-            $this->t('Override')
+          $this->t('Default') :
+          $this->t('Override'),
         ]),
         '1' => $this->t('(@default_desc) Import this asset along with the File entity', [
           '@default_desc' => $this->larkSettings->shouldImportAssets() === TRUE ?
-            $this->t('Default') :
-            $this->t('Override')
+          $this->t('Default') :
+          $this->t('Override'),
         ]),
       ],
     ]);

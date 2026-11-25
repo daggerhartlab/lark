@@ -2,15 +2,7 @@
 
 namespace Drupal\lark\Form;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\lark\Model\LarkSettings;
-use Drupal\lark\Service\ExportableFactoryInterface;
-use Drupal\lark\Service\ImporterInterface;
-use Drupal\lark\Service\Render\ExportablesStatusBuilder;
-use Drupal\lark\Service\Render\ExportablesTableBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class EntityImportForm extends EntityBaseForm {
 
@@ -22,7 +14,7 @@ class EntityImportForm extends EntityBaseForm {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $entity_type_id = $this->getRouteMatch()->getRouteObject()->getOption('_lark_entity_type_id');
@@ -85,14 +77,14 @@ class EntityImportForm extends EntityBaseForm {
         '#markup' => '<hr>',
       ],
       'summary' => $this->statusBuilder->getExportablesSummary($exportables),
-      'table' => $this->exportablesTableBuilder->table($exportables, $form, $form_state, 'export_form_values')
+      'table' => $this->exportablesTableBuilder->table($exportables, $form, $form_state, 'export_form_values'),
     ];
 
     return $form;
   }
 
   /**
-   * @inheritDoc
+   * {@inheritDoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $source_id = $form_state->getValue('source');
