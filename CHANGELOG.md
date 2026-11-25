@@ -7,6 +7,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-24
+
 ### Added
 
 - Export media, files, and Entity Embed entities embedded in formatted text as
@@ -22,6 +24,9 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 - Store the `should_export_assets` and `should_import_assets` settings as
   booleans. Run database updates to convert existing values (#67).
 - Harden handling of serialized field values during import.
+- For code that extends Lark: `FieldTypeHandlerManagerInterface` extends
+  `PluginManagerInterface`, and `EntityController` and `MenuController` take
+  the request stack in their constructors (#67).
 
 ### Removed
 
@@ -223,7 +228,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 Initial release with YAML export and import.
 
-[Unreleased]: https://github.com/daggerhartlab/lark/compare/2.1.5...HEAD
+[Unreleased]: https://github.com/daggerhartlab/lark/compare/2.2.0...HEAD
+[2.2.0]: https://github.com/daggerhartlab/lark/compare/2.1.5...2.2.0
 [2.1.5]: https://github.com/daggerhartlab/lark/compare/2.1.4...2.1.5
 [2.1.4]: https://github.com/daggerhartlab/lark/compare/2.1.3...2.1.4
 [2.1.3]: https://github.com/daggerhartlab/lark/compare/2.1.2...2.1.3
