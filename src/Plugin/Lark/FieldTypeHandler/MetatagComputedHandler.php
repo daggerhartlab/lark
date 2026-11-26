@@ -33,11 +33,10 @@ class MetatagComputedHandler extends FieldTypeHandlerBase {
       ->execute();
 
     /** @var \Drupal\metatag\MetatagManagerInterface $metatagManager */
-    // @phpstan-ignore class.notFound, globalDrupalDependencyInjection.useDependencyInjection (Metatag is an optional integration.)
+    // @phpstan-ignore globalDrupalDependencyInjection.useDependencyInjection (Metatag is an optional integration.)
     $metatagManager = \Drupal::service('metatag.manager');
     if ($metatag_configured) {
       return [
-        // @phpstan-ignore class.notFound (Metatag is an optional integration.)
         0 => $metatagManager->tagsFromEntity($field->getEntity()),
       ];
     }
