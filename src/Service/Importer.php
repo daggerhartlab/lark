@@ -94,6 +94,18 @@ class Importer implements ImporterInterface {
   public function importSource(string $source_id, bool $show_messages = TRUE): void {
     /** @var \Drupal\lark\Entity\LarkSourceInterface $source */
     $source = $this->sourceManager->load($source_id);
+    $this->importFromSource($source, $show_messages);
+  }
+
+  /**
+   * Imports every export in a source.
+   *
+   * @param \Drupal\lark\Entity\LarkSourceInterface $source
+   *   The source, which doesn't need to be saved.
+   * @param bool $show_messages
+   *   Whether to show messages.
+   */
+  protected function importFromSource(LarkSourceInterface $source, bool $show_messages): void {
     $collection = $this->discoverSourceExports($source);
 
     try {
@@ -112,20 +124,21 @@ class Importer implements ImporterInterface {
    * {@inheritdoc}
    */
   public function importArchive(string $path_to_archive, bool $show_messages = TRUE): void {
-    // Create a temporary source to extract the archive to.
+    // Extract to an unsaved source of its own, so imports never share a
+    // directory or cached discovery.
+    $suffix = bin2hex(random_bytes(8));
     $source = $this->sourceManager->getTmpSource();
-    $source->setDirectory($source->directory() . DIRECTORY_SEPARATOR . 'lark-archive');
-    $source->save();
+    $source->set('id', '_tmp_archive_' . $suffix);
+    $source->setDirectory($source->directory() . DIRECTORY_SEPARATOR . 'lark-archive-' . $suffix);
+    $directory = $source->directoryProcessed();
 
-    // Move the archive to the temporary source directory and extract it.
     try {
-      $directory = $source->directoryProcessed();
       $this->fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
       $this->fileSystem->copy($path_to_archive, $directory, FileExists::Replace);
       $path_to_archive = $directory . DIRECTORY_SEPARATOR . basename($path_to_archive);
       $archive = new ArchiveTar($path_to_archive);
       $archive->extract($directory);
-      $this->importSource($source->id(), $show_messages);
+      $this->importFromSource($source, $show_messages);
     }
     catch (\Exception $exception) {
       if ($show_messages) {
@@ -133,10 +146,9 @@ class Importer implements ImporterInterface {
       }
       $this->logger->error($exception->getMessage());
     }
-
-    // Remove our temporary source.
-    $this->fileSystem->deleteRecursive($source->directoryProcessed());
-    $source->delete();
+    finally {
+      $this->fileSystem->deleteRecursive($directory);
+    }
   }
 
   /**

@@ -13,6 +13,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   copies its asset and points the file at the copy (#87).
 - Setting a file's asset choices back to the defaults in the export form now
   clears the earlier override (#89).
+- An archive import that didn't finish no longer blocks later archive imports,
+  and importing several archives in one request imports each of them (#93).
 
 ## [2.2.0] - 2026-11-24
 
