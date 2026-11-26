@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\lark\Kernel\Service;
 
+use Drupal\Component\Serialization\Yaml;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Model\ExportCollection;
@@ -22,6 +23,31 @@ class ExportFileManagerTest extends KernelTestBase {
    * {@inheritdoc}
    */
   protected static $modules = ['lark', 'user', 'system'];
+
+  /**
+   * The absolute path of the export directory used by prune tests.
+   *
+   * @var string
+   */
+  protected string $exportDir;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+    $this->exportDir = sys_get_temp_dir() . '/lark-test-prune-' . uniqid();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown(): void {
+    if (is_dir($this->exportDir)) {
+      $this->container->get('file_system')->deleteRecursive($this->exportDir);
+    }
+    parent::tearDown();
+  }
 
   /**
    * Tests that a missing directory yields an empty collection.
@@ -112,6 +138,104 @@ class ExportFileManagerTest extends KernelTestBase {
     $this->assertTrue($result->has('uuid-b'));
     $this->assertFalse($result->has('uuid-c'), 'A dependency-only export must not be reported.');
     $this->assertFalse($result->has('uuid-d'), 'An export already in the removal set must not be reported against itself.');
+  }
+
+  /**
+   * Tests that removing an export removes the dependencies only it uses.
+   */
+  public function testRemoveExportWithDependencies(): void {
+    $this->writePruneExports();
+
+    $removed = $this->manager()->removeExportWithDependencies($this->exportDir, 'uuid-root');
+
+    // The root, its own node dependency, and the file with its asset.
+    $this->assertSame(4, $removed);
+    $this->assertFileDoesNotExist($this->exportDir . '/node/root.yml');
+    $this->assertFileDoesNotExist($this->exportDir . '/node/own.yml');
+    $this->assertFileDoesNotExist($this->exportDir . '/file/file.yml');
+    $this->assertFileDoesNotExist($this->exportDir . '/file/uuid-file--photo.jpg');
+    $this->assertFileExists($this->exportDir . '/node/shared.yml');
+    $this->assertFileExists($this->exportDir . '/node/other.yml');
+  }
+
+  /**
+   * Tests that an export another export depends on isn't removed.
+   */
+  public function testRemoveExportKeepsDependencyOfAnotherExport(): void {
+    $this->writePruneExports();
+
+    $removed = $this->manager()->removeExportWithDependencies($this->exportDir, 'uuid-own');
+
+    $this->assertSame(0, $removed);
+    $this->assertFileExists($this->exportDir . '/node/own.yml');
+  }
+
+  /**
+   * Tests that removing an unknown export removes nothing.
+   */
+  public function testRemoveUnknownExport(): void {
+    $this->writePruneExports();
+    $this->assertSame(0, $this->manager()->removeExportWithDependencies($this->exportDir, 'uuid-missing'));
+    $this->assertCount(5, glob($this->exportDir . '/*/*.yml'));
+  }
+
+  /**
+   * Writes exports for the prune tests.
+   *
+   * The root depends on its own node, a file with an exported asset, and a
+   * node it shares with another export.
+   */
+  protected function writePruneExports(): void {
+    $this->writeExport('node/root.yml', 'uuid-root', 'node', [
+      'uuid-own' => 'node',
+      'uuid-file' => 'file',
+      'uuid-shared' => 'node',
+    ]);
+    $this->writeExport('node/own.yml', 'uuid-own', 'node');
+    $this->writeExport('node/shared.yml', 'uuid-shared', 'node');
+    $this->writeExport('node/other.yml', 'uuid-other', 'node', ['uuid-shared' => 'node']);
+    $this->writeExport('file/file.yml', 'uuid-file', 'file', [], [
+      'uri' => [['value' => 'public://photo.jpg']],
+    ]);
+    file_put_contents($this->exportDir . '/file/uuid-file--photo.jpg', 'asset');
+  }
+
+  /**
+   * Writes an export file.
+   *
+   * @param string $path
+   *   Path relative to the export directory.
+   * @param string $uuid
+   *   The export's UUID.
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param array $depends
+   *   Dependencies, keyed by UUID.
+   * @param array $fields
+   *   Default-language field values.
+   */
+  protected function writeExport(string $path, string $uuid, string $entity_type, array $depends = [], array $fields = []): void {
+    $filepath = $this->exportDir . '/' . $path;
+    if (!is_dir(dirname($filepath))) {
+      mkdir(dirname($filepath), 0777, TRUE);
+    }
+    file_put_contents($filepath, Yaml::encode([
+      '_meta' => [
+        'entity_type' => $entity_type,
+        'bundle' => $entity_type,
+        'uuid' => $uuid,
+        'default_langcode' => 'en',
+        'depends' => $depends,
+      ],
+      'default' => $fields,
+    ]));
+  }
+
+  /**
+   * Returns the export file manager.
+   */
+  protected function manager(): ExportFileManager {
+    return $this->container->get(ExportFileManager::class);
   }
 
 }
