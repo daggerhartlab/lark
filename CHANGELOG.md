@@ -7,6 +7,10 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- Require a token on the import action links.
+
 ### Fixed
 
 - Re-importing an existing file with the Rename asset import setting no longer
