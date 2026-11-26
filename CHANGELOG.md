@@ -21,6 +21,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   and importing several archives in one request imports each of them (#93).
 - Pruning an export no longer deletes dependencies that a kept export still
   needs (#96).
+- An entity that references itself is no longer listed as its own dependency
+  (#65).
 
 ## [2.2.0] - 2026-11-24
 

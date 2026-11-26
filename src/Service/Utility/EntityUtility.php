@@ -135,6 +135,11 @@ class EntityUtility {
             continue;
           }
 
+          // An entity is never its own dependency.
+          if ($referenced_entity->uuid() === $entity->uuid()) {
+            continue;
+          }
+
           // If the referenced entity is already processing, do nothing.
           if (array_key_exists($referenced_entity->uuid(), $found)) {
             continue;
