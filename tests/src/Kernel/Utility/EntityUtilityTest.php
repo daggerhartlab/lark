@@ -2,12 +2,15 @@
 
 namespace Drupal\Tests\lark\Kernel\Utility;
 
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Model\ExportArray;
 use Drupal\lark\Service\Utility\EntityUtility;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
+use Drupal\node\NodeInterface;
 use Drupal\system\Entity\Menu;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -171,6 +174,59 @@ class EntityUtilityTest extends KernelTestBase {
     $this->assertSame($child->uuid(), end($order), 'The root entity is discovered last.');
     $this->assertContains($parent->uuid(), $order);
     $this->assertContains($grandparent->uuid(), $order);
+  }
+
+  /**
+   * Tests that an entity referencing itself isn't its own dependency.
+   */
+  public function testSelfReferenceIsExcludedFromDependencies(): void {
+    $node = $this->createSelfReferencingNode();
+
+    $deps = $this->container->get(EntityUtility::class)->getEntityExportDependencies($node);
+
+    $this->assertArrayNotHasKey($node->uuid(), $deps);
+    $this->assertCount(1, $deps);
+  }
+
+  /**
+   * Tests that an entity referencing itself is still discovered last.
+   */
+  public function testSelfReferencingRootIsDiscoveredLast(): void {
+    $node = $this->createSelfReferencingNode();
+
+    $found = [];
+    $order = array_keys($this->container->get(EntityUtility::class)->getEntityUuidEntityTypePairs($node, $found));
+
+    $this->assertCount(2, $order);
+    $this->assertSame($node->uuid(), end($order));
+  }
+
+  /**
+   * Creates a node that references itself and one other node.
+   */
+  protected function createSelfReferencingNode(): NodeInterface {
+    FieldStorageConfig::create([
+      'field_name' => 'field_related',
+      'entity_type' => 'node',
+      'type' => 'entity_reference',
+      'settings' => ['target_type' => 'node'],
+      'cardinality' => -1,
+    ])->save();
+    FieldConfig::create([
+      'field_name' => 'field_related',
+      'entity_type' => 'node',
+      'bundle' => 'article',
+    ])->save();
+
+    $other = Node::create(['type' => 'article', 'title' => 'Other']);
+    $other->save();
+    $node = Node::create(['type' => 'article', 'title' => 'Self']);
+    $node->save();
+    $node->set('field_related', [
+      ['target_id' => $node->id()],
+      ['target_id' => $other->id()],
+    ])->save();
+    return $node;
   }
 
   /**
