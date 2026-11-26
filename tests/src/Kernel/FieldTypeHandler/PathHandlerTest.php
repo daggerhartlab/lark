@@ -64,4 +64,27 @@ class PathHandlerTest extends KernelTestBase {
     $this->assertArrayNotHasKey('pathauto', $values[0]);
   }
 
+  /**
+   * Tests that an alias matching by text and language is reused.
+   */
+  public function testImportReusesMatchingAlias(): void {
+    $storage = $this->container->get('entity_type.manager')->getStorage('path_alias');
+    $existing = $storage->create(['path' => '/user/1', 'alias' => '/imported', 'langcode' => 'en']);
+    $existing->save();
+
+    $uuid = $this->container->get('uuid')->generate();
+    $node = Node::create(['type' => 'article', 'title' => 'Test']);
+    $values = $this->container->get(FieldTypeHandlerManagerInterface::class)->getInstances()['path_handler']
+      ->alterImportValue([
+        ['target_uuid' => $uuid, 'alias' => '/imported', 'langcode' => 'en'],
+      ], $node->get('path'));
+
+    $this->assertCount(1, $storage->loadMultiple());
+    $alias = $storage->load($existing->id());
+    $this->assertInstanceOf(PathAliasInterface::class, $alias);
+    $this->assertSame($uuid, $alias->uuid());
+    $this->assertSame('/node/' . $node->id(), $alias->getPath());
+    $this->assertEquals($alias->id(), $values[0]['pid']);
+  }
+
 }
