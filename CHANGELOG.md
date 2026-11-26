@@ -7,6 +7,12 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-11-26
+
+### Added
+
+- Composer suggestions for the modules Lark integrates with (#94).
+
 ### Changed
 
 - Require a token on the import action links.
@@ -245,7 +251,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 Initial release with YAML export and import.
 
-[Unreleased]: https://github.com/daggerhartlab/lark/compare/2.2.0...HEAD
+[Unreleased]: https://github.com/daggerhartlab/lark/compare/2.2.1...HEAD
+[2.2.1]: https://github.com/daggerhartlab/lark/compare/2.2.0...2.2.1
 [2.2.0]: https://github.com/daggerhartlab/lark/compare/2.1.5...2.2.0
 [2.1.5]: https://github.com/daggerhartlab/lark/compare/2.1.4...2.1.5
 [2.1.4]: https://github.com/daggerhartlab/lark/compare/2.1.3...2.1.4
