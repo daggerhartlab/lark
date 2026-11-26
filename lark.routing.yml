@@ -26,6 +26,7 @@ lark.action_import_source:
         type: entity:lark_source
   requirements:
     _permission: 'lark import entity'
+    _csrf_token: 'TRUE'
 
 lark.action_import_source_entity:
   path: '/admin/lark/action/import-source-entity/{lark_source}/{uuid}'
@@ -41,6 +42,7 @@ lark.action_import_source_entity:
         type: string
   requirements:
     _permission: 'lark import entity'
+    _csrf_token: 'TRUE'
 
 lark.action_download_source:
   path: '/admin/lark/action/download-source/{lark_source}'
