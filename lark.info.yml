@@ -4,3 +4,7 @@ description: 'Import and export content.'
 package: Development
 configure: lark.settings
 core_version_requirement: ^11.3 || ^12
+
+# Information added by the release workflow on 2026-11-26
+version: '2.2.1'
+datestamp: 1795692969
