@@ -96,18 +96,13 @@ class ExportFileManager {
     // contains only the exports that are not being removed.
     $pruned_collection = $collection->diff($removal_candidates);
 
-    // We need to filter out of the remove_exports array any item that is a
-    // dependency of another item in the all_exports array. This produces a
-    // collection of exports that can be safely removed.
-    $removal_safe = $removal_candidates->filter(function ($removal_candidate) use ($pruned_collection) {
-      foreach ($pruned_collection as $export) {
-        if ($export->hasDependency($removal_candidate->uuid())) {
-          return FALSE;
-        }
-      }
-
-      return TRUE;
-    });
+    // Keep every export the remaining exports need, directly or through
+    // other dependencies.
+    $kept = new ExportCollection();
+    foreach ($pruned_collection as $export) {
+      $kept->merge($collection->getWithDependencies($export->uuid()));
+    }
+    $removal_safe = $removal_candidates->diff($kept);
 
     // If the item we want to remove is not in the "safe" array, we can't remove
     // it, and don't want to remove its dependencies either.

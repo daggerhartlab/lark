@@ -171,6 +171,25 @@ class ExportFileManagerTest extends KernelTestBase {
   }
 
   /**
+   * Tests that a kept dependency keeps its own dependencies.
+   */
+  public function testRemoveExportKeepsDependenciesOfKeptExports(): void {
+    // The root and another export both depend on a node, which depends on a
+    // leaf. The shared node stays, so its leaf must stay too.
+    $this->writeExport('node/root.yml', 'uuid-root', 'node', ['uuid-shared' => 'node']);
+    $this->writeExport('node/other.yml', 'uuid-other', 'node', ['uuid-shared' => 'node']);
+    $this->writeExport('node/shared.yml', 'uuid-shared', 'node', ['uuid-leaf' => 'node']);
+    $this->writeExport('node/leaf.yml', 'uuid-leaf', 'node');
+
+    $removed = $this->manager()->removeExportWithDependencies($this->exportDir, 'uuid-root');
+
+    $this->assertSame(1, $removed);
+    $this->assertFileDoesNotExist($this->exportDir . '/node/root.yml');
+    $this->assertFileExists($this->exportDir . '/node/shared.yml');
+    $this->assertFileExists($this->exportDir . '/node/leaf.yml');
+  }
+
+  /**
    * Tests that removing an unknown export removes nothing.
    */
   public function testRemoveUnknownExport(): void {
