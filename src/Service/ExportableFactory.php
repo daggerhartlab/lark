@@ -287,13 +287,20 @@ class ExportableFactory implements ExportableFactoryInterface {
         continue;
       }
 
-      // Override meta options for the exportable.
-      if (
-        array_key_exists($uuid, $meta_option_overrides) &&
-        array_key_exists($meta_option->id(), $meta_option_overrides[$uuid]) &&
-        !empty($meta_option_overrides[$uuid][$meta_option->id()])
-      ) {
-        $exportable->setOption($meta_option->id(), $meta_option_overrides[$uuid][$meta_option->id()]);
+      // Override meta options for the exportable. An empty override removes
+      // the option.
+      if (!array_key_exists($meta_option->id(), $meta_option_overrides[$uuid] ?? [])) {
+        continue;
+      }
+
+      $override = $meta_option_overrides[$uuid][$meta_option->id()];
+      if ($override) {
+        $exportable->setOption($meta_option->id(), $override);
+      }
+      else {
+        $options = $exportable->getOptions();
+        unset($options[$meta_option->id()]);
+        $exportable->setOptions($options);
       }
     }
 
