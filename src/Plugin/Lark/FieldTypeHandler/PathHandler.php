@@ -35,7 +35,6 @@ class PathHandler extends DefaultHandler {
         }
 
         $values[$delta]['target_uuid'] = $path_alias->uuid();
-        $values[$delta]['original_values']['pid'] = $path_alias->id();
         unset($values[$delta]['pid']);
       }
 

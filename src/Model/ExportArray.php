@@ -24,11 +24,10 @@ class ExportArray extends \ArrayObject {
       'entity_type' => '',
       // Bundle.
       'bundle' => '',
-      // Exported Entity ID. Only used for debugging.
-      'entity_id' => '',
       // Export entity label. Only used for debugging.
       'label' => '',
-      // Path to the exported entity.
+      // Location of the export's file. Kept in memory only: filled in when
+      // the file is found or about to be saved, and left out of the file.
       'path' => '',
       // UUID of the exported entity.
       'uuid' => '',
@@ -88,7 +87,6 @@ class ExportArray extends \ArrayObject {
     $export
       ->setEntityTypeId($entity->getEntityTypeId())
       ->setBundle($entity->bundle())
-      ->setEntityId($entity->id() ?? 0)
       ->setLabel($entity->label())
       // ->setPath('') // Can't know the path yet.
       ->setUuid($entity->uuid())
@@ -226,29 +224,6 @@ class ExportArray extends \ArrayObject {
    */
   public function setBundle(string $bundle): self {
     $this->setMeta('bundle', $bundle);
-    return $this;
-  }
-
-  /**
-   * Get the entity ID.
-   *
-   * @return string|int
-   *   Entity ID.
-   */
-  public function entityId(): string|int {
-    return $this->getMeta('entity_id') ?? '0';
-  }
-
-  /**
-   * Set the entity ID.
-   *
-   * @param string|int $entity_id
-   *   Entity ID.
-   *
-   * @return static
-   */
-  public function setEntityId(string|int $entity_id): self {
-    $this->setMeta('entity_id', (string) $entity_id);
     return $this;
   }
 
@@ -790,6 +765,11 @@ class ExportArray extends \ArrayObject {
    */
   public function cleanArray(): array {
     $array = $this->getArrayCopy();
+
+    // The file's location is known when it's read, and differs between
+    // environments.
+    unset($array['_meta']['path']);
+
     if (!$this->options()) {
       unset($array['_meta']['options']);
     }

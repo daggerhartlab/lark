@@ -46,12 +46,11 @@ class LarkSettingsTest extends TestCase {
   }
 
   /**
-   * Tests that ignored comparison keys always include 'original_values'.
+   * Tests that only the configured keys are ignored in comparisons.
    */
-  public function testIgnoredComparisonKeysAlwaysIncludesOriginalValues(): void {
-    $settings = $this->makeSettings(['ignored_comparison_keys' => '']);
-    $keys = $settings->ignoredComparisonKeysArray();
-    $this->assertContains('original_values', $keys);
+  public function testIgnoredComparisonKeysAreOnlyTheConfiguredKeys(): void {
+    $settings = $this->makeSettings(['ignored_comparison_keys' => "changed\nrevision_timestamp"]);
+    $this->assertSame(['changed', 'revision_timestamp'], $settings->ignoredComparisonKeysArray());
   }
 
   /**

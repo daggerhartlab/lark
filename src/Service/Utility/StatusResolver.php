@@ -109,8 +109,42 @@ class StatusResolver {
    *   The processed export array.
    */
   protected function processExportArrayForComparison(array $array): array {
+    unset($array['_meta']['entity_id']);
+    $array = $this->removeReferenceIds($array);
     $this->deepUnsetAll($array, $this->larkSettings->ignoredComparisonKeysArray());
     return $array;
+  }
+
+  /**
+   * Removes database IDs from reference properties.
+   *
+   * Exports from Lark 2.2 and earlier recorded them; they differ between
+   * environments.
+   *
+   * @param array $data
+   *   Export data.
+   *
+   * @return array
+   *   The data without IDs, and without reference properties left empty.
+   */
+  protected function removeReferenceIds(array $data): array {
+    foreach ($data as $key => $value) {
+      if (!is_array($value)) {
+        continue;
+      }
+
+      if ($key === 'original_values') {
+        unset($value['target_id'], $value['target_revision_id'], $value['pid']);
+        if (!$value) {
+          unset($data[$key]);
+          continue;
+        }
+      }
+
+      $data[$key] = $this->removeReferenceIds($value);
+    }
+
+    return $data;
   }
 
   /**

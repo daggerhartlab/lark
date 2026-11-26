@@ -48,16 +48,17 @@ class EntityReferenceUuidHandler extends FieldTypeHandlerBase {
           'target_entity_type' => $referenced_entity->getEntityTypeId(),
           // Add additional information for entity reference revisions.
           'target_bundle' => $referenced_entity->bundle(),
-          'original_values' => [],
         ];
 
-        foreach ($field->getFieldDefinition()->getFieldStorageDefinition()->getPropertyNames() as $property) {
-          $values[$delta]['original_values'][$property] = $item->get($property)->getValue();
-        }
-
-        // Unset the entity property to avoid serialization issues.
-        if (isset($values[$delta]['original_values']['entity'])) {
-          unset($values[$delta]['original_values']['entity']);
+        // Keep the item's other properties, such as an image's alt text. The
+        // IDs differ between environments and are resolved from the UUID on
+        // import; the entity property can't be serialized.
+        $storage_definition = $field->getFieldDefinition()->getFieldStorageDefinition();
+        $skipped = [$storage_definition->getMainPropertyName(), 'target_revision_id', 'entity'];
+        foreach ($storage_definition->getPropertyNames() as $property) {
+          if (!in_array($property, $skipped, TRUE)) {
+            $values[$delta]['original_values'][$property] = $item->get($property)->getValue();
+          }
         }
       }
     }
