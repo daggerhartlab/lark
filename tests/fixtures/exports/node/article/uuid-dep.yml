@@ -2,7 +2,6 @@ _meta:
   entity_type: node
   bundle: article
   label: 'Dependency Node'
-  path: ''
   uuid: uuid-dep-0000-0000-000000000001
   default_langcode: en
   depends: {}

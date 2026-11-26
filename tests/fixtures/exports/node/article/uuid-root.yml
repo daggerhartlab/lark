@@ -2,7 +2,6 @@ _meta:
   entity_type: node
   bundle: article
   label: 'Root Node'
-  path: ''
   uuid: uuid-root-0000-0000-000000000002
   default_langcode: en
   depends:

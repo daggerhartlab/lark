@@ -26,7 +26,7 @@ class ExportArray extends \ArrayObject {
       'bundle' => '',
       // Export entity label. Only used for debugging.
       'label' => '',
-      // Path to the exported entity.
+      // Path to the export file, set when the file is read. Not written.
       'path' => '',
       // UUID of the exported entity.
       'uuid' => '',
@@ -794,6 +794,11 @@ class ExportArray extends \ArrayObject {
    */
   public function cleanArray(): array {
     $array = $this->getArrayCopy();
+
+    // The file's location is known when it's read, and differs between
+    // environments.
+    unset($array['_meta']['path']);
+
     if (!$this->options()) {
       unset($array['_meta']['options']);
     }

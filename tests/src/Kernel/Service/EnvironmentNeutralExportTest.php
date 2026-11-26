@@ -135,13 +135,14 @@ class EnvironmentNeutralExportTest extends KernelTestBase {
   }
 
   /**
-   * Tests that the export holds no database IDs.
+   * Tests that the export holds no database IDs or file paths.
    */
-  public function testExportHasNoDatabaseIds(): void {
+  public function testExportHasNoEnvironmentValues(): void {
     $this->export();
     $export = $this->readExport();
 
     $this->assertArrayNotHasKey('entity_id', $export['_meta']);
+    $this->assertArrayNotHasKey('path', $export['_meta']);
     foreach (['field_image', 'field_file', 'field_related', 'field_paragraphs', 'path'] as $field_name) {
       $item = $export['default'][$field_name][0];
       $original = $item['original_values'] ?? [];
@@ -199,12 +200,13 @@ class EnvironmentNeutralExportTest extends KernelTestBase {
   }
 
   /**
-   * Tests that an export written with database IDs still counts as in sync.
+   * Tests that an export written with database IDs and a path is in sync.
    */
-  public function testExportWithDatabaseIdsIsInSync(): void {
+  public function testExportWithEnvironmentValuesIsInSync(): void {
     $this->export();
     $export = $this->readExport();
     $export['_meta']['entity_id'] = '999';
+    $export['_meta']['path'] = '/another/environment/' . $this->node->uuid() . '.yml';
     $export['default']['field_image'][0]['original_values']['target_id'] = '999';
     $export['default']['field_paragraphs'][0]['original_values'] = [
       'target_id' => '999',

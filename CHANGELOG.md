@@ -9,10 +9,10 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Exports no longer include database IDs, which differ between environments:
-  `_meta.entity_id`, and `target_id`, `target_revision_id` and `pid` in
-  reference fields' `original_values`. Exports written by earlier versions
-  still import, and their IDs are ignored when comparing (#104).
+- Exports no longer include values that differ between environments:
+  `_meta.entity_id`, `_meta.path`, and `target_id`, `target_revision_id` and
+  `pid` in reference fields' `original_values`. Exports written by earlier
+  versions still import, and these values are ignored when comparing (#104).
 
 ### Deprecated
 
@@ -23,6 +23,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 - Changing a reference property such as an image's alt text or a file's
   description now marks the export out of sync (#104).
+- An export written on another environment, with a different source path, no
+  longer shows as out of sync (#104).
 
 ## [2.2.1] - 2026-11-26
 
