@@ -26,7 +26,8 @@ class ExportArray extends \ArrayObject {
       'bundle' => '',
       // Export entity label. Only used for debugging.
       'label' => '',
-      // Path to the export file, set when the file is read. Not written.
+      // Location of the export's file. Kept in memory only: filled in when
+      // the file is found or about to be saved, and left out of the file.
       'path' => '',
       // UUID of the exported entity.
       'uuid' => '',
