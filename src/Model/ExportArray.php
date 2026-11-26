@@ -228,36 +228,6 @@ class ExportArray extends \ArrayObject {
   }
 
   /**
-   * Get the entity ID.
-   *
-   * @return string|int
-   *   Entity ID.
-   *
-   * @deprecated in lark:2.3.0 and is removed from lark:3.0.0. Exports no longer
-   *   record the entity ID, which differs between environments. Load the
-   *   entity by UUID instead.
-   */
-  public function entityId(): string|int {
-    return $this->getMeta('entity_id') ?? '0';
-  }
-
-  /**
-   * Set the entity ID.
-   *
-   * @param string|int $entity_id
-   *   Entity ID.
-   *
-   * @return static
-   *
-   * @deprecated in lark:2.3.0 and is removed from lark:3.0.0. Exports no longer
-   *   record the entity ID, which differs between environments.
-   */
-  public function setEntityId(string|int $entity_id): self {
-    $this->setMeta('entity_id', (string) $entity_id);
-    return $this;
-  }
-
-  /**
    * Get the label.
    *
    * @return string

@@ -14,7 +14,7 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   `pid` in reference fields' `original_values`. Exports written by earlier
   versions still import, and these values are ignored when comparing (#104).
 
-### Deprecated
+### Removed
 
 - `ExportArray::entityId()` and `ExportArray::setEntityId()`; exports no longer
   record the entity ID (#104).
