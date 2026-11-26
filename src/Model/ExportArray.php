@@ -24,8 +24,6 @@ class ExportArray extends \ArrayObject {
       'entity_type' => '',
       // Bundle.
       'bundle' => '',
-      // Exported Entity ID. Only used for debugging.
-      'entity_id' => '',
       // Export entity label. Only used for debugging.
       'label' => '',
       // Path to the exported entity.
@@ -88,7 +86,6 @@ class ExportArray extends \ArrayObject {
     $export
       ->setEntityTypeId($entity->getEntityTypeId())
       ->setBundle($entity->bundle())
-      ->setEntityId($entity->id() ?? 0)
       ->setLabel($entity->label())
       // ->setPath('') // Can't know the path yet.
       ->setUuid($entity->uuid())
@@ -234,6 +231,10 @@ class ExportArray extends \ArrayObject {
    *
    * @return string|int
    *   Entity ID.
+   *
+   * @deprecated in lark:2.3.0 and is removed from lark:3.0.0. Exports no longer
+   *   record the entity ID, which differs between environments. Load the
+   *   entity by UUID instead.
    */
   public function entityId(): string|int {
     return $this->getMeta('entity_id') ?? '0';
@@ -246,6 +247,9 @@ class ExportArray extends \ArrayObject {
    *   Entity ID.
    *
    * @return static
+   *
+   * @deprecated in lark:2.3.0 and is removed from lark:3.0.0. Exports no longer
+   *   record the entity ID, which differs between environments.
    */
   public function setEntityId(string|int $entity_id): self {
     $this->setMeta('entity_id', (string) $entity_id);
