@@ -1,0 +1,8 @@
+name: 'Lark test'
+type: module
+description: 'Support module for Lark tests.'
+package: Testing
+core_version_requirement: ^11.3 || ^12
+hidden: true
+dependencies:
+  - lark:lark

@@ -54,6 +54,15 @@ class ArchiveImportTest extends KernelTestBase {
     // The importer switches to user 1 to resolve entity owners.
     User::create(['uid' => 1, 'name' => 'admin', 'status' => 1])->save();
     NodeType::create(['type' => 'article', 'name' => 'Article'])->save();
+
+    // Extract archives into a directory no other test process uses.
+    $temp = sys_get_temp_dir() . '/lark-test-temp-' . uniqid();
+    mkdir($temp);
+    $this->cleanup[] = $temp;
+    $this->setSetting('file_temp_path', $temp);
+    $this->container->get('kernel')->resetContainer();
+    $this->container = \Drupal::getContainer();
+    $this->assertSame($temp, $this->container->get('file_system')->getTempDirectory());
   }
 
   /**

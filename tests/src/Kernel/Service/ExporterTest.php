@@ -3,10 +3,12 @@
 namespace Drupal\Tests\lark\Kernel\Service;
 
 use Drupal\Component\Serialization\Yaml;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\lark\Entity\LarkSource;
 use Drupal\lark\Service\Exporter;
 use Drupal\lark\Service\ExporterInterface;
+use Drupal\lark_test\Hook\LarkTestHooks;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -25,7 +27,7 @@ class ExporterTest extends KernelTestBase {
    * {@inheritdoc}
    */
   protected static $modules = [
-    'lark', 'node', 'user', 'system', 'field', 'text', 'filter',
+    'lark', 'lark_test', 'node', 'user', 'system', 'field', 'text', 'filter',
   ];
 
   /**
@@ -154,6 +156,23 @@ class ExporterTest extends KernelTestBase {
 
     // No exception, and nothing written.
     $this->assertDirectoryDoesNotExist($this->exportDir . '/node');
+  }
+
+  /**
+   * Tests that a module can stop an entity from being exported.
+   */
+  public function testHookVetoesExport(): void {
+    $kept = Node::create(['type' => 'article', 'title' => 'Kept']);
+    $kept->save();
+    $vetoed = Node::create(['type' => 'article', 'title' => 'Vetoed']);
+    $vetoed->save();
+    $this->container->get('state')->set(LarkTestHooks::VETOED_UUIDS, [$vetoed->uuid()]);
+
+    $this->container->get(ExporterInterface::class)->exportEntities('test_source', [$kept, $vetoed], TRUE);
+
+    $this->assertFileExists($this->exportDir . '/node/article/' . $kept->uuid() . '.yml');
+    $this->assertFileDoesNotExist($this->exportDir . '/node/article/' . $vetoed->uuid() . '.yml');
+    $this->assertSame(['Exported 1 entity to Test Source.'], array_map('strval', \Drupal::messenger()->messagesByType(MessengerInterface::TYPE_STATUS)));
   }
 
 }
