@@ -15,7 +15,18 @@
         "league/commonmark" : "^2.6"
     },
     "require-dev": {
+        "drupal/config_pages": "^4.0",
+        "drupal/entity_embed": "^1.8",
+        "drupal/metatag": "^2.2",
         "drupal/paragraphs": "^1.23",
+        "drupal/pathauto": "^1.16",
         "drush/drush": "^13"
+    },
+    "suggest": {
+        "drupal/config_pages": "Adds Lark's export and import tabs to config pages.",
+        "drupal/entity_embed": "Embedded entities in formatted text are exported as dependencies.",
+        "drupal/metatag": "Meta tags are exported and imported with their entities.",
+        "drupal/paragraphs": "Paragraphs are exported and imported with their parent entities.",
+        "drupal/pathauto": "Exports keep whether an alias is generated automatically."
     }
 }
