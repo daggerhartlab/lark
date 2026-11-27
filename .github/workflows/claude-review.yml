@@ -13,9 +13,10 @@ permissions:
 
 jobs:
   review:
-    uses: daggerhartlab/devops-shared-actions/.github/workflows/claude-review-github-issues.yml@claude-review-github-issues
+    uses: daggerhartlab/devops-shared-actions/.github/workflows/claude-review-github-issues.yml@v1
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.LABBY_CLAUDE_CODE_OAUTH_TOKEN }}
     with:
       exclude_paths: |
         **/composer.lock
+        CHANGELOG.md
