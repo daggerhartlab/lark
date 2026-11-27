@@ -12,7 +12,7 @@ their dependencies from one Drupal site to another.
 
 Visit the Lark Sources page (`/admin/lark/source`), and create a new Source for
 where you will export your content. Ideally, this directory should be outside
-the document root of the Drupal site.
+the document root of the Drupal site, so exported files are never served.
 
 You can make your exports directory relative to a module or theme by providing
 the module or theme name within brackets in the directory path.
