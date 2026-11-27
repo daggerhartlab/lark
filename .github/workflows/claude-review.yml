@@ -1,0 +1,22 @@
+name: Claude code review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read
+
+jobs:
+  review:
+    uses: daggerhartlab/devops-shared-actions/.github/workflows/claude-review-github-issues.yml@v1
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.LABBY_CLAUDE_CODE_OAUTH_TOKEN }}
+    with:
+      exclude_paths: |
+        **/composer.lock
+        CHANGELOG.md
